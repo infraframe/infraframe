@@ -26,77 +26,87 @@
 
 // This file is borrowed from lynckia/licode with some modifications.
 
-'use strict';
+"use strict";
 
-var dataAccess = require('../data_access');
-var logger = require('./../logger').logger;
-var cipher = require('../cipher');
-var e = require('../errors');
+var dataAccess = require("../data_access");
+var logger = require("./../logger").logger;
+var cipher = require("../cipher");
+var e = require("../errors");
 
 // Logger
-var log = logger.getLogger('ServicesResource');
+var log = logger.getLogger("ServicesResource");
 
 /*
  * Gets the service and checks if it is superservice. Only superservice can do actions about services.
  */
 var doInit = function (currentService) {
-    var superService = global.config.server.superserviceID;
-    currentService._id = currentService._id + '';
-    return (currentService._id === superService);
+  var superService = global.config.server.superserviceID;
+  currentService._id = currentService._id + "";
+  return currentService._id === superService;
 };
 
 /*
  * Post Service. Creates a new service.
  */
 exports.create = function (req, res, next) {
-    var authData = req.authData || {};
-    if (!doInit(authData.service)) {
-        log.info('Service ', authData.service._id, ' not authorized for this action');
-        return next(new e.AccessError('Permission denied'));
-    }
+  var authData = req.authData || {};
+  if (!doInit(authData.service)) {
+    log.info(
+      "Service ",
+      authData.service._id,
+      " not authorized for this action"
+    );
+    return next(new e.AccessError("Permission denied"));
+  }
 
-    if (typeof req.body !== 'object' || req.body === null) {
-        return next(new e.BadRequestError('Invalid request body'));
-    }
+  if (typeof req.body !== "object" || req.body === null) {
+    return next(new e.BadRequestError("Invalid request body"));
+  }
 
-    var service = {};
-    // Check the request body as service
-    if (typeof req.body.name !== 'string' || typeof req.body.key !== 'string') {
-        return next(new e.BadRequestError('Service name and key do not have string type'));
-    } else {
-        service.name = req.body.name;
-        service.key = req.body.key;
-    }
+  var service = {};
+  // Check the request body as service
+  if (typeof req.body.name !== "string" || typeof req.body.key !== "string") {
+    return next(
+      new e.BadRequestError("Service name and key do not have string type")
+    );
+  } else {
+    service.name = req.body.name;
+    service.key = req.body.key;
+  }
 
-    service.encrypted = true;
-    service.key = cipher.encrypt(global.config.spk, service.key);
-    dataAccess.service.create(service, function(err, result) {
-        if (err) {
-            log.warn('Failed to create service:', err.message);
-            return next(err);
-        }
-        log.info('Service created: ', service.name);
-        res.send(result);
-    });
+  service.encrypted = true;
+  service.key = cipher.encrypt(global.config.spk, service.key);
+  dataAccess.service.create(service, function (err, result) {
+    if (err) {
+      log.warn("Failed to create service:", err.message);
+      return next(err);
+    }
+    log.info("Service created: ", service.name);
+    res.send(result);
+  });
 };
 
 /*
  * Get Service. Represents a determined service.
  */
 exports.represent = function (req, res, next) {
-    var authData = req.authData || {};
+  var authData = req.authData || {};
 
-    if (!doInit(authData.service)) {
-        log.info('Service ', authData.service._id, ' not authorized for this action');
-        return next(new e.AccessError('Permission denied'));
+  if (!doInit(authData.service)) {
+    log.info(
+      "Service ",
+      authData.service._id,
+      " not authorized for this action"
+    );
+    return next(new e.AccessError("Permission denied"));
+  }
+
+  dataAccess.service.list(function (err, list) {
+    if (err) {
+      log.warn("Failed to list services:", err.message);
+      return next(err);
     }
-
-    dataAccess.service.list(function(err, list) {
-        if (err) {
-            log.warn('Failed to list services:', err.message);
-            return next(err);
-        }
-        log.info('Representing services');
-        res.send(list);
-    });
+    log.info("Representing services");
+    res.send(list);
+  });
 };

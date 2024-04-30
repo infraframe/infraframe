@@ -5,18 +5,18 @@
 #ifndef GstInternalIn_h
 #define GstInternalIn_h
 
-#include <gst/gst.h>
 #include <gst/app/gstappsrc.h>
+#include <gst/gst.h>
 #include <logger.h>
 
-#include "RawTransport.h"
 #include "MediaFramePipeline.h"
-
+#include "RawTransport.h"
 
 class GstInternalIn : public owt_base::FrameDestination {
     DECLARE_LOGGER();
+
 public:
-    GstInternalIn(GstAppSrc *data, int framerate);
+    GstInternalIn(GstAppSrc* data, int framerate);
     virtual ~GstInternalIn();
 
     void onFrame(const owt_base::Frame& frame);
@@ -28,7 +28,7 @@ private:
     bool m_dumpIn;
     size_t num_frames;
     int m_framerate;
-    GstAppSrc *appsrc;
+    GstAppSrc* appsrc;
 };
 
 #endif /* GstInternalIn_h */

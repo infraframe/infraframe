@@ -4,8 +4,8 @@
 
 #ifdef ENABLE_MSDK
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 #include "MsdkBase.h"
 #include "MsdkVideoCompositor.h"
@@ -27,11 +27,11 @@ MsdkAvatarManager::~MsdkAvatarManager()
 {
 }
 
-bool MsdkAvatarManager::getImageSize(const std::string &url, uint32_t *pWidth, uint32_t *pHeight)
+bool MsdkAvatarManager::getImageSize(const std::string& url, uint32_t* pWidth, uint32_t* pHeight)
 {
     uint32_t width, height;
     size_t begin, end;
-    char *str_end = NULL;
+    char* str_end = NULL;
 
     begin = url.find('.');
     if (begin == std::string::npos) {
@@ -71,7 +71,7 @@ bool MsdkAvatarManager::getImageSize(const std::string &url, uint32_t *pWidth, u
     return true;
 }
 
-boost::shared_ptr<owt_base::MsdkFrame> MsdkAvatarManager::loadImage(const std::string &url)
+boost::shared_ptr<owt_base::MsdkFrame> MsdkAvatarManager::loadImage(const std::string& url)
 {
     uint32_t width, height;
 
@@ -79,38 +79,37 @@ boost::shared_ptr<owt_base::MsdkFrame> MsdkAvatarManager::loadImage(const std::s
         return NULL;
 
     std::ifstream in(url, std::ios::in | std::ios::binary);
-    in.seekg (0, in.end);
+    in.seekg(0, in.end);
     uint32_t size = in.tellg();
-    in.seekg (0, in.beg);
+    in.seekg(0, in.beg);
 
     if (size <= 0 || ((width * height * 3 + 1) / 2) != size) {
-        ELOG_WARN("Open avatar image(%s) error, invalid size %d, expected size %d"
-                , url.c_str(), size, (width * height * 3 + 1) / 2);
+        ELOG_WARN("Open avatar image(%s) error, invalid size %d, expected size %d", url.c_str(), size, (width * height * 3 + 1) / 2);
         return NULL;
     }
 
-    char *image = new char [size];;
-    in.read (image, size);
+    char* image = new char[size];
+    ;
+    in.read(image, size);
     in.close();
 
     rtc::scoped_refptr<I420Buffer> i420Buffer = I420Buffer::Copy(
-            width, height,
-            reinterpret_cast<const uint8_t *>(image), width,
-            reinterpret_cast<const uint8_t *>(image + width * height), width / 2,
-            reinterpret_cast<const uint8_t *>(image + width * height * 5 / 4), width / 2
-            );
+        width, height,
+        reinterpret_cast<const uint8_t*>(image), width,
+        reinterpret_cast<const uint8_t*>(image + width * height), width / 2,
+        reinterpret_cast<const uint8_t*>(image + width * height * 5 / 4), width / 2);
 
     delete[] image;
 
     boost::shared_ptr<owt_base::MsdkFrame> frame(new owt_base::MsdkFrame(width, height, m_allocator));
-    if(!frame->init())
+    if (!frame->init())
         return NULL;
 
     frame->convertFrom(i420Buffer.get());
     return frame;
 }
 
-bool MsdkAvatarManager::setAvatar(uint8_t index, const std::string &url)
+bool MsdkAvatarManager::setAvatar(uint8_t index, const std::string& url)
 {
     boost::unique_lock<boost::shared_mutex> lock(m_mutex);
     ELOG_DEBUG("setAvatar(%d) = %s", index, url.c_str());
@@ -178,7 +177,7 @@ boost::shared_ptr<owt_base::MsdkFrame> MsdkAvatarManager::getAvatarFrame(uint8_t
 
 DEFINE_LOGGER(MsdkInput, "mcu.media.MsdkVideoCompositor.MsdkInput");
 
-MsdkInput::MsdkInput(MsdkVideoCompositor *owner, boost::shared_ptr<mfxFrameAllocator> allocator)
+MsdkInput::MsdkInput(MsdkVideoCompositor* owner, boost::shared_ptr<mfxFrameAllocator> allocator)
     : m_owner(owner)
     , m_allocator(allocator)
     , m_active(false)
@@ -234,7 +233,7 @@ boost::shared_ptr<MsdkFrame> MsdkInput::popInput()
 {
     boost::unique_lock<boost::shared_mutex> lock(m_mutex);
 
-    if(!m_active)
+    if (!m_active)
         return NULL;
 
     return m_busyFrame;
@@ -260,7 +259,7 @@ boost::shared_ptr<owt_base::MsdkFrame> MsdkInput::getMsdkFrame(const uint32_t wi
         }
     }
 
-    if(!(m_msdkFrame.use_count() == 1 && m_msdkFrame->isFree())) {
+    if (!(m_msdkFrame.use_count() == 1 && m_msdkFrame->isFree())) {
         ELOG_INFO_T("No free frame available");
         return NULL;
     }
@@ -282,12 +281,12 @@ boost::shared_ptr<owt_base::MsdkFrame> MsdkInput::getMsdkFrame(const uint32_t wi
 bool MsdkInput::processCmd(const owt_base::Frame& frame)
 {
     if (frame.format == FRAME_FORMAT_MSDK) {
-        MsdkFrameHolder *holder = (MsdkFrameHolder *)frame.payload;
+        MsdkFrameHolder* holder = (MsdkFrameHolder*)frame.payload;
         if (holder && holder->cmd == MsdkCmd_DEC_FLUSH) {
             {
                 boost::unique_lock<boost::shared_mutex> lock(m_mutex);
                 boost::shared_ptr<MsdkFrame> copyFrame;
-                if(m_active && m_busyFrame) {
+                if (m_active && m_busyFrame) {
                     if (!m_converter)
                         m_converter.reset(new FrameConverter());
 
@@ -313,17 +312,17 @@ bool MsdkInput::processCmd(const owt_base::Frame& frame)
 boost::shared_ptr<MsdkFrame> MsdkInput::convert(const owt_base::Frame& frame)
 {
     if (frame.format == FRAME_FORMAT_MSDK) {
-        MsdkFrameHolder *holder = (MsdkFrameHolder *)frame.payload;
+        MsdkFrameHolder* holder = (MsdkFrameHolder*)frame.payload;
 
         return holder->frame;
     } else if (frame.format == FRAME_FORMAT_I420) {
-        const struct VideoFrameSpecificInfo &video = frame.additionalInfo.video;
+        const struct VideoFrameSpecificInfo& video = frame.additionalInfo.video;
 
         if (m_swFramePool == NULL || m_swFramePoolWidth < video.width || m_swFramePoolHeight < video.height) {
             { // todo, new msdk frame pool impl
                 boost::unique_lock<boost::shared_mutex> lock(m_mutex);
                 boost::shared_ptr<MsdkFrame> copyFrame;
-                if(m_active && m_busyFrame) {
+                if (m_active && m_busyFrame) {
                     if (!m_converter)
                         m_converter.reset(new FrameConverter());
 
@@ -351,14 +350,14 @@ boost::shared_ptr<MsdkFrame> MsdkInput::convert(const owt_base::Frame& frame)
         if (dst->getVideoWidth() != video.width || dst->getVideoHeight() != video.height)
             dst->setCrop(0, 0, video.width, video.height);
 
-        VideoFrame *i420Frame = (reinterpret_cast<VideoFrame *>(frame.payload));
+        VideoFrame* i420Frame = (reinterpret_cast<VideoFrame*>(frame.payload));
         if (!dst->convertFrom(i420Frame->video_frame_buffer().get())) {
             ELOG_ERROR_T("Failed to convert I420 frame");
             return NULL;
         }
 
         return dst;
-    } else{
+    } else {
         ELOG_ERROR_T("Unsupported frame format, %d", frame.format);
         return NULL;
     }
@@ -366,7 +365,7 @@ boost::shared_ptr<MsdkFrame> MsdkInput::convert(const owt_base::Frame& frame)
 
 DEFINE_LOGGER(MsdkVpp, "mcu.media.MsdkVideoCompositor.MsdkVpp");
 
-MsdkVpp::MsdkVpp(owt_base::VideoSize &size, owt_base::YUVColor &bgColor, const bool crop)
+MsdkVpp::MsdkVpp(owt_base::VideoSize& size, owt_base::YUVColor& bgColor, const bool crop)
     : m_size(size)
     , m_bgColor(bgColor)
     , m_crop(crop)
@@ -383,7 +382,7 @@ MsdkVpp::~MsdkVpp()
     if (m_vpp) {
         m_vpp->Close();
         delete m_vpp;
-        m_vpp= NULL;
+        m_vpp = NULL;
     }
 
     m_mixedFramePool.reset();
@@ -393,7 +392,7 @@ MsdkVpp::~MsdkVpp()
     m_allocator.reset();
 
     if (m_session) {
-        MsdkBase *msdkBase = MsdkBase::get();
+        MsdkBase* msdkBase = MsdkBase::get();
         if (msdkBase) {
             msdkBase->destroySession(m_session);
         }
@@ -414,14 +413,9 @@ bool MsdkVpp::allocateFrames()
     }
 
     if (!m_defaultRootFrame
-            || m_defaultRootFrame->getVideoWidth() != m_size.width
-            || m_defaultRootFrame->getVideoHeight() != m_size.height) {
-        ELOG_TRACE_T("reset root size %dx%d -> %dx%d"
-                , m_defaultRootFrame ? m_defaultRootFrame->getVideoWidth() : 0
-                , m_defaultRootFrame ? m_defaultRootFrame->getVideoHeight() : 0
-                , m_size.width
-                , m_size.height
-                );
+        || m_defaultRootFrame->getVideoWidth() != m_size.width
+        || m_defaultRootFrame->getVideoHeight() != m_size.height) {
+        ELOG_TRACE_T("reset root size %dx%d -> %dx%d", m_defaultRootFrame ? m_defaultRootFrame->getVideoWidth() : 0, m_defaultRootFrame ? m_defaultRootFrame->getVideoHeight() : 0, m_size.width, m_size.height);
 
         m_defaultRootFrame.reset(new MsdkFrame(m_size.width, m_size.height, m_allocator));
         if (!m_defaultRootFrame->init()) {
@@ -448,41 +442,41 @@ void MsdkVpp::defaultParam(void)
     m_videoParam->AsyncDepth = 1;
     m_videoParam->IOPattern = MFX_IOPATTERN_IN_VIDEO_MEMORY | MFX_IOPATTERN_OUT_VIDEO_MEMORY;
     m_videoParam->NumExtParam = 0;
-    m_videoParam->ExtParam = (mfxExtBuffer **)&m_extVppComp;
+    m_videoParam->ExtParam = (mfxExtBuffer**)&m_extVppComp;
 
     // mfxVideoParam Vpp In
-    m_videoParam->vpp.In.FourCC             = MFX_FOURCC_NV12;
-    m_videoParam->vpp.In.ChromaFormat       = MFX_CHROMAFORMAT_YUV420;
-    m_videoParam->vpp.In.PicStruct          = MFX_PICSTRUCT_PROGRESSIVE;
+    m_videoParam->vpp.In.FourCC = MFX_FOURCC_NV12;
+    m_videoParam->vpp.In.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
+    m_videoParam->vpp.In.PicStruct = MFX_PICSTRUCT_PROGRESSIVE;
 
-    m_videoParam->vpp.In.BitDepthLuma       = 0;
-    m_videoParam->vpp.In.BitDepthChroma     = 0;
-    m_videoParam->vpp.In.Shift              = 0;
+    m_videoParam->vpp.In.BitDepthLuma = 0;
+    m_videoParam->vpp.In.BitDepthChroma = 0;
+    m_videoParam->vpp.In.Shift = 0;
 
-    m_videoParam->vpp.In.AspectRatioW       = 0;
-    m_videoParam->vpp.In.AspectRatioH       = 0;
+    m_videoParam->vpp.In.AspectRatioW = 0;
+    m_videoParam->vpp.In.AspectRatioH = 0;
 
-    m_videoParam->vpp.In.FrameRateExtN      = 30;
-    m_videoParam->vpp.In.FrameRateExtD      = 1;
+    m_videoParam->vpp.In.FrameRateExtN = 30;
+    m_videoParam->vpp.In.FrameRateExtD = 1;
 
     // mfxVideoParam Vpp Out
-    m_videoParam->vpp.Out.FourCC            = MFX_FOURCC_NV12;
-    m_videoParam->vpp.Out.ChromaFormat      = MFX_CHROMAFORMAT_YUV420;
-    m_videoParam->vpp.Out.PicStruct         = MFX_PICSTRUCT_PROGRESSIVE;
+    m_videoParam->vpp.Out.FourCC = MFX_FOURCC_NV12;
+    m_videoParam->vpp.Out.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
+    m_videoParam->vpp.Out.PicStruct = MFX_PICSTRUCT_PROGRESSIVE;
 
-    m_videoParam->vpp.Out.BitDepthLuma      = 0;
-    m_videoParam->vpp.Out.BitDepthChroma    = 0;
-    m_videoParam->vpp.Out.Shift             = 0;
+    m_videoParam->vpp.Out.BitDepthLuma = 0;
+    m_videoParam->vpp.Out.BitDepthChroma = 0;
+    m_videoParam->vpp.Out.Shift = 0;
 
-    m_videoParam->vpp.Out.AspectRatioW      = 0;
-    m_videoParam->vpp.Out.AspectRatioH      = 0;
+    m_videoParam->vpp.Out.AspectRatioW = 0;
+    m_videoParam->vpp.Out.AspectRatioH = 0;
 
-    m_videoParam->vpp.Out.FrameRateExtN     = 30;
-    m_videoParam->vpp.Out.FrameRateExtD     = 1;
+    m_videoParam->vpp.Out.FrameRateExtN = 30;
+    m_videoParam->vpp.Out.FrameRateExtD = 1;
 
     // mfxExtVPPComposite
-    m_extVppComp->Header.BufferId           = MFX_EXTBUFF_VPP_COMPOSITE;
-    m_extVppComp->Header.BufferSz           = sizeof(mfxExtVPPComposite);
+    m_extVppComp->Header.BufferId = MFX_EXTBUFF_VPP_COMPOSITE;
+    m_extVppComp->Header.BufferSz = sizeof(mfxExtVPPComposite);
     m_extVppComp->Y = 0;
     m_extVppComp->U = 0;
     m_extVppComp->V = 0;
@@ -490,38 +484,38 @@ void MsdkVpp::defaultParam(void)
 
 void MsdkVpp::updateParam(void)
 {
-    m_videoParam->vpp.In.Width      = ALIGN16(m_size.width);
-    m_videoParam->vpp.In.Height     = ALIGN16(m_size.height);
-    m_videoParam->vpp.In.CropX      = 0;
-    m_videoParam->vpp.In.CropY      = 0;
-    m_videoParam->vpp.In.CropW      = m_size.width;
-    m_videoParam->vpp.In.CropH      = m_size.height;
+    m_videoParam->vpp.In.Width = ALIGN16(m_size.width);
+    m_videoParam->vpp.In.Height = ALIGN16(m_size.height);
+    m_videoParam->vpp.In.CropX = 0;
+    m_videoParam->vpp.In.CropY = 0;
+    m_videoParam->vpp.In.CropW = m_size.width;
+    m_videoParam->vpp.In.CropH = m_size.height;
 
-    m_videoParam->vpp.Out.Width     = ALIGN16(m_size.width);
-    m_videoParam->vpp.Out.Height    = ALIGN16(m_size.height);
-    m_videoParam->vpp.Out.CropX     = 0;
-    m_videoParam->vpp.Out.CropY     = 0;
-    m_videoParam->vpp.Out.CropW     = m_size.width;
-    m_videoParam->vpp.Out.CropH     = m_size.height;
+    m_videoParam->vpp.Out.Width = ALIGN16(m_size.width);
+    m_videoParam->vpp.Out.Height = ALIGN16(m_size.height);
+    m_videoParam->vpp.Out.CropX = 0;
+    m_videoParam->vpp.Out.CropY = 0;
+    m_videoParam->vpp.Out.CropW = m_size.width;
+    m_videoParam->vpp.Out.CropH = m_size.height;
 
     // swap u/v as msdk's bug
-    m_extVppComp->Y                 = m_bgColor.y;
-    m_extVppComp->U                 = m_bgColor.cr;
-    m_extVppComp->V                 = m_bgColor.cb;
+    m_extVppComp->Y = m_bgColor.y;
+    m_extVppComp->U = m_bgColor.cr;
+    m_extVppComp->V = m_bgColor.cb;
 }
 
 void MsdkVpp::createVpp(void)
 {
     mfxStatus sts = MFX_ERR_NONE;
 
-    MsdkBase *msdkBase = MsdkBase::get();
-    if(msdkBase == NULL) {
+    MsdkBase* msdkBase = MsdkBase::get();
+    if (msdkBase == NULL) {
         ELOG_ERROR_T("Get MSDK failed.");
         return;
     }
 
     m_session = msdkBase->createSession();
-    if (!m_session ) {
+    if (!m_session) {
         ELOG_ERROR_T("Create session failed.");
         return;
     }
@@ -576,12 +570,12 @@ bool MsdkVpp::resetVpp()
     return true;
 }
 
-void MsdkVpp::convertToCompInputStream(mfxVPPCompInputStream *vppStream, const owt_base::VideoSize& rootSize, const Region& region)
+void MsdkVpp::convertToCompInputStream(mfxVPPCompInputStream* vppStream, const owt_base::VideoSize& rootSize, const Region& region)
 {
-    uint32_t sub_width      = (uint64_t)rootSize.width * region.area.rect.width.numerator / region.area.rect.width.denominator;
-    uint32_t sub_height     = (uint64_t)rootSize.height * region.area.rect.height.numerator / region.area.rect.height.denominator;
-    uint32_t offset_width   = (uint64_t)rootSize.width * region.area.rect.left.numerator / region.area.rect.left.denominator;
-    uint32_t offset_height  = (uint64_t)rootSize.height * region.area.rect.top.numerator / region.area.rect.top.denominator;
+    uint32_t sub_width = (uint64_t)rootSize.width * region.area.rect.width.numerator / region.area.rect.width.denominator;
+    uint32_t sub_height = (uint64_t)rootSize.height * region.area.rect.height.numerator / region.area.rect.height.denominator;
+    uint32_t offset_width = (uint64_t)rootSize.width * region.area.rect.left.numerator / region.area.rect.left.denominator;
+    uint32_t offset_height = (uint64_t)rootSize.height * region.area.rect.top.numerator / region.area.rect.top.denominator;
     if (offset_width + sub_width > rootSize.width)
         sub_width = rootSize.width - offset_width;
 
@@ -595,7 +589,7 @@ void MsdkVpp::convertToCompInputStream(mfxVPPCompInputStream *vppStream, const o
     vppStream->DstH = sub_height;
 }
 
-void MsdkVpp::applyAspectRatio(std::vector<boost::shared_ptr<owt_base::MsdkFrame>> &inputFrames)
+void MsdkVpp::applyAspectRatio(std::vector<boost::shared_ptr<owt_base::MsdkFrame>>& inputFrames)
 {
     uint32_t size = inputFrames.size();
 
@@ -610,8 +604,8 @@ void MsdkVpp::applyAspectRatio(std::vector<boost::shared_ptr<owt_base::MsdkFrame
         if (!frame)
             continue;
 
-        mfxVPPCompInputStream *layoutRect = &m_msdkLayout[i];
-        mfxVPPCompInputStream *roiRect = &m_extVppComp->InputStream[i];
+        mfxVPPCompInputStream* layoutRect = &m_msdkLayout[i];
+        mfxVPPCompInputStream* roiRect = &m_extVppComp->InputStream[i];
 
         uint32_t frame_w = frame->getCropW();
         uint32_t frame_h = frame->getCropH();
@@ -624,12 +618,8 @@ void MsdkVpp::applyAspectRatio(std::vector<boost::shared_ptr<owt_base::MsdkFrame
             x = frame->getCropX() + (frame_w - w) / 2;
             y = frame->getCropY() + (frame_h - h) / 2;
 
-            if (frame->getCropX() != x || frame->getCropY() != y || frame->getCropW() != w || frame->getCropH()!= h) {
-                ELOG_TRACE_T("setCrop(%p) %d-%d-%d-%d -> %d-%d-%d-%d"
-                        , frame.get()
-                        , frame->getCropX(), frame->getCropY(), frame->getCropW(), frame->getCropH()
-                        , x, y, w, h
-                        );
+            if (frame->getCropX() != x || frame->getCropY() != y || frame->getCropW() != w || frame->getCropH() != h) {
+                ELOG_TRACE_T("setCrop(%p) %d-%d-%d-%d -> %d-%d-%d-%d", frame.get(), frame->getCropX(), frame->getCropY(), frame->getCropW(), frame->getCropH(), x, y, w, h);
 
                 frame->setCrop(x, y, w, h);
             }
@@ -641,12 +631,7 @@ void MsdkVpp::applyAspectRatio(std::vector<boost::shared_ptr<owt_base::MsdkFrame
             y = layoutRect->DstY + (layoutRect->DstH - h) / 2;
 
             if (roiRect->DstX != x || roiRect->DstY != y || roiRect->DstW != w || roiRect->DstH != h) {
-                ELOG_TRACE_T("update pos %d-%d-%d-%d -> %d-%d-%d-%d, aspect ratio %lf -> %lf"
-                        , roiRect->DstX, roiRect->DstY, roiRect->DstW, roiRect->DstH
-                        , x, y, w, h
-                        , (double)roiRect->DstW / roiRect->DstH
-                        , (double)w / h
-                        );
+                ELOG_TRACE_T("update pos %d-%d-%d-%d -> %d-%d-%d-%d, aspect ratio %lf -> %lf", roiRect->DstX, roiRect->DstY, roiRect->DstW, roiRect->DstH, x, y, w, h, (double)roiRect->DstW / roiRect->DstH, (double)w / h);
 
                 roiRect->DstX = x;
                 roiRect->DstY = y;
@@ -697,7 +682,7 @@ bool MsdkVpp::init()
     return true;
 }
 
-bool MsdkVpp::update(owt_base::VideoSize &size, owt_base::YUVColor &bgColor, LayoutSolution &layout)
+bool MsdkVpp::update(owt_base::VideoSize& size, owt_base::YUVColor& bgColor, LayoutSolution& layout)
 {
     m_layout = layout;
 
@@ -725,7 +710,7 @@ bool MsdkVpp::update(owt_base::VideoSize &size, owt_base::YUVColor &bgColor, Lay
 }
 
 boost::shared_ptr<owt_base::MsdkFrame> MsdkVpp::mix(
-            std::vector<boost::shared_ptr<owt_base::MsdkFrame>> &inputFrames)
+    std::vector<boost::shared_ptr<owt_base::MsdkFrame>>& inputFrames)
 {
     if (m_layout.size() == 0) {
         ELOG_TRACE_T("Feed default root frame");
@@ -749,7 +734,7 @@ boost::shared_ptr<owt_base::MsdkFrame> MsdkVpp::mix(
         if (!src)
             src = m_defaultInputFrame;
 
-retry:
+    retry:
         sts = m_vpp->RunFrameVPPAsync(src->getSurface(), dst->getSurface(), NULL, &syncP);
         if (sts == MFX_WRN_DEVICE_BUSY) {
             ELOG_TRACE_T("Device busy, retry!");
@@ -765,7 +750,7 @@ retry:
         }
     }
 
-    if(sts != MFX_ERR_NONE) {
+    if (sts != MFX_ERR_NONE) {
         ELOG_ERROR_T("Composite failed, ret %d", sts);
         return NULL;
     }
@@ -787,12 +772,12 @@ retry:
 DEFINE_LOGGER(MsdkFrameGenerator, "mcu.media.MsdkVideoCompositor.MsdkFrameGenerator");
 
 MsdkFrameGenerator::MsdkFrameGenerator(
-            MsdkVideoCompositor *owner,
-            owt_base::VideoSize &size,
-            owt_base::YUVColor &bgColor,
-            const bool crop,
-            const uint32_t maxFps,
-            const uint32_t minFps)
+    MsdkVideoCompositor* owner,
+    owt_base::VideoSize& size,
+    owt_base::YUVColor& bgColor,
+    const bool crop,
+    const uint32_t maxFps,
+    const uint32_t minFps)
     : m_clock(Clock::GetRealTimeClock())
     , m_owner(owner)
     , m_maxSupportedFps(maxFps)
@@ -814,10 +799,7 @@ MsdkFrameGenerator::MsdkFrameGenerator(
         fps *= 2;
     }
     if (fps > m_maxSupportedFps) {
-        ELOG_WARN_T("Invalid fps min(%d), max(%d) --> mix(%d), max(%d)"
-                , m_minSupportedFps, m_maxSupportedFps
-                , m_minSupportedFps, m_minSupportedFps
-                );
+        ELOG_WARN_T("Invalid fps min(%d), max(%d) --> mix(%d), max(%d)", m_minSupportedFps, m_maxSupportedFps, m_minSupportedFps, m_minSupportedFps);
         m_maxSupportedFps = m_minSupportedFps;
     }
 
@@ -843,7 +825,7 @@ MsdkFrameGenerator::~MsdkFrameGenerator()
 
     m_msdkVpp.reset();
 
-    for (uint32_t i = 0; i <  m_outputs.size(); i++) {
+    for (uint32_t i = 0; i < m_outputs.size(); i++) {
         if (m_outputs[i].size())
             ELOG_WARN_T("Outputs not empty!!!");
     }
@@ -865,19 +847,21 @@ bool MsdkFrameGenerator::isSupported(uint32_t width, uint32_t height, uint32_t f
     return false;
 }
 
-bool MsdkFrameGenerator::addOutput(const uint32_t width, const uint32_t height, const uint32_t fps, owt_base::FrameDestination *dst) {
+bool MsdkFrameGenerator::addOutput(const uint32_t width, const uint32_t height, const uint32_t fps, owt_base::FrameDestination* dst)
+{
     assert(isSupported(width, height, fps));
 
     boost::unique_lock<boost::shared_mutex> lock(m_outputMutex);
 
     int index = m_maxSupportedFps / fps - 1;
 
-    Output_t output{.width = width, .height = height, .fps = fps, .dest = dst};
+    Output_t output { .width = width, .height = height, .fps = fps, .dest = dst };
     m_outputs[index].push_back(output);
     return true;
 }
 
-bool MsdkFrameGenerator::removeOutput(owt_base::FrameDestination *dst) {
+bool MsdkFrameGenerator::removeOutput(owt_base::FrameDestination* dst)
+{
     boost::unique_lock<boost::shared_mutex> lock(m_outputMutex);
 
     for (uint32_t i = 0; i < m_outputs.size(); i++) {
@@ -896,8 +880,8 @@ void MsdkFrameGenerator::updateLayoutSolution(LayoutSolution& solution)
 {
     boost::unique_lock<boost::shared_mutex> lock(m_configMutex);
 
-    m_newLayout         = solution;
-    m_configureChanged  = true;
+    m_newLayout = solution;
+    m_configureChanged = true;
 }
 
 void MsdkFrameGenerator::onTimeout()
@@ -934,13 +918,12 @@ void MsdkFrameGenerator::onTimeout()
 
             {
                 boost::unique_lock<boost::shared_mutex> lock(m_outputMutex);
-                for (uint32_t i = 0; i <  m_outputs.size(); i++) {
+                for (uint32_t i = 0; i < m_outputs.size(); i++) {
                     if (m_counter % (i + 1))
                         continue;
 
                     for (auto it = m_outputs[i].begin(); it != m_outputs[i].end(); ++it) {
-                        ELOG_TRACE_T("+++deliverFrame(%d), dst(%p), fps(%d), timestamp(%d)"
-                                , m_counter, it->dest, m_maxSupportedFps / (i + 1), frame.timeStamp / 90);
+                        ELOG_TRACE_T("+++deliverFrame(%d), dst(%p), fps(%d), timestamp(%d)", m_counter, it->dest, m_maxSupportedFps / (i + 1), frame.timeStamp / 90);
 
                         it->dest->onFrame(frame);
                     }
@@ -991,11 +974,7 @@ MsdkVideoCompositor::MsdkVideoCompositor(uint32_t maxInput, VideoSize rootSize, 
     : m_maxInput(maxInput)
     , m_session(NULL)
 {
-    ELOG_DEBUG("set rootSize(%dx%d), maxInput(%d), bgColor YCbCr(0x%x, 0x%x, 0x%x), crop(%d)"
-            , rootSize.width, rootSize.height, maxInput
-            , bgColor.y, bgColor.cb, bgColor.cr
-            , crop
-            );
+    ELOG_DEBUG("set rootSize(%dx%d), maxInput(%d), bgColor YCbCr(0x%x, 0x%x, 0x%x), crop(%d)", rootSize.width, rootSize.height, maxInput, bgColor.y, bgColor.cb, bgColor.cr, crop);
 
     createAllocator();
 
@@ -1022,7 +1001,7 @@ MsdkVideoCompositor::MsdkVideoCompositor(uint32_t maxInput, VideoSize rootSize, 
 MsdkVideoCompositor::~MsdkVideoCompositor()
 {
     if (m_session) {
-        MsdkBase *msdkBase = MsdkBase::get();
+        MsdkBase* msdkBase = MsdkBase::get();
         if (msdkBase) {
             msdkBase->destroySession(m_session);
         }
@@ -1039,14 +1018,14 @@ void MsdkVideoCompositor::createAllocator()
 {
     mfxStatus sts = MFX_ERR_NONE;
 
-    MsdkBase *msdkBase = MsdkBase::get();
-    if(msdkBase == NULL) {
+    MsdkBase* msdkBase = MsdkBase::get();
+    if (msdkBase == NULL) {
         ELOG_ERROR("Get MSDK failed.");
         return;
     }
 
     m_session = msdkBase->createSession();
-    if (!m_session ) {
+    if (!m_session) {
         ELOG_ERROR("Create session failed.");
         return;
     }
@@ -1124,7 +1103,7 @@ void MsdkVideoCompositor::pushInput(int input, const owt_base::Frame& frame)
     ELOG_TRACE("---pushInput %d", input);
 }
 
-bool MsdkVideoCompositor::addOutput(const uint32_t width, const uint32_t height, const uint32_t framerateFPS, owt_base::FrameDestination *dst)
+bool MsdkVideoCompositor::addOutput(const uint32_t width, const uint32_t height, const uint32_t framerateFPS, owt_base::FrameDestination* dst)
 {
     ELOG_DEBUG("addOutput, %dx%d, fps(%d), dst(%p)", width, height, framerateFPS, dst);
 
@@ -1138,7 +1117,7 @@ bool MsdkVideoCompositor::addOutput(const uint32_t width, const uint32_t height,
     return false;
 }
 
-bool MsdkVideoCompositor::removeOutput(owt_base::FrameDestination *dst)
+bool MsdkVideoCompositor::removeOutput(owt_base::FrameDestination* dst)
 {
     ELOG_DEBUG("removeOutput, dst(%p)", dst);
 

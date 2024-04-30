@@ -59,12 +59,11 @@ void InternalOut::onMetaData(const MetaData& metadata)
 void InternalOut::onTransportData(char* buf, int len)
 {
     switch (buf[0]) {
-        case TDT_FEEDBACK_MSG:
-            deliverFeedbackMsg(*(reinterpret_cast<FeedbackMsg*>(buf + 1)));
-        default:
-            break;
+    case TDT_FEEDBACK_MSG:
+        deliverFeedbackMsg(*(reinterpret_cast<FeedbackMsg*>(buf + 1)));
+    default:
+        break;
     }
 }
 
 } /* namespace owt_base */
-

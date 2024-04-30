@@ -10,9 +10,9 @@
     }
   },
   "categories": {
-    "default": { "appenders": [ "out" ], "level": "info" },
-    "AmqpClient": { "appenders": [ "out" ], "level": "info" },
-    "SipPortal": { "appenders": [ "out" ], "level": "info" },
-    "SipErizoHelper": { "appenders": [ "out" ], "level": "info" }
+    "default": { "appenders": ["out"], "level": "info" },
+    "AmqpClient": { "appenders": ["out"], "level": "info" },
+    "SipPortal": { "appenders": ["out"], "level": "info" },
+    "SipErizoHelper": { "appenders": ["out"], "level": "info" }
   }
 }

@@ -111,7 +111,7 @@ void AudioRanker::removeInput(std::string streamId)
         audioProc.reset();
         promise->set_value();
     });
-    std::chrono::milliseconds span (1000);
+    std::chrono::milliseconds span(1000);
     if (promise->get_future().wait_for(span) == std::future_status::timeout) {
         ELOG_WARN("removeInput timeout: %s", streamId.c_str());
     }
@@ -219,7 +219,8 @@ void AudioRanker::triggerRankChange()
 {
     // In IO service thread
     uint64_t tsNow = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count();
+        std::chrono::steady_clock::now().time_since_epoch())
+                         .count();
 
     ELOG_TRACE("triggerRankChange %zu, %zu", tsNow, m_lastChangeTime);
     if (tsNow - m_lastChangeTime < m_minChangeInterval) {
@@ -270,8 +271,7 @@ void AudioRanker::triggerRankChange()
         bool hasChange = false;
         if (m_lastUpdates.size() == updates.size()) {
             for (size_t i = 0; i < updates.size(); i++) {
-                if (updates[i].first != m_lastUpdates[i].first ||
-                    updates[i].second != m_lastUpdates[i].second) {
+                if (updates[i].first != m_lastUpdates[i].first || updates[i].second != m_lastUpdates[i].second) {
                     hasChange = true;
                     break;
                 }
@@ -334,7 +334,8 @@ void AudioRanker::AudioLevelProcessor::onFrame(const Frame& frame)
 
     if (frame.additionalInfo.audio.voice) {
         uint64_t tsNow = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count();
+            std::chrono::steady_clock::now().time_since_epoch())
+                             .count();
 
         // Less the original level, larger the volume
         int revLevel = 127 - frame.additionalInfo.audio.audioLevel;
@@ -358,7 +359,7 @@ void AudioRanker::AudioLevelProcessor::deliverOwnerData()
     // Pass owner ID metadata to linkedoutput
     MetaData ownerData;
     ownerData.type = META_DATA_OWNER_ID;
-    ownerData.payload = (uint8_t*) m_ownerId.c_str();
+    ownerData.payload = (uint8_t*)m_ownerId.c_str();
     ownerData.length = m_ownerId.length();
     deliverMetaData(ownerData);
 }

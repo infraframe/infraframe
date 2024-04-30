@@ -3,12 +3,18 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-this=`dirname "$0"`
-this=`cd "$this"; pwd`
-ROOT=`cd "${this}/.."; pwd`
+this=$(dirname "$0")
+this=$(
+  cd "$this"
+  pwd
+)
+ROOT=$(
+  cd "${this}/.."
+  pwd
+)
 SUDO=""
 if [[ $EUID -ne 0 ]]; then
-   SUDO="sudo -E"
+  SUDO="sudo -E"
 fi
 
 usage() {
@@ -19,16 +25,14 @@ usage() {
   echo
 }
 
-OS=`${this}/detectOS.sh | awk '{print tolower($0)}'`
+OS=$(${this}/detectOS.sh | awk '{print tolower($0)}')
 echo $OS
 
 do_update() {
-  if [[ "$OS" =~ .*centos.* ]]
-  then
+  if [[ "$OS" =~ .*centos.* ]]; then
     echo -e "\x1b[32mRun yum update...\x1b[0m"
     ${SUDO} yum update -y
-  elif [[ "$OS" =~ .*ubuntu.* ]]
-  then
+  elif [[ "$OS" =~ .*ubuntu.* ]]; then
     echo -e "\x1b[32mRun apt-get update...\x1b[0m"
     ${SUDO} apt-get update -y
   else
@@ -50,13 +54,11 @@ install_boost() {
 }
 
 install_deps() {
-  if [[ "$OS" =~ .*centos.* ]]
-  then
+  if [[ "$OS" =~ .*centos.* ]]; then
     echo -e "\x1b[32mInstalling deps via yum install...\x1b[0m"
     ${SUDO} yum install log4cxx -y
     install_boost
-  elif [[ "$OS" =~ .*ubuntu.* ]]
-  then
+  elif [[ "$OS" =~ .*ubuntu.* ]]; then
     echo -e "\x1b[32mInstalling deps via apt-get install...\x1b[0m"
     ${SUDO} apt-get install libboost-system-dev libboost-thread-dev liblog4cxx-dev -y
   fi
@@ -71,10 +73,10 @@ install_all() {
 shopt -s extglob
 while [[ $# -gt 0 ]]; do
   case $1 in
-    *(-)help )
-      usage
-      exit 0
-      ;;
+  *(-)help)
+    usage
+    exit 0
+    ;;
   esac
   shift
 done

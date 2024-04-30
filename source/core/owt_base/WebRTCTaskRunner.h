@@ -5,8 +5,8 @@
 #ifndef WebRTCTaskRunner_h
 #define WebRTCTaskRunner_h
 
-#include <rtc_base/location.h>
 #include <modules/utility/include/process_thread.h>
+#include <rtc_base/location.h>
 
 namespace owt_base {
 

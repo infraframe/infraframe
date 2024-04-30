@@ -4,264 +4,289 @@
 
 var assert = require("assert");
 var mockery = require("mockery");
-var expect = require('chai').use(require('chai-as-promised')).expect;
-var sinon = require('sinon');
-var defaults = require('../data_access/defaults');
-var Room = require('../data_access/model/roomModel');
+var expect = require("chai").use(require("chai-as-promised")).expect;
+var sinon = require("sinon");
+var defaults = require("../data_access/defaults");
+var Room = require("../data_access/model/roomModel");
 
-
-var sampleConfig = Room.processLayout(new Room(defaults.ROOM_CONFIG).toObject());
-var testView = Object.assign({}, sampleConfig.views[0], {label: 'test'});
-var twoViewConfig = Object.assign({}, sampleConfig, {views: [sampleConfig.views[0], testView]});
-var noViewConfig = Object.assign({}, sampleConfig, {views: []});
+var sampleConfig = Room.processLayout(
+  new Room(defaults.ROOM_CONFIG).toObject()
+);
+var testView = Object.assign({}, sampleConfig.views[0], { label: "test" });
+var twoViewConfig = Object.assign({}, sampleConfig, {
+  views: [sampleConfig.views[0], testView],
+});
+var noViewConfig = Object.assign({}, sampleConfig, { views: [] });
 
 describe("MultipleViewController", () => {
-    let Controller;
-    let controller, commonViewController;
-    let rpcMock = {
-        makeRPC: sinon.stub()
+  let Controller;
+  let controller, commonViewController;
+  let rpcMock = {
+    makeRPC: sinon.stub(),
+  };
+  let clusterName = "owt-cluster";
+  let rpcClient = "fakeRpcClient";
+  let roomName = "TestRoom";
+  let roomRpcId = "fakeRpcId";
+  let mixedStreams;
+  let videoNodes = [];
+  let audioNodes = [];
+
+  function registerRpc(args, ret, error) {
+    let validArgs = [
+      sinon.match.any,
+      sinon.match.any,
+      sinon.match.any,
+      sinon.match.any,
+      sinon.match.func,
+      sinon.match.func,
+    ];
+    for (let i = args.length; i < validArgs.length; i++)
+      args.push(validArgs[i]);
+    if (ret) rpcMock.makeRPC.withArgs(...args).callsArgWith(4, ret);
+    else if (error) rpcMock.makeRPC.withArgs(...args).callsArgWith(5, error);
+  }
+
+  before(() => {
+    mockery.enable();
+
+    // Fake makeRPC require
+    mockery.registerMock("./makeRPC", rpcMock);
+
+    // Fake logger require
+    let print = () => {};
+    let loggerMock = {
+      logger: {
+        getLogger: () => {
+          return {
+            debug: print,
+            info: print,
+            warn: print,
+            error: print,
+          };
+        },
+      },
     };
-    let clusterName = "owt-cluster";
-    let rpcClient = "fakeRpcClient";
-    let roomName = "TestRoom";
-    let roomRpcId = "fakeRpcId";
-    let mixedStreams;
-    let videoNodes = [];
-    let audioNodes = [];
+    mockery.registerMock("./logger", loggerMock);
 
-    function registerRpc(args, ret, error) {
-        let validArgs = [
-            sinon.match.any,
-            sinon.match.any,
-            sinon.match.any,
-            sinon.match.any,
-            sinon.match.func,
-            sinon.match.func
-        ];
-        for (let i = args.length; i < validArgs.length; i++)
-            args.push(validArgs[i]);
-        if (ret)
-            rpcMock.makeRPC.withArgs(...args).callsArgWith(4, ret);
-        else if (error)
-            rpcMock.makeRPC.withArgs(...args).callsArgWith(5, error);
+    // Fake rpc request
+    rpcReq = {};
+    let agentCount = 0;
+    rpcReq.getWorkerNode = (cm, purpose, whom) => {
+      agentCount++;
+      let mediaNode = {
+        agent: purpose + agentCount,
+        node: Math.random().toString().substr(2),
+      };
+
+      if (purpose === "video") {
+        videoNodes.push(mediaNode);
+      } else {
+        audioNodes.push(mediaNode);
+      }
+
+      // Register rpc to media node
+      let result =
+        purpose === "video"
+          ? {
+              codecs: ["fake_codec1", "fake_codec2"],
+              resolutions: ["fake_resolution1", "fake_resolution2"],
+            }
+          : {
+              codecs: ["fake_audio_codec1", "fake_audio_codec2"],
+            };
+      registerRpc([rpcClient, mediaNode.node, "init"], result);
+      registerRpc(
+        [rpcClient, mediaNode.node, "generate"],
+        purpose + "-stream-" + agentCount
+      );
+      registerRpc([rpcClient, mediaNode.node], "ok");
+
+      return Promise.resolve(mediaNode);
+    };
+    rpcReq.recycleWorkerNode = () => Promise.resolve("ok");
+
+    mockery.registerAllowable("assert");
+    mockery.registerAllowable("../roomController");
+    Controller = require("../roomController");
+  });
+
+  after(() => {
+    mockery.disable();
+  });
+
+  describe("Intialize/Destroy", () => {
+    // We'll use the 2-view controller in the later tests.
+    let configLabels = ["2-view-room", "sample-room", "no-mixing-room"];
+    let roomConfigs = [twoViewConfig, sampleConfig, noViewConfig];
+    let toDestroys = [];
+    let okCallbacks = [
+      (ctlResult) => {
+        // 2-view
+        controller = ctlResult;
+        expect(ctlResult.getMixedStreams().length).to.equal(2);
+        mixedStreams = ctlResult.getMixedStreams();
+      },
+      (ctlResult) => {
+        // old-style
+        commonViewController = ctlResult;
+        expect(ctlResult.getMixedStreams().length).to.equal(1);
+      },
+      (ctlResult) => {
+        // no-mixing
+        expect(ctlResult.getMixedStreams().length).to.equal(0);
+        toDestroys.push(ctlResult);
+      },
+    ];
+
+    for (let i = 0; i < roomConfigs.length; i++) {
+      it("Initialize-With-Config:" + configLabels[i], (done) => {
+        let roomConfig = roomConfigs[i];
+        roomConfig.internalConnProtocol = "sctp";
+        roomConfig.enableAudioTranscoding = true;
+        roomConfig.enableVideoTranscoding = true;
+
+        Controller.create(
+          {
+            cluster: clusterName,
+            rpcReq: rpcReq,
+            rpcClient: rpcClient,
+            room: roomName,
+            config: roomConfig,
+            selfRpcId: roomRpcId,
+          },
+          function (ctlResult, mixStreams) {
+            okCallbacks[i](ctlResult, mixStreams);
+            done();
+          },
+          function (reason) {
+            throw new Error(reason);
+            done();
+          }
+        );
+      });
     }
 
-    before(() => {
-        mockery.enable();
-
-        // Fake makeRPC require
-        mockery.registerMock("./makeRPC", rpcMock);
-
-        // Fake logger require
-        let print = () => {};
-        let loggerMock = {
-            logger: {
-                getLogger: () => {
-                    return {
-                        debug: print,
-                        info: print,
-                        warn: print,
-                        error: print
-                    }
-                }
-            }
-        };
-        mockery.registerMock("./logger", loggerMock);
-
-        // Fake rpc request
-        rpcReq = {};
-        let agentCount = 0;
-        rpcReq.getWorkerNode = (cm, purpose, whom) => {
-            agentCount++;
-            let mediaNode = {
-                agent: purpose + agentCount,
-                node: Math.random().toString().substr(2)
-            };
-
-            if (purpose === "video") {
-                videoNodes.push(mediaNode);
-            } else {
-                audioNodes.push(mediaNode);
-            }
-
-            // Register rpc to media node
-            let result = (purpose === "video")? {
-                codecs: ['fake_codec1', 'fake_codec2'],
-                resolutions: ['fake_resolution1', 'fake_resolution2']
-            } : {
-                codecs: ["fake_audio_codec1", "fake_audio_codec2"]
-            };
-            registerRpc([rpcClient, mediaNode.node, "init"], result);
-            registerRpc([rpcClient, mediaNode.node, "generate"], purpose + "-stream-" + agentCount);
-            registerRpc([rpcClient, mediaNode.node], "ok");
-
-            return Promise.resolve(mediaNode);
-        };
-        rpcReq.recycleWorkerNode = () => Promise.resolve('ok');
-
-        mockery.registerAllowable("assert");
-        mockery.registerAllowable("../roomController");
-        Controller = require("../roomController");
+    it("Destroy-Controllers", () => {
+      toDestroys.forEach(function (ctl) {
+        ctl.destroy();
+      });
     });
+  });
 
-    after(() => {
-        mockery.disable();
-    });
+  describe("Publish/Unpublish-Streams", () => {
+    let publishDesc = ["PublishNotMix", "PublishWithMix"];
+    let user = ["Alice", "Bob"];
+    let stream = ["stream1", "stream2"];
+    let streamInfo = {
+      type: "webrtc",
+      audio: {
+        codec: "fake_audio_codec1",
+      },
+      video: {
+        codec: "fake_codec2",
+        resolution: "fake_resolution2",
+      },
+    };
+    let mixNum = [0, 1];
 
-    describe("Intialize/Destroy", () => {
-        // We'll use the 2-view controller in the later tests.
-        let configLabels = [
-            "2-view-room",
-            "sample-room",
-            "no-mixing-room"
-        ];
-        let roomConfigs = [
-            twoViewConfig,
-            sampleConfig,
-            noViewConfig,
-        ];
-        let toDestroys = [];
-        let okCallbacks = [
-            (ctlResult) => { // 2-view
-                controller = ctlResult;
-                expect(ctlResult.getMixedStreams().length).to.equal(2);
-                mixedStreams = ctlResult.getMixedStreams();
-            },
-            (ctlResult) => { // old-style
-                commonViewController = ctlResult;
-                expect(ctlResult.getMixedStreams().length).to.equal(1);
-            },
-            (ctlResult) => { // no-mixing
-                expect(ctlResult.getMixedStreams().length).to.equal(0);
-                toDestroys.push(ctlResult);
-            },
-        ];
+    for (let i = 0; i < user.length; i++) {
+      it(publishDesc[i], (done) => {
+        let accessNode = { agent: "fakeAgent" + i, node: "fakeAccessNode" + i };
+        registerRpc([rpcClient, accessNode.node], "ok");
 
-        for (let i = 0; i < roomConfigs.length; i++) {
-            it("Initialize-With-Config:" + configLabels[i], (done) => {
-                let roomConfig = roomConfigs[i];
-                roomConfig.internalConnProtocol = "sctp";
-                roomConfig.enableAudioTranscoding = true;
-                roomConfig.enableVideoTranscoding = true;
-
-                Controller.create({
-                    cluster: clusterName,
-                    rpcReq: rpcReq,
-                    rpcClient: rpcClient,
-                    room: roomName,
-                    config: roomConfig,
-                    selfRpcId: roomRpcId
-                }, function (ctlResult, mixStreams) {
-                    okCallbacks[i](ctlResult, mixStreams);
-                    done();
-                }, function (reason) {
-                    throw new Error(reason);
-                    done();
-                });
-            });
-        }
-
-        it("Destroy-Controllers", () => {
-            toDestroys.forEach(function(ctl) {
-                ctl.destroy();
-            });
-        });
-    });
-
-    describe("Publish/Unpublish-Streams", () => {
-        let publishDesc = ["PublishNotMix", "PublishWithMix"];
-        let user = ["Alice", "Bob"];
-        let stream = ["stream1", "stream2"];
-        let streamInfo = {
-            type: "webrtc",
-            audio: {
-                codec: "fake_audio_codec1"
-            },
-            video: {
-                codec: "fake_codec2",
-                resolution: "fake_resolution2"
-            }
-        };
-        let mixNum = [0, 1];
-
-        for (let i = 0; i < user.length; i++) {
-            it(publishDesc[i], (done) => {
-                let accessNode = {agent:"fakeAgent" + i, node: "fakeAccessNode" + i};
-                registerRpc([rpcClient, accessNode.node], "ok");
-
-                let mixStreamIds = mixedStreams.map((mstream) => mstream.streamId);
-                let mixList = mixStreamIds.slice(0, mixNum[i]);
-                controller.publish(user[i], stream[i], accessNode, streamInfo, mixList,
-                    function onOk() {
-                        done();
-                    },
-                    function onError(reason) {
-                        throw new Error(reason);
-                    }
-                );
-            });
-        }
-
-        it("UnpublishStreams", () => {
-            for (let i = 0; i < user.length; i++) {
-                controller.unpublish(user[i], stream[i]);
-            }
-        });
-    });
-
-    function userPublish() {
-        let pubuser = ["Tom", "Jerry"];
-        let stream = ["ustream1", "ustream2"];
-        let streamInfo = [
-            { // Video & Audio Stream
-                type: "webrtc",
-                audio: {
-                    codec: "fake_audio_codec1"
-                },
-                video: {
-                    codec: "fake_codec2",
-                    resolution: "fake_resolution2"
-                }
-            },
-            { // Audio-Only Stream
-                type: "webrtc",
-                audio: {
-                    codec: "fake_audio_codec2"
-                }
-            }
-        ];
-        let accessNode = [
-            {agent:"fakeTomAgent", node: "fakeTomNode"},
-            {agent:"fakeJerryAgent", node: "fakeJerryNode"}
-        ];
-
-        return {
-            before: (ctl, done) => {
-                pubpromise = [];
-                for (let i = 0; i < pubuser.length; i++) {
-                    registerRpc([rpcClient, accessNode[i].node], "ok");
-                    pubpromise.push(new Promise((resolve, reject) => {
-                        ctl.publish(pubuser[i], stream[i], accessNode[i], streamInfo[i], false, resolve, reject);
-                    }));
-                }
-                Promise.all(pubpromise).then((ret) => {
-                    done();
-                }).catch((err) => {
-                    console.log("pub err", err);
-                    throw new Error(reason);
-                });
-            },
-            after: (ctl) => {
-                for (let i = 0; i < pubuser.length; i++) {
-                    ctl.unpublish(pubuser[i], stream[i]);
-                }
-            }
-        };
+        let mixStreamIds = mixedStreams.map((mstream) => mstream.streamId);
+        let mixList = mixStreamIds.slice(0, mixNum[i]);
+        controller.publish(
+          user[i],
+          stream[i],
+          accessNode,
+          streamInfo,
+          mixList,
+          function onOk() {
+            done();
+          },
+          function onError(reason) {
+            throw new Error(reason);
+          }
+        );
+      });
     }
 
-    let published = userPublish();
+    it("UnpublishStreams", () => {
+      for (let i = 0; i < user.length; i++) {
+        controller.unpublish(user[i], stream[i]);
+      }
+    });
+  });
 
-    /*
+  function userPublish() {
+    let pubuser = ["Tom", "Jerry"];
+    let stream = ["ustream1", "ustream2"];
+    let streamInfo = [
+      {
+        // Video & Audio Stream
+        type: "webrtc",
+        audio: {
+          codec: "fake_audio_codec1",
+        },
+        video: {
+          codec: "fake_codec2",
+          resolution: "fake_resolution2",
+        },
+      },
+      {
+        // Audio-Only Stream
+        type: "webrtc",
+        audio: {
+          codec: "fake_audio_codec2",
+        },
+      },
+    ];
+    let accessNode = [
+      { agent: "fakeTomAgent", node: "fakeTomNode" },
+      { agent: "fakeJerryAgent", node: "fakeJerryNode" },
+    ];
+
+    return {
+      before: (ctl, done) => {
+        pubpromise = [];
+        for (let i = 0; i < pubuser.length; i++) {
+          registerRpc([rpcClient, accessNode[i].node], "ok");
+          pubpromise.push(
+            new Promise((resolve, reject) => {
+              ctl.publish(
+                pubuser[i],
+                stream[i],
+                accessNode[i],
+                streamInfo[i],
+                false,
+                resolve,
+                reject
+              );
+            })
+          );
+        }
+        Promise.all(pubpromise)
+          .then((ret) => {
+            done();
+          })
+          .catch((err) => {
+            console.log("pub err", err);
+            throw new Error(reason);
+          });
+      },
+      after: (ctl) => {
+        for (let i = 0; i < pubuser.length; i++) {
+          ctl.unpublish(pubuser[i], stream[i]);
+        }
+      },
+    };
+  }
+
+  let published = userPublish();
+
+  /*
     describe("Subscribe/Unsubscribe-Streams", () => {
         before((done) => {
             published.before(controller, done);

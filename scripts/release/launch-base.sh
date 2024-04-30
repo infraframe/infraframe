@@ -3,5 +3,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-bin=`dirname "$0"`
-bin=`cd "$bin"; pwd`
+bin=$(dirname "$0")
+bin=$(
+    cd "$bin"
+    pwd
+)

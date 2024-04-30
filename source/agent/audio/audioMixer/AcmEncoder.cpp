@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "AudioUtilities.h"
 #include "AcmEncoder.h"
+#include "AudioUtilities.h"
 
 #include "AudioTime.h"
 
@@ -72,14 +72,14 @@ bool AcmEncoder::init()
     }
 
     switch (m_format) {
-        case FRAME_FORMAT_G722_16000_1:
-        case FRAME_FORMAT_G722_16000_2:
-            m_rtpSampleRate = getAudioSampleRate(m_format) / 2;
-            break;
+    case FRAME_FORMAT_G722_16000_1:
+    case FRAME_FORMAT_G722_16000_2:
+        m_rtpSampleRate = getAudioSampleRate(m_format) / 2;
+        break;
 
-        default:
-            m_rtpSampleRate = getAudioSampleRate(m_format);
-            break;
+    default:
+        m_rtpSampleRate = getAudioSampleRate(m_format);
+        break;
     }
 
     m_valid = true;
@@ -93,12 +93,11 @@ bool AcmEncoder::addAudioFrame(const AudioFrame* audioFrame)
         return false;
 
     ELOG_TRACE_T("NewMixedAudio, id(%d), sample_rate(%d), channels(%ld), samples_per_channel(%ld), timestamp(%d)",
-            audioFrame->id_,
-            audioFrame->sample_rate_hz_,
-            audioFrame->num_channels_,
-            audioFrame->samples_per_channel_,
-            audioFrame->timestamp_
-            );
+        audioFrame->id_,
+        audioFrame->sample_rate_hz_,
+        audioFrame->num_channels_,
+        audioFrame->samples_per_channel_,
+        audioFrame->timestamp_);
 
     {
         boost::mutex::scoped_lock lock(m_mutex);
@@ -147,11 +146,11 @@ void AcmEncoder::encodeLoop()
 }
 
 int32_t AcmEncoder::SendData(FrameType frame_type,
-        uint8_t payload_type,
-        uint32_t timestamp,
-        const uint8_t* payload_data,
-        size_t payload_len_bytes,
-        const RTPFragmentationHeader* fragmentation)
+    uint8_t payload_type,
+    uint32_t timestamp,
+    const uint8_t* payload_data,
+    size_t payload_len_bytes,
+    const RTPFragmentationHeader* fragmentation)
 {
     if (!m_valid)
         return -1;
@@ -176,13 +175,12 @@ int32_t AcmEncoder::SendData(FrameType frame_type,
     frame.timeStamp = timestamp;
 
     ELOG_TRACE_T("deliverFrame(%s), sampleRate(%d), channels(%d), timeStamp(%d), length(%d), %s",
-            getFormatStr(frame.format),
-            frame.additionalInfo.audio.sampleRate,
-            frame.additionalInfo.audio.channels,
-            frame.timeStamp * 1000 / m_rtpSampleRate,
-            frame.length,
-            frame.additionalInfo.audio.isRtpPacket ? "RtpPacket" : "NonRtpPacket"
-            );
+        getFormatStr(frame.format),
+        frame.additionalInfo.audio.sampleRate,
+        frame.additionalInfo.audio.channels,
+        frame.timeStamp * 1000 / m_rtpSampleRate,
+        frame.length,
+        frame.additionalInfo.audio.isRtpPacket ? "RtpPacket" : "NonRtpPacket");
 
     deliverFrame(frame);
 

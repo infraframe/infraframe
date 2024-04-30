@@ -6,7 +6,10 @@
 # OpenH264 Library Uninstall Script
 
 this=$(dirname "$0")
-this=$(cd "${this}"; pwd)
+this=$(
+  cd "${this}"
+  pwd
+)
 
 echo -e "\x1b[32mOpenH264 Video Codec provided by Cisco Systems, Inc.\x1b[0m"
 

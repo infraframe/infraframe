@@ -8,17 +8,17 @@
 #include <gst/gst.h>
 #include <logger.h>
 
-#include "RawTransport.h"
 #include "MediaFramePipeline.h"
+#include "RawTransport.h"
 
-
-class GstInternalOut : public owt_base::FrameSource,  public owt_base::FrameDestination {
+class GstInternalOut : public owt_base::FrameSource, public owt_base::FrameDestination {
     DECLARE_LOGGER();
+
 public:
     GstInternalOut();
     virtual ~GstInternalOut();
 
-    void setPad(GstPad *pad);
+    void setPad(GstPad* pad);
 
     // Implements FrameSource
     void onFeedback(const owt_base::FeedbackMsg&);
@@ -26,7 +26,7 @@ public:
     void onFrame(const owt_base::Frame& frame);
 
 private:
-    GstPad *encoder_pad;
+    GstPad* encoder_pad;
 };
 
 #endif /* GstInternalOut_h */

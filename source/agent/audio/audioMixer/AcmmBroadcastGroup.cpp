@@ -26,7 +26,7 @@ AcmmBroadcastGroup::~AcmmBroadcastGroup()
     ELOG_DEBUG("~AcmmBroadcastGroup");
 }
 
-bool AcmmBroadcastGroup::getFreeOutputId(uint16_t *id)
+bool AcmmBroadcastGroup::getFreeOutputId(uint16_t* id)
 {
     for (size_t i = 0; i < m_outputIds.size(); ++i) {
         if (m_outputIds[i]) {
@@ -51,7 +51,7 @@ bool AcmmBroadcastGroup::addDest(const owt_base::FrameFormat format, owt_base::F
         ELOG_DEBUG("New format(%s)", getFormatStr(format));
 
         uint16_t outputId;
-        if(!getFreeOutputId(&outputId)) {
+        if (!getFreeOutputId(&outputId)) {
             return false;
         }
 
@@ -104,15 +104,14 @@ int32_t AcmmBroadcastGroup::NeededFrequency()
     return neededFreq;
 }
 
-void AcmmBroadcastGroup::NewMixedAudio(const webrtc::AudioFrame *audioFrame)
+void AcmmBroadcastGroup::NewMixedAudio(const webrtc::AudioFrame* audioFrame)
 {
     ELOG_TRACE("newAudioFrame, frame id(0x%x), sample_rate(%d), channels(%ld), samples_per_channel(%ld), timestamp(%d)",
-            audioFrame->id_,
-            audioFrame->sample_rate_hz_,
-            audioFrame->num_channels_,
-            audioFrame->samples_per_channel_,
-            audioFrame->timestamp_
-            );
+        audioFrame->id_,
+        audioFrame->sample_rate_hz_,
+        audioFrame->num_channels_,
+        audioFrame->samples_per_channel_,
+        audioFrame->timestamp_);
 
     for (auto& it : m_outputMap) {
         boost::shared_ptr<AcmmOutput> output = it.second;

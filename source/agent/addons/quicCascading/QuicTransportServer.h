@@ -5,15 +5,15 @@
 #ifndef QUIC_TRANSPORT_SERVER_H_
 #define QUIC_TRANSPORT_SERVER_H_
 
-#include <string>
-#include <mutex>
-#include <nan.h>
-#include <unordered_map>
-#include <queue>
-#include <logger.h>
 #include <boost/asio.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/thread/mutex.hpp>
+#include <logger.h>
+#include <mutex>
+#include <nan.h>
+#include <queue>
+#include <string>
+#include <unordered_map>
 
 #include "QuicTransportSession.h"
 #include "owt/quic/quic_transport_server_interface.h"
@@ -26,6 +26,7 @@
  */
 class QuicTransportServer : public owt::quic::QuicTransportServerInterface::Visitor, public Nan::ObjectWrap {
     DECLARE_LOGGER();
+
 public:
     static NAN_MODULE_INIT(init);
 
@@ -48,8 +49,8 @@ protected:
     void OnSession(owt::quic::QuicTransportSessionInterface*) override;
     void OnClosedSession(char* sessionId, size_t len) override;
     void OnEnded() override;
-private:
 
+private:
     unsigned int getListeningPort();
 
     std::unique_ptr<owt::quic::QuicTransportServerInterface> m_quicServer;
@@ -59,10 +60,10 @@ private:
     bool has_sessionClosed_callback_;
     std::queue<owt::quic::QuicTransportSessionInterface*> session_messages;
     std::queue<std::string> sessionId_messages;
-    Nan::Callback *session_callback_;
-    Nan::Callback *sessionClosed_callback_;
-    Nan::AsyncResource *asyncResourceNewSession_;
-    Nan::AsyncResource *asyncResourceClosedSession_;
+    Nan::Callback* session_callback_;
+    Nan::Callback* sessionClosed_callback_;
+    Nan::AsyncResource* asyncResourceNewSession_;
+    Nan::AsyncResource* asyncResourceClosedSession_;
 
     boost::mutex mutex;
     boost::mutex closedmutex;
@@ -70,4 +71,4 @@ private:
     static Nan::Persistent<v8::Function> s_constructor;
 };
 
-#endif  // QUIC_TRANSPORT_SERVER_H_
+#endif // QUIC_TRANSPORT_SERVER_H_

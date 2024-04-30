@@ -2,22 +2,18 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
+"use strict";
 
-const transform = require('sdp-transform');
-const logger = require('../logger').logger;
-const log = logger.getLogger('SdpInfo');
+const transform = require("sdp-transform");
+const logger = require("../logger").logger;
+const log = logger.getLogger("SdpInfo");
 
-const {
-  filterH264,
-  filterVP9,
-} = require('./profileFilter');
+const { filterH264, filterVP9 } = require("./profileFilter");
 
 const TransportCCUri =
-  'http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01';
+  "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01";
 
-const MidUri =
-  'urn:ietf:params:rtp-hdrext:sdes:mid';
+const MidUri = "urn:ietf:params:rtp-hdrext:sdes:mid";
 
 class SdpInfo {
   constructor(str) {
@@ -31,22 +27,24 @@ class SdpInfo {
   }
 
   bundleMids() {
-    const bundles = this.obj.groups.find(g => g.type === 'BUNDLE');
-    return bundles.mids.split(' ');
+    const bundles = this.obj.groups.find((g) => g.type === "BUNDLE");
+    return bundles.mids.split(" ");
   }
 
   setBundleMids(mids) {
-    const bundles = this.obj.groups.find(g => g.type === 'BUNDLE');
-    bundles.mids = mids.join(' ');
+    const bundles = this.obj.groups.find((g) => g.type === "BUNDLE");
+    bundles.mids = mids.join(" ");
   }
 
   mids() {
-    return this.obj.media.map(mediaInfo => mediaInfo.mid.toString());
+    return this.obj.media.map((mediaInfo) => mediaInfo.mid.toString());
   }
 
   media(mid) {
-    const mediaInfo = this.obj.media.find(media => media.mid.toString() === mid);
-    return (mediaInfo || null);
+    const mediaInfo = this.obj.media.find(
+      (media) => media.mid.toString() === mid
+    );
+    return mediaInfo || null;
   }
 
   rids(mid) {
@@ -54,12 +52,12 @@ class SdpInfo {
     let rids = null;
     if (mediaInfo) {
       if (mediaInfo.rids) {
-        rids = mediaInfo.rids.map(r => (r.id + ''));
+        rids = mediaInfo.rids.map((r) => r.id + "");
       } else {
         // Assign [0,1...n] to legacy simulcast
         const sim = this.getLegacySimulcast(mid);
         if (sim) {
-          rids = sim.map((v, i) => (i + ''));
+          rids = sim.map((v, i) => i + "");
         }
       }
     }
@@ -90,7 +88,7 @@ class SdpInfo {
     const optionals = preference.optional || [];
     let finalFmt = null;
     let selectedPayload = -1;
-    const reservedCodecs = ['telephone-event', 'cn'];
+    const reservedCodecs = ["telephone-event", "cn"];
     const allowedFbTypes = [];
     const relatedPayloads = new Set();
     const rtpMap = new Map();
@@ -99,12 +97,17 @@ class SdpInfo {
     const isAudioMatchRtp = (fmt, rtp) => {
       if (fmt && fmt.codec === rtp.codec.toLowerCase()) {
         // codec matched
-        if ((!fmt.sampleRate || fmt.codec === 'g722' ||
-            fmt.sampleRate === rtp.rate)) {
+        if (
+          !fmt.sampleRate ||
+          fmt.codec === "g722" ||
+          fmt.sampleRate === rtp.rate
+        ) {
           // rate matched
-          if (!fmt.channelNum ||
-              (fmt.channelNum === 1 && !rtp.encoding) ||
-              (fmt.channelNum === rtp.encoding)) {
+          if (
+            !fmt.channelNum ||
+            (fmt.channelNum === 1 && !rtp.encoding) ||
+            fmt.channelNum === rtp.encoding
+          ) {
             // channel matched
             return true;
           }
@@ -114,10 +117,12 @@ class SdpInfo {
     };
 
     const mediaInfo = this.media(mid);
-    if (mediaInfo && mediaInfo.type === 'audio') {
+    if (mediaInfo && mediaInfo.type === "audio") {
       let rtp, fmtp;
       // Keep payload order in m line
-      mediaInfo.payloads.toString().split(' ')
+      mediaInfo.payloads
+        .toString()
+        .split(" ")
         .forEach((p, index) => {
           payloadOrder.set(parseInt(p), index);
         });
@@ -130,30 +135,34 @@ class SdpInfo {
           finalFmt = preferred;
           break;
         }
-        let optIndex = optionals.findIndex(fmt => isAudioMatchRtp(fmt, rtp));
+        let optIndex = optionals.findIndex((fmt) => isAudioMatchRtp(fmt, rtp));
         if (optIndex > -1) {
-          if (selectedPayload < 0 ||
-              payloadOrder.get(rtp.payload) < payloadOrder.get(selectedPayload)) {
+          if (
+            selectedPayload < 0 ||
+            payloadOrder.get(rtp.payload) < payloadOrder.get(selectedPayload)
+          ) {
             selectedPayload = rtp.payload;
             finalFmt = optionals[optIndex];
           }
         }
       }
-      if (mediaInfo.direction === 'recvonly') {
+      if (mediaInfo.direction === "recvonly") {
         // For subscription
         // concat(optionals.map((fmt) => fmt.codec.toLowerCase()));
         mediaInfo.rtp.forEach((rtp) => {
-          if (optionals.findIndex(fmt => isAudioMatchRtp(fmt, rtp)) > -1) {
+          if (optionals.findIndex((fmt) => isAudioMatchRtp(fmt, rtp)) > -1) {
             relatedPayloads.add(rtp.payload);
           }
         });
       }
       if (rtpMap.has(selectedPayload)) {
         const selectedRtp = rtpMap.get(selectedPayload);
-        rtpMap.forEach(rtp => {
+        rtpMap.forEach((rtp) => {
           const codecName = rtp.codec.toLowerCase();
-          if (reservedCodecs.includes(codecName) &&
-              rtp.rate === selectedRtp.rate) {
+          if (
+            reservedCodecs.includes(codecName) &&
+            rtp.rate === selectedRtp.rate
+          ) {
             relatedPayloads.add(rtp.payload);
           }
         });
@@ -161,26 +170,30 @@ class SdpInfo {
       }
 
       // Remove non-selected audio payload
-      mediaInfo.rtp = mediaInfo.rtp.filter(
-        (rtp) => relatedPayloads.has(rtp.payload));
+      mediaInfo.rtp = mediaInfo.rtp.filter((rtp) =>
+        relatedPayloads.has(rtp.payload)
+      );
       if (mediaInfo.fmtp) {
-        mediaInfo.fmtp = mediaInfo.fmtp.filter(
-          (fmtp) => relatedPayloads.has(fmtp.payload));
+        mediaInfo.fmtp = mediaInfo.fmtp.filter((fmtp) =>
+          relatedPayloads.has(fmtp.payload)
+        );
       }
       if (mediaInfo.rtcpFb) {
-        mediaInfo.rtcpFb = mediaInfo.rtcpFb.filter(
-          (rtcp) => allowedFbTypes.includes(rtcp.type));
-        mediaInfo.rtcpFb = mediaInfo.rtcpFb.filter(
-          (rtcp) => relatedPayloads.has(rtcp.payload));
+        mediaInfo.rtcpFb = mediaInfo.rtcpFb.filter((rtcp) =>
+          allowedFbTypes.includes(rtcp.type)
+        );
+        mediaInfo.rtcpFb = mediaInfo.rtcpFb.filter((rtcp) =>
+          relatedPayloads.has(rtcp.payload)
+        );
       }
-      const payloadList = mediaInfo.payloads.toString().split(' ');
+      const payloadList = mediaInfo.payloads.toString().split(" ");
       if (selectedPayload !== -1) {
         payloadList.unshift(selectedPayload.toString());
       }
       mediaInfo.payloads = payloadList
         .filter((p) => relatedPayloads.has(parseInt(p)))
         .filter((v, index, self) => self.indexOf(v) === index)
-        .join(' ');
+        .join(" ");
     }
     return finalFmt;
   }
@@ -194,26 +207,23 @@ class SdpInfo {
     const preferred = preference.preferred;
     const optionals = preference.optional || [];
     const relatedPayloads = new Set();
-    const allowedFbTypes = [
-      'ccm fir',
-      'nack',
-      'transport-cc',
-      'goog-remb',
-    ];
-    const reservedCodecs = ['red', 'ulpfec'];
+    const allowedFbTypes = ["ccm fir", "nack", "transport-cc", "goog-remb"];
+    const reservedCodecs = ["red", "ulpfec"];
     const codecMap = new Map();
     const payloadOrder = new Map();
 
     const mediaInfo = this.media(mid);
-    if (mediaInfo && mediaInfo.type == 'video') {
+    if (mediaInfo && mediaInfo.type == "video") {
       let rtp, fmtp;
       let payloads;
       // Keep payload order in m line
-      mediaInfo.payloads.toString().split(' ')
+      mediaInfo.payloads
+        .toString()
+        .split(" ")
         .forEach((p, index) => {
           payloadOrder.set(parseInt(p), index);
         });
-      if (mediaInfo.direction === 'recvonly') {
+      if (mediaInfo.direction === "recvonly") {
         // For subscription
         // concat(optionals.map((fmt) => fmt.codec.toLowerCase()));
         optionals.forEach((fmt) => {
@@ -232,9 +242,11 @@ class SdpInfo {
           selectedPayload = rtp.payload;
           break;
         }
-        if (optionals.findIndex((fmt) => (fmt.codec === codec)) > -1) {
-          if (selectedPayload < 0 ||
-              payloadOrder.get(rtp.payload) < payloadOrder.get(selectedPayload)) {
+        if (optionals.findIndex((fmt) => fmt.codec === codec) > -1) {
+          if (
+            selectedPayload < 0 ||
+            payloadOrder.get(rtp.payload) < payloadOrder.get(selectedPayload)
+          ) {
             selectedPayload = rtp.payload;
           }
         }
@@ -251,17 +263,17 @@ class SdpInfo {
 
       // Remove ulpfec if h264/h265 is selected
       const selectedCodec = codecMap.get(selectedPayload);
-      if (['h264', 'h265'].includes(selectedCodec)) {
+      if (["h264", "h265"].includes(selectedCodec)) {
         codecMap.forEach((codec, pt) => {
-          if (codec === 'ulpfec') {
+          if (codec === "ulpfec") {
             relatedPayloads.delete(pt);
           }
         });
       }
       // Remove red if vp9 SVC
-      if (selectedCodec === 'vp9' && this.getLegacySimulcast(mid)) {
+      if (selectedCodec === "vp9" && this.getLegacySimulcast(mid)) {
         codecMap.forEach((codec, pt) => {
-          if (codec === 'red') {
+          if (codec === "red") {
             relatedPayloads.delete(pt);
           }
         });
@@ -269,35 +281,39 @@ class SdpInfo {
 
       relatedPayloads.add(selectedPayload);
       // Remove non-selected video payload
-      mediaInfo.rtp = mediaInfo.rtp.filter(
-        (rtp) => relatedPayloads.has(rtp.payload));
+      mediaInfo.rtp = mediaInfo.rtp.filter((rtp) =>
+        relatedPayloads.has(rtp.payload)
+      );
       if (mediaInfo.fmtp) {
-        mediaInfo.fmtp = mediaInfo.fmtp.filter(
-          (fmtp) => relatedPayloads.has(fmtp.payload));
+        mediaInfo.fmtp = mediaInfo.fmtp.filter((fmtp) =>
+          relatedPayloads.has(fmtp.payload)
+        );
       }
       if (mediaInfo.rtcpFb) {
-        mediaInfo.rtcpFb = mediaInfo.rtcpFb.filter(
-          (rtcp) => allowedFbTypes.includes(rtcp.type));
-        mediaInfo.rtcpFb = mediaInfo.rtcpFb.filter(
-          (rtcp) => relatedPayloads.has(rtcp.payload));
+        mediaInfo.rtcpFb = mediaInfo.rtcpFb.filter((rtcp) =>
+          allowedFbTypes.includes(rtcp.type)
+        );
+        mediaInfo.rtcpFb = mediaInfo.rtcpFb.filter((rtcp) =>
+          relatedPayloads.has(rtcp.payload)
+        );
       }
-      const payloadList = mediaInfo.payloads.toString().split(' ');
+      const payloadList = mediaInfo.payloads.toString().split(" ");
       if (selectedPayload !== -1) {
         payloadList.unshift(selectedPayload.toString());
       }
       mediaInfo.payloads = payloadList
         .filter((p) => relatedPayloads.has(parseInt(p)))
         .filter((v, index, self) => self.indexOf(v) === index)
-        .join(' ');
+        .join(" ");
     }
 
     if (selectedPayload !== -1) {
       finalFmt = { codec: codecMap.get(selectedPayload) };
-      if (finalFmt.codec === 'h264' && finalPrf) {
+      if (finalFmt.codec === "h264" && finalPrf) {
         finalFmt.profile = finalPrf;
       }
     }
-    log.debug('finalFmt video:', finalFmt);
+    log.debug("finalFmt video:", finalFmt);
     return finalFmt;
   }
 
@@ -326,15 +342,15 @@ class SdpInfo {
       return {
         iceUfrag: mediaInfo.iceUfrag,
         icePwd: mediaInfo.icePwd,
-        fingerprint: mediaInfo.fingerprint
+        fingerprint: mediaInfo.fingerprint,
       };
     } else {
       return {};
     }
   }
 
-  setCredentials({iceUfrag, icePwd, fingerprint}) {
-    this.obj.media.forEach(mediaInfo => {
+  setCredentials({ iceUfrag, icePwd, fingerprint }) {
+    this.obj.media.forEach((mediaInfo) => {
       mediaInfo.iceUfrag = iceUfrag;
       mediaInfo.icePwd = icePwd;
       mediaInfo.fingerprint = fingerprint;
@@ -359,27 +375,27 @@ class SdpInfo {
   }
 
   setCandidates(candidates) {
-    this.obj.media.forEach(mediaInfo => {
+    this.obj.media.forEach((mediaInfo) => {
       mediaInfo.candidates = candidates;
     });
   }
 
   singleMediaSdp(mid) {
     const sdp = new SdpInfo(this.toString());
-    sdp.obj.media = sdp.obj.media.filter(m => m.mid.toString() === mid);
+    sdp.obj.media = sdp.obj.media.filter((m) => m.mid.toString() === mid);
     sdp.setBundleMids([mid]);
     return sdp;
   }
 
   mergeMedia(sdp) {
     const mids = this.mids();
-    const bundles = this.obj.groups.find(g => g.type === 'BUNDLE');
-    sdp.obj.media.forEach(media => {
+    const bundles = this.obj.groups.find((g) => g.type === "BUNDLE");
+    sdp.obj.media.forEach((media) => {
       if (mids.indexOf(media.mid.toString()) >= 0) {
         log.warn(`Conflict MID ${mid} to merge`);
       } else {
         this.obj.media.push(media);
-        bundles.mids += ' ' + media.mid;
+        bundles.mids += " " + media.mid;
       }
     });
   }
@@ -399,7 +415,7 @@ class SdpInfo {
     if (!mediaInfo) {
       return true;
     }
-    if (mediaInfo.direction === 'inactive') {
+    if (mediaInfo.direction === "inactive") {
       return true;
     }
     return false;
@@ -411,7 +427,7 @@ class SdpInfo {
       if (!mediaInfo.candidates) {
         mediaInfo.port = 0;
       }
-      mediaInfo.direction = 'inactive';
+      mediaInfo.direction = "inactive";
       delete mediaInfo.ext;
       delete mediaInfo.ssrcs;
       delete mediaInfo.ssrcGroups;
@@ -422,10 +438,10 @@ class SdpInfo {
 
   compareMedia(sdp) {
     const diffMids = [];
-    this.obj.media.forEach(m1 => {
+    this.obj.media.forEach((m1) => {
       const m2 = sdp.media(m1.mid);
       if (!m2) {
-        diffMids.push(m1.mid)
+        diffMids.push(m1.mid);
       } else if (m1.port !== m2.port) {
         diffMids.push(m1.mid);
       } else if (m1.direction !== m2.direction) {
@@ -433,47 +449,48 @@ class SdpInfo {
       }
     });
 
-    return diffMids.map(m => m.toString());
+    return diffMids.map((m) => m.toString());
   }
 
   getMediaSettings(mid) {
     const mediaInfo = this.media(mid);
     if (!mediaInfo) {
-      return null;  
+      return null;
     }
 
     const settings = {};
     const ssrcs = mediaInfo.ssrcs;
-    if (mediaInfo.type === 'audio') {
+    if (mediaInfo.type === "audio") {
       settings.audio = {};
       // Audio ssrc
       if (ssrcs && ssrcs[0] && ssrcs[0].id) {
         settings.audio.ssrc = ssrcs[0].id;
       }
-
-    } else if (mediaInfo.type === 'video') {
+    } else if (mediaInfo.type === "video") {
       settings.video = {};
       // Video ssrcs
       if (ssrcs) {
         settings.video.ssrcs = ssrcs
-          .map(s => s.id)
+          .map((s) => s.id)
           .filter((v, i, self) => self.indexOf(v) === i);
       }
 
       // Video ulpfec, red
       if (mediaInfo.rtp) {
-        if (mediaInfo.rtp.find(r => (r.codec.toLowerCase() === 'ulpfec'))) {
+        if (mediaInfo.rtp.find((r) => r.codec.toLowerCase() === "ulpfec")) {
           settings.video.ulpfec = true;
         }
-        if (mediaInfo.rtp.find(r => (r.codec.toLowerCase() === 'red'))) {
+        if (mediaInfo.rtp.find((r) => r.codec.toLowerCase() === "red")) {
           settings.video.red = true;
         }
       }
 
       // Video transport-cc
       if (mediaInfo.rtcpFb && mediaInfo.ext) {
-        if (mediaInfo.rtcpFb.find(r => (r.type === 'transport-cc'))) {
-          const transportExt = mediaInfo.ext.find(e => e.uri === TransportCCUri);
+        if (mediaInfo.rtcpFb.find((r) => r.type === "transport-cc")) {
+          const transportExt = mediaInfo.ext.find(
+            (e) => e.uri === TransportCCUri
+          );
           if (transportExt) {
             settings.video.transportcc = transportExt.value;
           }
@@ -481,7 +498,7 @@ class SdpInfo {
       }
     }
 
-    const midExt = mediaInfo.ext.find(e => e.uri === MidUri);
+    const midExt = mediaInfo.ext.find((e) => e.uri === MidUri);
     if (midExt) {
       settings[mediaInfo.type].mid = mid;
       settings[mediaInfo.type].midExtId = midExt.value;
@@ -494,13 +511,13 @@ class SdpInfo {
     const simulcast = [];
     const media = this.media(mid);
     if (!media) {
-      return null;  
+      return null;
     }
     if (media.ssrcGroups) {
-      media.ssrcGroups.forEach(ssrcGroup => {
+      media.ssrcGroups.forEach((ssrcGroup) => {
         // Ignore FID for legacy simulcast.
-        if (ssrcGroup.semantics === 'SIM') {
-          ssrcGroup.ssrcs.split(' ').forEach(ssrc => {
+        if (ssrcGroup.semantics === "SIM") {
+          ssrcGroup.ssrcs.split(" ").forEach((ssrc) => {
             const nssrc = parseInt(ssrc);
             if (nssrc > 0) {
               simulcast.push(nssrc);
@@ -524,79 +541,80 @@ class SdpInfo {
     }
     if (!msid) {
       // Generate msid
-      const alphanum = '0123456789' +
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
-        'abcdefghijklmnopqrstuvwxyz';
+      const alphanum =
+        "0123456789" +
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+        "abcdefghijklmnopqrstuvwxyz";
       const msidLength = 10;
-      msid = '';
+      msid = "";
       for (let i = 0; i < msidLength; i++) {
         msid += alphanum[Math.floor(Math.random() * alphanum.length)];
       }
     }
 
-    const mtype = (media.type === 'audio') ? 'a' : 'v';
+    const mtype = media.type === "audio" ? "a" : "v";
     // Only support one ssrc now
     const ssrc = ssrcs[0];
     media.ssrcs = [
-      {id: ssrc, attribute: 'cname', value: 'o/i14u9pJrxRKAsu'},
-      {id: ssrc, attribute: 'msid', value: `${msid} ${mtype}0`},
-      {id: ssrc, attribute: 'mslabel', value: msid},
-      {id: ssrc, attribute: 'label', value: `${msid}${mtype}0`},
+      { id: ssrc, attribute: "cname", value: "o/i14u9pJrxRKAsu" },
+      { id: ssrc, attribute: "msid", value: `${msid} ${mtype}0` },
+      { id: ssrc, attribute: "mslabel", value: msid },
+      { id: ssrc, attribute: "label", value: `${msid}${mtype}0` },
     ];
-    log.debug('Set SSRC:', mid, JSON.stringify(media.ssrcs));
+    log.debug("Set SSRC:", mid, JSON.stringify(media.ssrcs));
     return msid;
   }
 
   answer() {
     const answer = new SdpInfo(this.toString());
     answer.obj.origin = {
-      username: '-',
-      sessionId: '0',
+      username: "-",
+      sessionId: "0",
       sessionVersion: 0,
-      netType: 'IN',
+      netType: "IN",
       ipVer: 4,
-      address: '127.0.0.1'
+      address: "127.0.0.1",
     };
-    answer.obj.media.forEach(mediaInfo => {
+    answer.obj.media.forEach((mediaInfo) => {
       mediaInfo.port = 1;
       mediaInfo.rtcp = {
         port: 1,
-        netType: 'IN',
+        netType: "IN",
         ipVer: 4,
-        address: '0.0.0.0'
+        address: "0.0.0.0",
       };
-      if (mediaInfo.setup === 'active') {
-        mediaInfo.setup = 'passive';
+      if (mediaInfo.setup === "active") {
+        mediaInfo.setup = "passive";
       } else {
-        mediaInfo.setup = 'active';
+        mediaInfo.setup = "active";
       }
 
-      delete mediaInfo.iceOptions;  
+      delete mediaInfo.iceOptions;
       delete mediaInfo.rtcpRsize;
-      if (mediaInfo.direction === 'recvonly') {
-        mediaInfo.direction = 'sendonly';
-      } else if (mediaInfo.direction === 'sendonly') {
+      if (mediaInfo.direction === "recvonly") {
+        mediaInfo.direction = "sendonly";
+      } else if (mediaInfo.direction === "sendonly") {
         delete mediaInfo.msid;
         delete mediaInfo.ssrcGroups;
         delete mediaInfo.ssrcs;
-        mediaInfo.direction = 'recvonly';
+        mediaInfo.direction = "recvonly";
       }
 
       if (mediaInfo.ext && Array.isArray(mediaInfo.ext)) {
         const extMappings = [
-          'urn:ietf:params:rtp-hdrext:ssrc-audio-level',
+          "urn:ietf:params:rtp-hdrext:ssrc-audio-level",
           // 'http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01',
-          'urn:ietf:params:rtp-hdrext:sdes:mid',
-          'urn:ietf:params:rtp-hdrext:sdes:rtp-stream-id',
-          'urn:ietf:params:rtp-hdrext:sdes:repaired-rtp-stream-id',
-          'urn:ietf:params:rtp-hdrext:toffset',
-          'http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time',
+          "urn:ietf:params:rtp-hdrext:sdes:mid",
+          "urn:ietf:params:rtp-hdrext:sdes:rtp-stream-id",
+          "urn:ietf:params:rtp-hdrext:sdes:repaired-rtp-stream-id",
+          "urn:ietf:params:rtp-hdrext:toffset",
+          "http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time",
           // 'urn:3gpp:video-orientation',
           // 'http://www.webrtc.org/experiments/rtp-hdrext/playout-delay',
         ];
-        if (mediaInfo.type === 'video') {
+        if (mediaInfo.type === "video") {
           extMappings.push(
-            'http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01'
+            "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01"
           );
         }
         mediaInfo.ext = mediaInfo.ext.filter((e) => {
@@ -606,23 +624,22 @@ class SdpInfo {
 
       if (mediaInfo.rids && Array.isArray(mediaInfo.rids)) {
         // Reverse rids direction
-        mediaInfo.rids.forEach(r => {
-          r.direction = (r.direction === 'send') ? 'recv' : 'send';
+        mediaInfo.rids.forEach((r) => {
+          r.direction = r.direction === "send" ? "recv" : "send";
         });
       }
       if (mediaInfo.simulcast) {
         // Reverse simulcast direction
-        if (mediaInfo.simulcast.dir1 === 'send') {
-          mediaInfo.simulcast.dir1 = 'recv';
+        if (mediaInfo.simulcast.dir1 === "send") {
+          mediaInfo.simulcast.dir1 = "recv";
         } else {
-          mediaInfo.simulcast.dir1 = 'send';
+          mediaInfo.simulcast.dir1 = "send";
         }
       }
     });
 
     return answer;
   }
-
 }
 
 exports.SdpInfo = SdpInfo;

@@ -5,273 +5,285 @@
 /*
  * Request Data Format for version 1.0 - 1.1
  */
-'use strict';
+"use strict";
 
 const Resolution = {
-  id: '/Resolution',
-  type: 'object',
+  id: "/Resolution",
+  type: "object",
   properties: {
-    'width': { type: 'number' },
-    'height': { type: 'number' }
+    width: { type: "number" },
+    height: { type: "number" },
   },
   additionalProperties: false,
-  required: ['width', 'height']
+  required: ["width", "height"],
 };
 
 // PublcationRequest
 const PublicationRequest = {
   anyOf: [
-    { // Webrtc Publication
-      type: 'object',
+    {
+      // Webrtc Publication
+      type: "object",
       properties: {
-        'media': { $ref: '#/definitions/WebRTCMediaOptions' },
-        'attributes': { type: 'object' }
+        media: { $ref: "#/definitions/WebRTCMediaOptions" },
+        attributes: { type: "object" },
       },
       additionalProperties: false,
-      required: ['media']
-    }
+      required: ["media"],
+    },
   ],
 
   definitions: {
-    'WebRTCMediaOptions': {
-      type: 'object',
+    WebRTCMediaOptions: {
+      type: "object",
       properties: {
-        'audio': {
+        audio: {
           anyOf: [
             {
-              type: 'object',
+              type: "object",
               properties: {
-                'source': { enum: ["mic", "screen-cast", "raw-file", "encoded-file"] }
+                source: {
+                  enum: ["mic", "screen-cast", "raw-file", "encoded-file"],
+                },
               },
               additionalProperties: false,
-              required: ['source']
+              required: ["source"],
             },
-            { 'const': false }
-          ]
+            { const: false },
+          ],
         },
-        'video': {
+        video: {
           anyOf: [
             {
-              type: 'object',
+              type: "object",
               properties: {
-                'source': { enum: ["camera", "screen-cast", "raw-file", "encoded-file"] },
-                'parameters': {
-                  type: 'object',
+                source: {
+                  enum: ["camera", "screen-cast", "raw-file", "encoded-file"],
+                },
+                parameters: {
+                  type: "object",
                   properties: {
-                    'resolution': Resolution,
-                    'framerate': { type: 'number' }
-                  }
-                }
+                    resolution: Resolution,
+                    framerate: { type: "number" },
+                  },
+                },
               },
               additionalProperties: false,
-              required: ['source']
+              required: ["source"],
             },
-            { 'const': false }
-          ]
-        }
+            { const: false },
+          ],
+        },
       },
       additionalProperties: false,
-      required: ['audio', 'video']
-    }
-  }
+      required: ["audio", "video"],
+    },
+  },
 };
 
 // StreamControlInfo
 const StreamControlInfo = {
-  type: 'object',
+  type: "object",
   anyOf: [
     {
       properties: {
-        'id': { type: 'string', require: true },
-        'operation': { enum: ['mix', 'unmix', 'get-region'] },
-        'data': { type: 'string' }
-      },
-      additionalProperties: false
-    },
-    {
-      properties: {
-        'id': { type: 'string', require: true },
-        'operation': { enum: ['set-region'] },
-        'data': { $ref: '#/definitions/RegionSetting' }
-      },
-      additionalProperties: false
-    },
-    {
-      properties: {
-        'id': { type: 'string', require: true },
-        'operation': { enum: ['pause', 'play'] },
-        'data': { enum: ['audio', 'video', 'av'] }
-      },
-      additionalProperties: false
-    },
-  ],
-  required: ['id', 'operation', 'data'],
-
-  definitions: {
-    'RegionSetting': {
-      type: 'object',
-      properties: {
-        'view': { type: 'string' },
-        'region': { type: 'string',  minLength: 1}
+        id: { type: "string", require: true },
+        operation: { enum: ["mix", "unmix", "get-region"] },
+        data: { type: "string" },
       },
       additionalProperties: false,
-      required: ['view', 'region']
-    }
-  }
+    },
+    {
+      properties: {
+        id: { type: "string", require: true },
+        operation: { enum: ["set-region"] },
+        data: { $ref: "#/definitions/RegionSetting" },
+      },
+      additionalProperties: false,
+    },
+    {
+      properties: {
+        id: { type: "string", require: true },
+        operation: { enum: ["pause", "play"] },
+        data: { enum: ["audio", "video", "av"] },
+      },
+      additionalProperties: false,
+    },
+  ],
+  required: ["id", "operation", "data"],
+
+  definitions: {
+    RegionSetting: {
+      type: "object",
+      properties: {
+        view: { type: "string" },
+        region: { type: "string", minLength: 1 },
+      },
+      additionalProperties: false,
+      required: ["view", "region"],
+    },
+  },
 };
 
 // SubscriptionRequest
 const SubscriptionRequest = {
   anyOf: [
-    { // Webrtc Subscription
-      type: 'object',
+    {
+      // Webrtc Subscription
+      type: "object",
       properties: {
-        'media': { $ref: '#/definitions/MediaSubOptions' },
+        media: { $ref: "#/definitions/MediaSubOptions" },
       },
       additionalProperties: false,
-      required: ['media']
-    }
+      required: ["media"],
+    },
   ],
 
   definitions: {
-    'MediaSubOptions': {
-      type: 'object',
+    MediaSubOptions: {
+      type: "object",
       properties: {
-        'audio': {
-          anyOf: [
-            { $ref: '#/definitions/AudioSubOptions'},
-            { 'const': false }
-          ]
+        audio: {
+          anyOf: [{ $ref: "#/definitions/AudioSubOptions" }, { const: false }],
         },
-        'video': {
-          anyOf: [
-            { $ref: '#/definitions/VideoSubOptions'},
-            { 'const': false }
-          ]
-        }
+        video: {
+          anyOf: [{ $ref: "#/definitions/VideoSubOptions" }, { const: false }],
+        },
       },
       additionalProperties: false,
-      required: ['audio', 'video']
+      required: ["audio", "video"],
     },
 
-    'AudioSubOptions': {
-      type: 'object',
+    AudioSubOptions: {
+      type: "object",
       properties: {
-        'from': { type: 'string' },
-        'format': { $ref: '#/definitions/AudioFormat' }
+        from: { type: "string" },
+        format: { $ref: "#/definitions/AudioFormat" },
       },
       additionalProperties: false,
-      required: ['from']
+      required: ["from"],
     },
 
-    'VideoSubOptions': {
-      type: 'object',
+    VideoSubOptions: {
+      type: "object",
       properties: {
-        'from': { type: 'string' },
-        'format': { $ref: '#/definitions/VideoFormat' },
-        'parameters': { $ref: '#/definitions/VideoParametersSpecification' },
-        'simulcastRid': { type: 'string' }
+        from: { type: "string" },
+        format: { $ref: "#/definitions/VideoFormat" },
+        parameters: { $ref: "#/definitions/VideoParametersSpecification" },
+        simulcastRid: { type: "string" },
       },
       additionalProperties: false,
-      required: ['from']
+      required: ["from"],
     },
 
-    'AudioFormat': {
-      type: 'object',
+    AudioFormat: {
+      type: "object",
       properties: {
-        'codec': { enum: ['pcmu', 'pcma', 'opus', 'g722', 'iSAC', 'iLBC', 'aac', 'ac3', 'nellymoser'] },
-        'sampleRate': { type: 'number' },
-        'channelNum': { type: 'number' }
+        codec: {
+          enum: [
+            "pcmu",
+            "pcma",
+            "opus",
+            "g722",
+            "iSAC",
+            "iLBC",
+            "aac",
+            "ac3",
+            "nellymoser",
+          ],
+        },
+        sampleRate: { type: "number" },
+        channelNum: { type: "number" },
       },
       additionalProperties: false,
-      required: ['codec']
+      required: ["codec"],
     },
 
-    'VideoFormat': {
-      type: 'object',
+    VideoFormat: {
+      type: "object",
       properties: {
-        'codec': { enum: ['h264', 'h265', 'vp8', 'vp9'] },
-        'profile': { enum: ['CB', 'B', 'M', 'E', 'H'] }
+        codec: { enum: ["h264", "h265", "vp8", "vp9"] },
+        profile: { enum: ["CB", "B", "M", "E", "H"] },
       },
       additionalProperties: false,
-      required: ['codec']
+      required: ["codec"],
     },
 
-    'VideoParametersSpecification': {
-      type: 'object',
+    VideoParametersSpecification: {
+      type: "object",
       properties: {
-        'resolution': Resolution,
-        'framerate': { type: 'number' },
-        'bitrate': { type: ['string', 'number'] },
-        'keyFrameInterval': { type: 'number' }
+        resolution: Resolution,
+        framerate: { type: "number" },
+        bitrate: { type: ["string", "number"] },
+        keyFrameInterval: { type: "number" },
       },
-      additionalProperties: false
-    }
-  }
+      additionalProperties: false,
+    },
+  },
 };
 
 // SubscriptionControlInfo
 const SubscriptionControlInfo = {
-  type: 'object',
+  type: "object",
   anyOf: [
     {
       properties: {
-        'id': { type: 'string' },
-        'operation': { enum: ['update'] },
-        'data': { $ref: '#/definitions/SubscriptionUpdate' }
+        id: { type: "string" },
+        operation: { enum: ["update"] },
+        data: { $ref: "#/definitions/SubscriptionUpdate" },
       },
-      additionalProperties: false
+      additionalProperties: false,
     },
     {
       properties: {
-        'id': { type: 'string' },
-        'operation': { enum: ['pause', 'play'] },
-        'data': { enum: ['audio', 'video', 'av'] }
-      },
-      additionalProperties: false
-    }
-  ],
-  required: ['id', 'operation', 'data'],
-
-  definitions: {
-    'SubscriptionUpdate': {
-      type: 'object',
-      properties: {
-        'audio': { $ref: '#/definitions/AudioUpdate' },
-        'video': { $ref: '#/definitions/VideoUpdate' }
-      },
-      additionalProperties: false
-    },
-
-    'AudioUpdate': {
-      type: 'object',
-      properties: {
-        'from': { type: 'string' }
+        id: { type: "string" },
+        operation: { enum: ["pause", "play"] },
+        data: { enum: ["audio", "video", "av"] },
       },
       additionalProperties: false,
-      required: ['from']
     },
+  ],
+  required: ["id", "operation", "data"],
 
-    'VideoUpdate': {
-      type: 'object',
+  definitions: {
+    SubscriptionUpdate: {
+      type: "object",
       properties: {
-        'from': { type: 'string' },
-        'parameters': { $ref: '#/definitions/VideoUpdateSpecification' }
+        audio: { $ref: "#/definitions/AudioUpdate" },
+        video: { $ref: "#/definitions/VideoUpdate" },
       },
-      additionalProperties: false
+      additionalProperties: false,
     },
 
-    'VideoUpdateSpecification': {
-      type: 'object',
+    AudioUpdate: {
+      type: "object",
+      properties: {
+        from: { type: "string" },
+      },
+      additionalProperties: false,
+      required: ["from"],
+    },
+
+    VideoUpdate: {
+      type: "object",
+      properties: {
+        from: { type: "string" },
+        parameters: { $ref: "#/definitions/VideoUpdateSpecification" },
+      },
+      additionalProperties: false,
+    },
+
+    VideoUpdateSpecification: {
+      type: "object",
       properties: {
         resolution: Resolution,
-        framerate: { type: 'number' },
-        bitrate: { type: ['number', 'string'] },
-        keyFrameInterval: { type: 'number' }
+        framerate: { type: "number" },
+        bitrate: { type: ["number", "string"] },
+        keyFrameInterval: { type: "number" },
       },
-      additionalProperties: false
-    }
-  }
+      additionalProperties: false,
+    },
+  },
 };
 
 module.exports = {

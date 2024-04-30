@@ -14,27 +14,27 @@
  * Wrapper class of owt_base::VideoFramePacketizer
  */
 class VideoFramePacketizer : public FrameDestination {
- public:
-  static void Init(v8::Local<v8::Object> exports);
-  owt_base::VideoFramePacketizer* me;
+public:
+    static void Init(v8::Local<v8::Object> exports);
+    owt_base::VideoFramePacketizer* me;
 
- private:
-  VideoFramePacketizer();
-  ~VideoFramePacketizer();
-  static v8::Persistent<v8::Function> constructor;
+private:
+    VideoFramePacketizer();
+    ~VideoFramePacketizer();
+    static v8::Persistent<v8::Function> constructor;
 
-  static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void close(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void close(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  static void bindTransport(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void unbindTransport(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void bindTransport(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void unbindTransport(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  static void enable(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void getSsrc(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void enable(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void getSsrc(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  static void getTotalBitrate(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void getRetransmitBitrate(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void getEstimatedBandwidth(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void getTotalBitrate(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void getRetransmitBitrate(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void getEstimatedBandwidth(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
 #endif

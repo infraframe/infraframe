@@ -6,7 +6,7 @@
  * JSON Validator for Request Data
  */
 
-const Ajv = require('ajv');
+const Ajv = require("ajv");
 // Using json schema validate with 'defaults' and 'removeAdditional' properties
 const ajv = new Ajv({ useDefaults: true });
 
@@ -25,18 +25,18 @@ function generateValidator(schema) {
 
 function getErrorMessage(errors) {
   var error = errors.shift();
-  var message = '';
+  var message = "";
   var messages = [];
   while (error) {
-    if (error.keyword === 'anyOf') {
+    if (error.keyword === "anyOf") {
       error = errors.shift();
       continue;
     }
-    var message = 'request' + error.dataPath + ' ' + error.message;
+    var message = "request" + error.dataPath + " " + error.message;
     for (let key in error.params) {
       let param = error.params[key];
       if (param) {
-        message += ' ' + JSON.stringify(param);
+        message += " " + JSON.stringify(param);
       }
     }
 
@@ -44,547 +44,572 @@ function getErrorMessage(errors) {
     error = errors.shift();
   }
 
-  return messages.join(',');
+  return messages.join(",");
 }
 
 const Resolution = {
-  $id: 'Resolution.json',
-  type: 'object',
+  $id: "Resolution.json",
+  type: "object",
   properties: {
-    'width': { type: 'number' },
-    'height': { type: 'number' }
+    width: { type: "number" },
+    height: { type: "number" },
   },
   additionalProperties: false,
-  required: ['width', 'height']
+  required: ["width", "height"],
 };
 ajv.addSchema(Resolution);
 
 const ParticipantUpdate = {
-  type: 'array',
-  items: {$ref: '#/definitions/PermissionUpdate'},
+  type: "array",
+  items: { $ref: "#/definitions/PermissionUpdate" },
   additionalProperties: false,
 
   definitions: {
-    'PermissionUpdate': {
-      type: 'object',
+    PermissionUpdate: {
+      type: "object",
       properties: {
-        'op': { enum: ['replace'] },
-        'path': { enum: ['/permission/publish', '/permission/publish/audio', '/permission/publish/video', '/permission/subscribe', '/permission/subscribe/audio', '/permission/subscribe/video']},
-        'value': {
-          anyOf: [{
-            type: 'boolean'
-          }, {
-            type: 'object',
-            properties: {
-              'audio': {type: 'boolean'},
-              'video': {type: 'boolean'}
+        op: { enum: ["replace"] },
+        path: {
+          enum: [
+            "/permission/publish",
+            "/permission/publish/audio",
+            "/permission/publish/video",
+            "/permission/subscribe",
+            "/permission/subscribe/audio",
+            "/permission/subscribe/video",
+          ],
+        },
+        value: {
+          anyOf: [
+            {
+              type: "boolean",
             },
-            additionalProperties: false,
-            required: ['audio', 'video']
-          }]
-        }
+            {
+              type: "object",
+              properties: {
+                audio: { type: "boolean" },
+                video: { type: "boolean" },
+              },
+              additionalProperties: false,
+              required: ["audio", "video"],
+            },
+          ],
+        },
       },
       additionalProperties: false,
-      required: ['op', 'path', 'value']
-    }
-  }
+      required: ["op", "path", "value"],
+    },
+  },
 };
 
 const StreamingInRequest = {
-  type: 'object',
+  type: "object",
   properties: {
-    'type': { 'const': 'streaming' },
-    'connection': { $ref: '#/definitions/StreamingInConnectionOptions' },
-    'media': { $ref: '#/definitions/StreamingInMediaOptions' },
-    'attributes': { type: 'object' }
+    type: { const: "streaming" },
+    connection: { $ref: "#/definitions/StreamingInConnectionOptions" },
+    media: { $ref: "#/definitions/StreamingInMediaOptions" },
+    attributes: { type: "object" },
   },
   additionalProperties: false,
-  required: ['type', 'connection', 'media'],
+  required: ["type", "connection", "media"],
 
   definitions: {
-    'StreamingInConnectionOptions': {
-      type: 'object',
+    StreamingInConnectionOptions: {
+      type: "object",
       properties: {
-        url: { type: 'string' },
-        transportProtocol: { enum: ['tcp', 'udp'], 'default': 'tcp' }, //optional, default: "tcp"
-        bufferSize: { type: 'number', 'default': 8192 },     //optional, default: 8192 bytes
+        url: { type: "string" },
+        transportProtocol: { enum: ["tcp", "udp"], default: "tcp" }, //optional, default: "tcp"
+        bufferSize: { type: "number", default: 8192 }, //optional, default: 8192 bytes
         origin: {
-          isp: { type: 'string'},
-          region: { type: 'string'}
-        }
-
+          isp: { type: "string" },
+          region: { type: "string" },
+        },
       },
       additionalProperties: false,
-      required: ['url']
+      required: ["url"],
     },
 
-    'StreamingInMediaOptions': {
-      type: 'object',
+    StreamingInMediaOptions: {
+      type: "object",
       properties: {
-        'audio': { enum: ['auto', true, false] },
-        'video': { enum: ['auto', true, false] }
+        audio: { enum: ["auto", true, false] },
+        video: { enum: ["auto", true, false] },
       },
       additionalProperties: false,
-      required: ['audio', 'video']
-    }
-  }
+      required: ["audio", "video"],
+    },
+  },
 };
 
 const StreamUpdate = {
-  type: 'array',
-  items: {$ref: '#/definitions/StreamInfoUpdate'},
+  type: "array",
+  items: { $ref: "#/definitions/StreamInfoUpdate" },
   additionalProperties: false,
 
   definitions: {
-    'StreamInfoUpdate': {
-      type: 'object',
+    StreamInfoUpdate: {
+      type: "object",
       anyOf: [
-      {
-        properties: {
-          'op': { enum: ['add', 'remove'] },
-          'path': { 'const': '/info/inViews'},
-          'value': { type: 'string'}
+        {
+          properties: {
+            op: { enum: ["add", "remove"] },
+            path: { const: "/info/inViews" },
+            value: { type: "string" },
+          },
+          additionalProperties: false,
         },
-        additionalProperties: false
-      }, {
-        properties: {
-          'op': { 'const': 'replace'},
-          'path': { enum: ['/media/audio/status', '/media/video/status']},
-          'value': { enum: ['active', 'inactive']}
+        {
+          properties: {
+            op: { const: "replace" },
+            path: { enum: ["/media/audio/status", "/media/video/status"] },
+            value: { enum: ["active", "inactive"] },
+          },
+          additionalProperties: false,
         },
-        additionalProperties: false
-      }, {
-        properties: {
-          'op': { 'const': 'replace'},
-          'path': { 'const': '/info/layout'},
-          'value': {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                'stream': { type: 'string'},
-                'region': {
-                  type: 'object',
-                  properties: {
-                    'id': { type: 'string'},
-                    'shape': { 'const': 'rectangle'},
-                    'area': {
-                      type: 'object',
-                      properties: {
-                        left: {$ref: '#/definitions/RationalNumberStr'},
-                        top: {$ref: '#/definitions/RationalNumberStr'},
-                        width: {$ref: '#/definitions/RationalNumberStr'},
-                        height: {$ref: '#/definitions/RationalNumberStr'}
+        {
+          properties: {
+            op: { const: "replace" },
+            path: { const: "/info/layout" },
+            value: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  stream: { type: "string" },
+                  region: {
+                    type: "object",
+                    properties: {
+                      id: { type: "string" },
+                      shape: { const: "rectangle" },
+                      area: {
+                        type: "object",
+                        properties: {
+                          left: { $ref: "#/definitions/RationalNumberStr" },
+                          top: { $ref: "#/definitions/RationalNumberStr" },
+                          width: { $ref: "#/definitions/RationalNumberStr" },
+                          height: { $ref: "#/definitions/RationalNumberStr" },
+                        },
+                        additionalProperties: false,
+                        required: ["left", "top", "width", "height"],
                       },
-                      additionalProperties: false,
-                      required: ['left', 'top', 'width', 'height']
-                    }
+                    },
+                    additionalProperties: false,
+                    required: ["id", "shape", "area"],
                   },
-                  additionalProperties: false,
-                  required: ['id', 'shape', 'area']
-                }
+                },
+                additionalProperties: false,
+                required: ["region"],
               },
-              additionalProperties: false,
-              required: ['region']
-            }
-          }
+            },
+          },
+          additionalProperties: false,
         },
-        additionalProperties: false
-      }, {
-        properties: {
-          'op': { 'const': 'replace'},
-          'path': { 'pattern': '/info/layout/[0-9]+/stream'},
-          'value': { type: 'string'}
+        {
+          properties: {
+            op: { const: "replace" },
+            path: { pattern: "/info/layout/[0-9]+/stream" },
+            value: { type: "string" },
+          },
+          additionalProperties: false,
         },
-        additionalProperties: false
-      }],
-      required: ['op', 'path', 'value']
+      ],
+      required: ["op", "path", "value"],
     },
-    'RationalNumberStr': {
-      type: 'string',
-      value: {'pattern': '/^0|1|(?:[1-9][0-9]*\/[1-9][0-9]*)/'}
-    }
-  }
+    RationalNumberStr: {
+      type: "string",
+      value: { pattern: "/^0|1|(?:[1-9][0-9]*/[1-9][0-9]*)/" },
+    },
+  },
 };
 
 const ServerSideSubscriptionRequest = {
   anyOf: [
     {
       // Streaming Subscription
-      type: 'object',
+      type: "object",
       properties: {
-        'type': { 'const': 'streaming' },
-        'connection': { $ref: '#/definitions/StreamingOutConnectionOptions' },
-        'media': { $ref: '#/definitions/MediaSubOptions' },
+        type: { const: "streaming" },
+        connection: { $ref: "#/definitions/StreamingOutConnectionOptions" },
+        media: { $ref: "#/definitions/MediaSubOptions" },
       },
       additionalProperties: false,
-      required: ['type', 'connection', 'media']
+      required: ["type", "connection", "media"],
     },
     {
       // Recording Subscription
-      type: 'object',
+      type: "object",
       properties: {
-        'type': { 'const': 'recording' },
-        'connection': { $ref: '#/definitions/RecordingStorageOptions' },
-        'media': { $ref: '#/definitions/MediaSubOptions' },
+        type: { const: "recording" },
+        connection: { $ref: "#/definitions/RecordingStorageOptions" },
+        media: { $ref: "#/definitions/MediaSubOptions" },
       },
       additionalProperties: false,
-      required: ['type', 'connection', 'media']
+      required: ["type", "connection", "media"],
     },
     {
       // Analytics Subscription
-      type: 'object',
+      type: "object",
       properties: {
-        'type': { 'const': 'analytics' },
-        'connection': { $ref: '#/definitions/AnalyticsOptions' },
-        'media': { $ref: '#/definitions/MediaSubOptions' },
+        type: { const: "analytics" },
+        connection: { $ref: "#/definitions/AnalyticsOptions" },
+        media: { $ref: "#/definitions/MediaSubOptions" },
       },
       additionalProperties: false,
-      required: ['type', 'connection', 'media']
-    }
+      required: ["type", "connection", "media"],
+    },
   ],
 
   definitions: {
-    'StreamingOutConnectionOptions': {
-      type: 'object',
+    StreamingOutConnectionOptions: {
+      type: "object",
       properties: {
-        'protocol': {enum: ['rtmp', 'rtsp', 'hls', 'dash']},
-        'url': { type: 'string' },
-        'parameters': {anyOf: [
-          {
-            type: 'object',
-            properties: {
-              'method': {enum: ['PUT', 'POST']},
-              'hlsTime': {type: 'number'},
-              'hlsListSize': {type: 'number'}
-            },
-            additionalProperties: false,
-            required: ['method', 'hlsTime', 'hlsListSize']
-          },{
-            type: 'object',
-            properties: {
-              'method': {enum: ['PUT', 'POST']},
-              'dashSegDuration': {type: 'number'},
-              'dashWindowSize': {type: 'number'}
-            },
-            additionalProperties: false,
-            required: ['method', 'dashSegDuration', 'dashWindowSize']
-          }
-        ]}
-      },
-      additionalProperties: false,
-      required: ['protocol', 'url']
-    },
-
-    'RecordingStorageOptions': {
-      type: 'object',
-      properties: {
-        'container': { enum: ['mp4', 'mkv', 'ts', 'auto'] }
-      },
-      additionalProperties: false
-    },
-
-    'AnalyticsOptions': {
-      type: 'object',
-      properties: {
-        'algorithm': { type: 'string' }
-      },
-      additionalProperties: false
-    },
-
-    'MediaSubOptions': {
-      type: 'object',
-      properties: {
-        'audio': {
+        protocol: { enum: ["rtmp", "rtsp", "hls", "dash"] },
+        url: { type: "string" },
+        parameters: {
           anyOf: [
-            { $ref: '#/definitions/AudioSubOptions'},
-            { 'const': false }
-          ]
+            {
+              type: "object",
+              properties: {
+                method: { enum: ["PUT", "POST"] },
+                hlsTime: { type: "number" },
+                hlsListSize: { type: "number" },
+              },
+              additionalProperties: false,
+              required: ["method", "hlsTime", "hlsListSize"],
+            },
+            {
+              type: "object",
+              properties: {
+                method: { enum: ["PUT", "POST"] },
+                dashSegDuration: { type: "number" },
+                dashWindowSize: { type: "number" },
+              },
+              additionalProperties: false,
+              required: ["method", "dashSegDuration", "dashWindowSize"],
+            },
+          ],
         },
-        'video': {
-          anyOf: [
-            { $ref: '#/definitions/VideoSubOptions'},
-            { 'const': false }
-          ]
-        }
       },
       additionalProperties: false,
-      required: ['audio', 'video']
+      required: ["protocol", "url"],
     },
 
-    'AudioSubOptions': {
-      type: 'object',
+    RecordingStorageOptions: {
+      type: "object",
       properties: {
-        'from': { type: 'string' },
-        'format': { $ref: '#/definitions/AudioFormat' }
+        container: { enum: ["mp4", "mkv", "ts", "auto"] },
       },
       additionalProperties: false,
-      required: ['from']
     },
 
-    'VideoSubOptions': {
-      type: 'object',
+    AnalyticsOptions: {
+      type: "object",
       properties: {
-        'from': { type: 'string' },
-        'format': { $ref: '#/definitions/VideoFormat' },
-        'parameters': { $ref: '#/definitions/VideoParametersSpecification' }
+        algorithm: { type: "string" },
       },
       additionalProperties: false,
-      required: ['from']
     },
 
-    'AudioFormat': {
-      type: 'object',
+    MediaSubOptions: {
+      type: "object",
       properties: {
-        'codec': { enum: ['pcmu', 'pcma', 'opus', 'g722', 'isac', 'ilbc', 'aac', 'ac3', 'nellymoser'] },
-        'sampleRate': { type: 'number' },
-        'channelNum': { type: 'number' }
+        audio: {
+          anyOf: [{ $ref: "#/definitions/AudioSubOptions" }, { const: false }],
+        },
+        video: {
+          anyOf: [{ $ref: "#/definitions/VideoSubOptions" }, { const: false }],
+        },
       },
       additionalProperties: false,
-      required: ['codec']
+      required: ["audio", "video"],
     },
 
-    'VideoFormat': {
-      type: 'object',
+    AudioSubOptions: {
+      type: "object",
       properties: {
-        'codec': { enum: ['h264', 'h265', 'vp8', 'vp9'] },
-        'profile': { enum: ['B', 'CB', 'M', 'H', 'E'] }
+        from: { type: "string" },
+        format: { $ref: "#/definitions/AudioFormat" },
       },
       additionalProperties: false,
-      required: ['codec']
+      required: ["from"],
     },
 
-    'VideoParametersSpecification': {
-      type: 'object',
+    VideoSubOptions: {
+      type: "object",
       properties: {
-        'resolution': { $ref: 'Resolution.json' },
-        'framerate': { type: 'number' },
-        'bitrate': { type: ['string', 'number'] },
-        'keyFrameInterval': { type: 'number' }
+        from: { type: "string" },
+        format: { $ref: "#/definitions/VideoFormat" },
+        parameters: { $ref: "#/definitions/VideoParametersSpecification" },
       },
-      additionalProperties: false
-    }
-  }
+      additionalProperties: false,
+      required: ["from"],
+    },
+
+    AudioFormat: {
+      type: "object",
+      properties: {
+        codec: {
+          enum: [
+            "pcmu",
+            "pcma",
+            "opus",
+            "g722",
+            "isac",
+            "ilbc",
+            "aac",
+            "ac3",
+            "nellymoser",
+          ],
+        },
+        sampleRate: { type: "number" },
+        channelNum: { type: "number" },
+      },
+      additionalProperties: false,
+      required: ["codec"],
+    },
+
+    VideoFormat: {
+      type: "object",
+      properties: {
+        codec: { enum: ["h264", "h265", "vp8", "vp9"] },
+        profile: { enum: ["B", "CB", "M", "H", "E"] },
+      },
+      additionalProperties: false,
+      required: ["codec"],
+    },
+
+    VideoParametersSpecification: {
+      type: "object",
+      properties: {
+        resolution: { $ref: "Resolution.json" },
+        framerate: { type: "number" },
+        bitrate: { type: ["string", "number"] },
+        keyFrameInterval: { type: "number" },
+      },
+      additionalProperties: false,
+    },
+  },
 };
 
 const SubscriptionControlInfo = {
-  $id: 'SubscriptionControlInfo.json',
-  type: 'object',
+  $id: "SubscriptionControlInfo.json",
+  type: "object",
   anyOf: [
     {
       properties: {
-        'op': { 'const': 'replace' },
-        'path': { enum: ['/media/audio/status', '/media/video/status'] },
-        'value': { enum: ['active', 'inactive'] }
+        op: { const: "replace" },
+        path: { enum: ["/media/audio/status", "/media/video/status"] },
+        value: { enum: ["active", "inactive"] },
       },
-      additionalProperties: false
+      additionalProperties: false,
     },
     {
       properties: {
-        'op': { 'const': 'replace' },
-        'path': { enum: ['/media/audio/from', '/media/video/from'] },
-        'value': { type: 'string' }
+        op: { const: "replace" },
+        path: { enum: ["/media/audio/from", "/media/video/from"] },
+        value: { type: "string" },
       },
-      additionalProperties: false
+      additionalProperties: false,
     },
     {
       properties: {
-        'op': { 'const': 'replace' },
-        'path': { 'const': '/media/video/parameters/resolution' },
-        'value': { $ref: 'Resolution.json' }
+        op: { const: "replace" },
+        path: { const: "/media/video/parameters/resolution" },
+        value: { $ref: "Resolution.json" },
       },
-      additionalProperties: false
+      additionalProperties: false,
     },
     {
       properties: {
-        'op': { 'const': 'replace' },
-        'path': { 'const': '/media/video/parameters/framerate' },
-        'value': { enum: [6, 12, 15, 24, 30, 48, 60] }
+        op: { const: "replace" },
+        path: { const: "/media/video/parameters/framerate" },
+        value: { enum: [6, 12, 15, 24, 30, 48, 60] },
       },
-      additionalProperties: false
+      additionalProperties: false,
     },
     {
       properties: {
-        'op': { 'const': 'replace' },
-        'path': { 'const': '/media/video/parameters/bitrate' },
-        'value': { enum: ['x0.8', 'x0.6', 'x0.4', 'x0.2'] }
+        op: { const: "replace" },
+        path: { const: "/media/video/parameters/bitrate" },
+        value: { enum: ["x0.8", "x0.6", "x0.4", "x0.2"] },
       },
-      additionalProperties: false
+      additionalProperties: false,
     },
     {
       properties: {
-        'op': { 'const': 'replace' },
-        'path': { 'const': '/media/video/parameters/keyFrameInterval' },
-        'value': { enum: [1, 2, 5, 30, 100] }
+        op: { const: "replace" },
+        path: { const: "/media/video/parameters/keyFrameInterval" },
+        value: { enum: [1, 2, 5, 30, 100] },
       },
-      additionalProperties: false
-    }
+      additionalProperties: false,
+    },
   ],
-  required: ['op', 'path', 'value']
+  required: ["op", "path", "value"],
 };
 ajv.addSchema(SubscriptionControlInfo);
 
 const SubscriptionUpdate = {
-  type: 'array',
-  items: {$ref: 'SubscriptionControlInfo.json',}
+  type: "array",
+  items: { $ref: "SubscriptionControlInfo.json" },
 };
 
 const SipCallAdd = {
-  type: 'object',
+  type: "object",
   properties: {
-    'peerURI': { type: 'string' },
-    'mediaIn': {
-      type: 'object',
+    peerURI: { type: "string" },
+    mediaIn: {
+      type: "object",
       properties: {
-        'audio': {'const': true},
-        'video': {type: 'boolean'}
+        audio: { const: true },
+        video: { type: "boolean" },
       },
       additionalProperties: false,
-      required: ['audio', 'video']
+      required: ["audio", "video"],
     },
-    'mediaOut': { $ref: '#/definitions/MediaOutOptions' },
+    mediaOut: { $ref: "#/definitions/MediaOutOptions" },
   },
   additionalProperties: false,
-  required: ['peerURI', 'mediaIn', 'mediaOut'],
+  required: ["peerURI", "mediaIn", "mediaOut"],
 
   definitions: {
-    'MediaOutOptions': {
-      type: 'object',
+    MediaOutOptions: {
+      type: "object",
       properties: {
-        'audio': {
-          $ref: '#/definitions/AudioOutOptions',
+        audio: {
+          $ref: "#/definitions/AudioOutOptions",
         },
-        'video': {
-          anyOf: [
-            { $ref: '#/definitions/VideoOutOptions'},
-            { 'const': false }
-          ]
-        }
+        video: {
+          anyOf: [{ $ref: "#/definitions/VideoOutOptions" }, { const: false }],
+        },
       },
       additionalProperties: false,
-      required: ['audio', 'video']
+      required: ["audio", "video"],
     },
 
-    'AudioOutOptions': {
-      type: 'object',
+    AudioOutOptions: {
+      type: "object",
       properties: {
-        'from': { type: 'string' }
+        from: { type: "string" },
       },
       additionalProperties: false,
-      required: ['from']
+      required: ["from"],
     },
 
-    'VideoOutOptions': {
-      type: 'object',
+    VideoOutOptions: {
+      type: "object",
       properties: {
-        'from': { type: 'string' },
-        'parameters': { $ref: '#/definitions/VideoParametersSpecification' }
+        from: { type: "string" },
+        parameters: { $ref: "#/definitions/VideoParametersSpecification" },
       },
       additionalProperties: false,
-      required: ['from']
+      required: ["from"],
     },
 
-    'VideoParametersSpecification': {
-      type: 'object',
+    VideoParametersSpecification: {
+      type: "object",
       properties: {
-        'resolution': { $ref: 'Resolution.json' },
-        'framerate': { type: 'number' },
-        'bitrate': { type: ['string', 'number'] },
-        'keyFrameInterval': { type: 'number' }
+        resolution: { $ref: "Resolution.json" },
+        framerate: { type: "number" },
+        bitrate: { type: ["string", "number"] },
+        keyFrameInterval: { type: "number" },
       },
-      additionalProperties: false
-    }
-  }
+      additionalProperties: false,
+    },
+  },
 };
 
 const SipCallControlInfo = {
-  $id: 'SipCallControlInfo.json',
-  type: 'object',
+  $id: "SipCallControlInfo.json",
+  type: "object",
   anyOf: [
     {
       properties: {
-        'op': { 'const': 'replace' },
-        'path': { enum: ['/output/media/audio/status', '/output/media/video/status'] },
-        'value': { enum: ['active', 'inactive'] }
+        op: { const: "replace" },
+        path: {
+          enum: ["/output/media/audio/status", "/output/media/video/status"],
+        },
+        value: { enum: ["active", "inactive"] },
       },
-      additionalProperties: false
+      additionalProperties: false,
     },
     {
       properties: {
-        'op': { 'const': 'replace' },
-        'path': { enum: ['/output/media/audio/from', '/output/media/video/from'] },
-        'value': { type: 'string' }
+        op: { const: "replace" },
+        path: {
+          enum: ["/output/media/audio/from", "/output/media/video/from"],
+        },
+        value: { type: "string" },
       },
-      additionalProperties: false
+      additionalProperties: false,
     },
     {
       properties: {
-        'op': { 'const': 'replace' },
-        'path': { 'const': '/output/media/video/parameters/resolution' },
-        'value': { $ref: 'Resolution.json' }
+        op: { const: "replace" },
+        path: { const: "/output/media/video/parameters/resolution" },
+        value: { $ref: "Resolution.json" },
       },
-      additionalProperties: false
+      additionalProperties: false,
     },
     {
       properties: {
-        'op': { 'const': 'replace' },
-        'path': { 'const': '/output/media/video/parameters/framerate' },
-        'value': { enum: [6, 12, 15, 24, 30, 48, 60] }
+        op: { const: "replace" },
+        path: { const: "/output/media/video/parameters/framerate" },
+        value: { enum: [6, 12, 15, 24, 30, 48, 60] },
       },
-      additionalProperties: false
+      additionalProperties: false,
     },
     {
       properties: {
-        'op': { 'const': 'replace' },
-        'path': { 'const': '/output/media/video/parameters/bitrate' },
-        'value': { enum: ['x0.8', 'x0.6', 'x0.4', 'x0.2'] }
+        op: { const: "replace" },
+        path: { const: "/output/media/video/parameters/bitrate" },
+        value: { enum: ["x0.8", "x0.6", "x0.4", "x0.2"] },
       },
-      additionalProperties: false
+      additionalProperties: false,
     },
     {
       properties: {
-        'op': { 'const': 'replace' },
-        'path': { 'const': '/output/media/video/parameters/keyFrameInterval' },
-        'value': { enum: [1, 2, 5, 30, 100] }
+        op: { const: "replace" },
+        path: { const: "/output/media/video/parameters/keyFrameInterval" },
+        value: { enum: [1, 2, 5, 30, 100] },
       },
-      additionalProperties: false
-    }
+      additionalProperties: false,
+    },
   ],
-  required: ['op', 'path', 'value']
+  required: ["op", "path", "value"],
 };
 ajv.addSchema(SipCallControlInfo);
 
 const SipCallUpdate = {
-  type: 'array',
-  items: {$ref: 'SipCallControlInfo.json'}
+  type: "array",
+  items: { $ref: "SipCallControlInfo.json" },
 };
 
 const CascadingRequest = {
-  type: 'object',
+  type: "object",
   properties: {
-    'type': { 'const': 'cascading' },
-    'evIP': { type: 'string' },
-    'evPort': { type: 'number' },
-    'mediaIP': { type: 'string' },
-    'mediaPort': { type: 'number' },
-    'targetCluster': { type: 'string' },
-    'selfCluster': { type: 'string' },
-    'token': { type: 'string' },
-    'room': {type: 'string'}
+    type: { const: "cascading" },
+    evIP: { type: "string" },
+    evPort: { type: "number" },
+    mediaIP: { type: "string" },
+    mediaPort: { type: "number" },
+    targetCluster: { type: "string" },
+    selfCluster: { type: "string" },
+    token: { type: "string" },
+    room: { type: "string" },
   },
   additionalProperties: false,
-  required: ['type', 'evIP', 'evPort', 'room', 'token']
+  required: ["type", "evIP", "evPort", "room", "token"],
 };
 
 var validators = {
-  'participant-update': generateValidator(ParticipantUpdate),
-  'streamingIn-req': generateValidator(StreamingInRequest),
-  'stream-update': generateValidator(StreamUpdate),
-  'serverSideSub-req': generateValidator(ServerSideSubscriptionRequest),
-  'subscription-update': generateValidator(SubscriptionUpdate),
-  'sipcall-add': generateValidator(SipCallAdd),
-  'sipcall-update': generateValidator(SipCallUpdate),
-  'cascading-req': generateValidator(CascadingRequest)
+  "participant-update": generateValidator(ParticipantUpdate),
+  "streamingIn-req": generateValidator(StreamingInRequest),
+  "stream-update": generateValidator(StreamUpdate),
+  "serverSideSub-req": generateValidator(ServerSideSubscriptionRequest),
+  "subscription-update": generateValidator(SubscriptionUpdate),
+  "sipcall-add": generateValidator(SipCallAdd),
+  "sipcall-update": generateValidator(SipCallUpdate),
+  "cascading-req": generateValidator(CascadingRequest),
 };
 
 // Export JSON validator functions
@@ -595,5 +620,5 @@ module.exports = {
     } else {
       throw new Error(`No such validator: ${spec}`);
     }
-  }
+  },
 };

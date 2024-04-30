@@ -11,16 +11,18 @@ using Nan::New;
 using Nan::Set;
 
 // Configure using the "log4cxx.properties" file
-NAN_METHOD(configure) {
-  // expect a number as the first argument
-  log4cxx::PropertyConfigurator::configure("log4cxx.properties");
+NAN_METHOD(configure)
+{
+    // expect a number as the first argument
+    log4cxx::PropertyConfigurator::configure("log4cxx.properties");
 }
 
 // Expose synchronous and asynchronous access to our
 // Estimate() function
-NAN_MODULE_INIT(InitAll) {
-  Set(target, New<v8::String>("configure").ToLocalChecked(),
-    GetFunction(New<v8::FunctionTemplate>(configure)).ToLocalChecked());
+NAN_MODULE_INIT(InitAll)
+{
+    Set(target, New<v8::String>("configure").ToLocalChecked(),
+        GetFunction(New<v8::FunctionTemplate>(configure)).ToLocalChecked());
 }
 
 NODE_MODULE(addon, InitAll)

@@ -2,71 +2,68 @@
   "name": "quic-agent",
   "dest": "quic_agent",
   "common": {
-      "package": "package.json",
-      "files": [
-          "agent.toml",
-          "log4js_configuration.json",
-          "configLoader.js",
-          "../index.js",
-          "../networkHelper.js",
-          "../nodeManager.js",
-          "../workingNode.js",
-          "../InternalConnectionFactory.js",
-          "log4cxx.properties",
-          "../../common/amqpClient.js",
-          "../../common/cipher.js",
-          "../../common/clusterWorker.js",
-          "../../common/loadCollector.js",
-          "../../common/logger.js",
-          "../../common/makeRPC.js",
-          "../../common/grpcTools.js",
-          "../../protos/protoConfig.json",
-          "../../protos/*.proto",
-          "../../../scripts/release/initcert.js",
-          "../../../scripts/release/initauth.js",
-          "../../../scripts/detectOS.sh"
+    "package": "package.json",
+    "files": [
+      "agent.toml",
+      "log4js_configuration.json",
+      "configLoader.js",
+      "../index.js",
+      "../networkHelper.js",
+      "../nodeManager.js",
+      "../workingNode.js",
+      "../InternalConnectionFactory.js",
+      "log4cxx.properties",
+      "../../common/amqpClient.js",
+      "../../common/cipher.js",
+      "../../common/clusterWorker.js",
+      "../../common/loadCollector.js",
+      "../../common/logger.js",
+      "../../common/makeRPC.js",
+      "../../common/grpcTools.js",
+      "../../protos/protoConfig.json",
+      "../../protos/*.proto",
+      "../../../scripts/release/initcert.js",
+      "../../../scripts/release/initauth.js",
+      "../../../scripts/detectOS.sh"
+    ],
+    "folders": {
+      "quic": [
+        "index.js",
+        "grpcAdapter.js",
+        "../../common/grpcTools.js",
+        "../../protos/protoConfig.json",
+        "../../protos/*.proto",
+        "../connections.js",
+        "../../common/makeRPC.js",
+        "../../common/rpcChannel.js",
+        "../internalConnectionRouter.js"
       ],
-      "folders": {
-          "quic": [
-              "index.js",
-              "grpcAdapter.js",
-              "../../common/grpcTools.js",
-              "../../protos/protoConfig.json",
-              "../../protos/*.proto",
-              "../connections.js",
-              "../../common/makeRPC.js",
-              "../../common/rpcChannel.js",
-              "../internalConnectionRouter.js"
-          ],
-          "quic/webtransport": [
-              "webtransport/quicTransportServer.js",
-              "webtransport/quicTransportStreamPipeline.js"
-          ],
-          "quic/webtransport/test": [
-              "webtransport/test/quicTransportServerTest.js"
-          ],
-          "cert": [
-              "../../../cert/certificate.pfx",
-              "../../../cert/.owt.keystore"
-          ]
-      }
+      "quic/webtransport": [
+        "webtransport/quicTransportServer.js",
+        "webtransport/quicTransportStreamPipeline.js"
+      ],
+      "quic/webtransport/test": [
+        "webtransport/test/quicTransportServerTest.js"
+      ],
+      "cert": ["../../../cert/certificate.pfx", "../../../cert/.owt.keystore"]
+    }
   },
   "natives": {
-      "libdist": "lib",
-      "addons": [
-          {
-              "folder": "../addons/quic",
-              "name": "quic"
-          },
-          {
-              "folder": "../addons/internalIO",
-              "name": "internalIO"
-          },
-          {
-              "folder": "../addons/logger",
-              "name": "logger"
-          }
-      ]
+    "libdist": "lib",
+    "addons": [
+      {
+        "folder": "../addons/quic",
+        "name": "quic"
+      },
+      {
+        "folder": "../addons/internalIO",
+        "name": "internalIO"
+      },
+      {
+        "folder": "../addons/logger",
+        "name": "logger"
+      }
+    ]
   },
   "start": "node . -U quic"
 }

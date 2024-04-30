@@ -5,9 +5,9 @@
 #include "QuicTransportServer.h"
 #include "QuicFactory.h"
 #include "Utils.h"
-#include <thread>
 #include <chrono>
 #include <iostream>
+#include <thread>
 
 #include "owt/quic/quic_transport_factory.h"
 #include "owt/quic/quic_transport_session_interface.h"
@@ -20,18 +20,19 @@ using v8::Object;
 using v8::ObjectTemplate;
 using v8::Value;
 
-
 DEFINE_LOGGER(QuicTransportServer, "QuicTransportServer");
 
 Nan::Persistent<v8::Function> QuicTransportServer::s_constructor;
 
 // QUIC Incomming
 QuicTransportServer::QuicTransportServer(unsigned int port, const std::string& pfxPath, const std::string& password)
-        : m_quicServer(QuicFactory::getQuicTransportFactory()->CreateQuicTransportServer(port, pfxPath.c_str(), password.c_str())) {
-  m_quicServer->SetVisitor(this);
+    : m_quicServer(QuicFactory::getQuicTransportFactory()->CreateQuicTransportServer(port, pfxPath.c_str(), password.c_str()))
+{
+    m_quicServer->SetVisitor(this);
 }
 
-QuicTransportServer::~QuicTransportServer() {
+QuicTransportServer::~QuicTransportServer()
+{
     m_quicServer->SetVisitor(nullptr);
     m_quicServer->Stop();
     m_quicServer.reset();
@@ -111,23 +112,26 @@ NAN_METHOD(QuicTransportServer::getListenPort)
     ELOG_DEBUG("End of QuicTransportServer::getListenPort");
 }
 
-NAN_METHOD(QuicTransportServer::onNewSession) {
-  ELOG_DEBUG("QuicTransportServer::onNewSession");
-  QuicTransportServer* obj = Nan::ObjectWrap::Unwrap<QuicTransportServer>(info.Holder());
+NAN_METHOD(QuicTransportServer::onNewSession)
+{
+    ELOG_DEBUG("QuicTransportServer::onNewSession");
+    QuicTransportServer* obj = Nan::ObjectWrap::Unwrap<QuicTransportServer>(info.Holder());
 
-  obj->has_session_callback_ = true;
-  obj->session_callback_ = new Nan::Callback(info[0].As<Function>());
+    obj->has_session_callback_ = true;
+    obj->session_callback_ = new Nan::Callback(info[0].As<Function>());
 }
 
-NAN_METHOD(QuicTransportServer::onClosedSession) {
-  ELOG_DEBUG("QuicTransportServer::onClosedSession");
-  QuicTransportServer* obj = Nan::ObjectWrap::Unwrap<QuicTransportServer>(info.Holder());
+NAN_METHOD(QuicTransportServer::onClosedSession)
+{
+    ELOG_DEBUG("QuicTransportServer::onClosedSession");
+    QuicTransportServer* obj = Nan::ObjectWrap::Unwrap<QuicTransportServer>(info.Holder());
 
-  obj->has_sessionClosed_callback_ = true;
-  obj->sessionClosed_callback_ = new Nan::Callback(info[0].As<Function>());
+    obj->has_sessionClosed_callback_ = true;
+    obj->sessionClosed_callback_ = new Nan::Callback(info[0].As<Function>());
 }
 
-NAUV_WORK_CB(QuicTransportServer::onNewSessionCallback){
+NAUV_WORK_CB(QuicTransportServer::onNewSessionCallback)
+{
     ELOG_DEBUG("QuicTransportServer::onNewSessionCallback");
     Nan::HandleScope scope;
     QuicTransportServer* obj = reinterpret_cast<QuicTransportServer*>(async->data);
@@ -138,20 +142,21 @@ NAUV_WORK_CB(QuicTransportServer::onNewSessionCallback){
     boost::mutex::scoped_lock lock(obj->mutex);
 
     if (obj->has_session_callback_) {
-      while (!obj->session_messages.empty()) {
-        v8::Local<v8::Object> connection = QuicTransportSession::newInstance(obj->session_messages.front());
-        QuicTransportSession* con = Nan::ObjectWrap::Unwrap<QuicTransportSession>(connection);
-        obj->session_messages.front()->SetVisitor(con);
-          ELOG_DEBUG("QuicTransportServer::onNewSessionCallback call js stack");
-          Local<Value> args[] = { connection };
-          obj->asyncResourceNewSession_->runInAsyncScope(Nan::GetCurrentContext()->Global(), obj->session_callback_->GetFunction(), 1, args);
-          obj->session_messages.pop();
-      }
+        while (!obj->session_messages.empty()) {
+            v8::Local<v8::Object> connection = QuicTransportSession::newInstance(obj->session_messages.front());
+            QuicTransportSession* con = Nan::ObjectWrap::Unwrap<QuicTransportSession>(connection);
+            obj->session_messages.front()->SetVisitor(con);
+            ELOG_DEBUG("QuicTransportServer::onNewSessionCallback call js stack");
+            Local<Value> args[] = { connection };
+            obj->asyncResourceNewSession_->runInAsyncScope(Nan::GetCurrentContext()->Global(), obj->session_callback_->GetFunction(), 1, args);
+            obj->session_messages.pop();
+        }
     }
     ELOG_DEBUG("QuicTransportServer::onNewSessionCallback ends");
 }
 
-NAUV_WORK_CB(QuicTransportServer::onClosedSessionCallback){
+NAUV_WORK_CB(QuicTransportServer::onClosedSessionCallback)
+{
     ELOG_DEBUG("QuicTransportServer::onClosedSessionCallback");
     Nan::HandleScope scope;
     QuicTransportServer* obj = reinterpret_cast<QuicTransportServer*>(async->data);
@@ -163,16 +168,17 @@ NAUV_WORK_CB(QuicTransportServer::onClosedSessionCallback){
     //boost::mutex::scoped_lock lock(obj->mutex);
 
     if (obj->has_sessionClosed_callback_) {
-      while (!obj->sessionId_messages.empty()) {
-        Local<Value> args[] = { Nan::New(obj->sessionId_messages.front().c_str()).ToLocalChecked() };
-        obj->asyncResourceClosedSession_->runInAsyncScope(Nan::GetCurrentContext()->Global(), obj->sessionClosed_callback_->GetFunction(), 1, args);
-        obj->sessionId_messages.pop();
-      }
+        while (!obj->sessionId_messages.empty()) {
+            Local<Value> args[] = { Nan::New(obj->sessionId_messages.front().c_str()).ToLocalChecked() };
+            obj->asyncResourceClosedSession_->runInAsyncScope(Nan::GetCurrentContext()->Global(), obj->sessionClosed_callback_->GetFunction(), 1, args);
+            obj->sessionId_messages.pop();
+        }
     }
     ELOG_DEBUG("QuicTransportServer::onClosedSessionCallback ends");
 }
 
-void QuicTransportServer::OnSession(owt::quic::QuicTransportSessionInterface* session) {
+void QuicTransportServer::OnSession(owt::quic::QuicTransportSessionInterface* session)
+{
     ELOG_DEBUG("QuicTransportServer::OnSession");
     boost::mutex::scoped_lock lock(mutex);
     this->session_messages.push(session);
@@ -180,7 +186,8 @@ void QuicTransportServer::OnSession(owt::quic::QuicTransportSessionInterface* se
     uv_async_send(&m_asyncOnNewSession);
 }
 
-void QuicTransportServer::OnClosedSession(char* sessionId, size_t len) {
+void QuicTransportServer::OnClosedSession(char* sessionId, size_t len)
+{
     ELOG_DEBUG("QuicTransportServer::OnClosedSession");
     std::string s_data(sessionId, len);
     this->sessionId_messages.push(s_data);
@@ -188,11 +195,13 @@ void QuicTransportServer::OnClosedSession(char* sessionId, size_t len) {
     uv_async_send(&m_asyncOnClosedSession);
 }
 
-void QuicTransportServer::OnEnded() {
+void QuicTransportServer::OnEnded()
+{
     ELOG_DEBUG("QuicTransportServer::OnEnded");
 }
 
-unsigned int QuicTransportServer::getListeningPort() {
+unsigned int QuicTransportServer::getListeningPort()
+{
     unsigned int port = m_quicServer->GetListenPort();
     while (port == 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(30));

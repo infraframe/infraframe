@@ -12,7 +12,7 @@
 #include "../common/MediaFramePipelineWrapper.h"
 
 // Configuration for a RTP session.
-struct RtpConfig{
+struct RtpConfig {
     // Local SSRC.
     uint32_t ssrc = 0;
     // Payload type of media.

@@ -27,7 +27,7 @@ public:
     MsdkFrameEncoder(FrameFormat format, VideoCodecProfile profile, bool useSimulcast = false);
     ~MsdkFrameEncoder();
 
-    FrameFormat getInputFormat() {return FRAME_FORMAT_MSDK;}
+    FrameFormat getInputFormat() { return FRAME_FORMAT_MSDK; }
 
     static bool supportFormat(FrameFormat format);
 
@@ -43,7 +43,7 @@ public:
 private:
     FrameFormat m_encodeFormat;
     VideoCodecProfile m_profile;
-    std::map<int, boost::shared_ptr<StreamEncoder> > m_streams;
+    std::map<int, boost::shared_ptr<StreamEncoder>> m_streams;
     boost::shared_mutex m_mutex;
     bool m_useSimulcast;
     int m_id;
@@ -52,4 +52,3 @@ private:
 } /* namespace owt_base */
 #endif /* ENABLE_MSDK */
 #endif /* MsdkFrameEncoder_h */
-

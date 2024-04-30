@@ -22,7 +22,7 @@ void MediaFrameMulticaster::onFeedback(const FeedbackMsg& msg)
 {
     if (msg.type == VIDEO_FEEDBACK && msg.cmd == REQUEST_KEY_FRAME) {
         if (!m_pendingKeyFrameRequests) {
-            FeedbackMsg msg = {VIDEO_FEEDBACK, REQUEST_KEY_FRAME};
+            FeedbackMsg msg = { VIDEO_FEEDBACK, REQUEST_KEY_FRAME };
             deliverFeedbackMsg(msg);
         }
         ++m_pendingKeyFrameRequests;
@@ -44,11 +44,10 @@ void MediaFrameMulticaster::onMetaData(const MetaData& metadata)
 void MediaFrameMulticaster::onTimeout()
 {
     if (m_pendingKeyFrameRequests > 1) {
-        FeedbackMsg msg = {VIDEO_FEEDBACK, REQUEST_KEY_FRAME};
+        FeedbackMsg msg = { VIDEO_FEEDBACK, REQUEST_KEY_FRAME };
         deliverFeedbackMsg(msg);
     }
     m_pendingKeyFrameRequests = 0;
 }
 
 } /* namespace owt_base */
-

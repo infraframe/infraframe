@@ -112,7 +112,7 @@ void VideoFrameConstructor::unbindTransport()
 void VideoFrameConstructor::enable(bool enabled)
 {
     m_enabled = enabled;
-    if(!m_enabled) {
+    if (!m_enabled) {
         m_ssrc = 0;
         m_rtcAdapter->destoryVideoReceiver(m_videoReceive);
         m_videoReceive = nullptr;
@@ -200,8 +200,7 @@ void VideoFrameConstructor::onAdapterData(char* data, int len)
         RTCPHeader* chead = reinterpret_cast<RTCPHeader*>(data);
         uint8_t packetType = chead->getPacketType();
         uint8_t rcOrFmt = chead->getRCOrFMT();
-        if (packetType == RTCP_PS_Feedback_PT &&
-            (rcOrFmt == RTCP_PLI_FMT || rcOrFmt == RTCP_FIR_FMT)) {
+        if (packetType == RTCP_PS_Feedback_PT && (rcOrFmt == RTCP_PLI_FMT || rcOrFmt == RTCP_FIR_FMT)) {
             ELOG_DEBUG("External RequestKeyFrame");
             m_requester->RequestKeyFrame();
         }

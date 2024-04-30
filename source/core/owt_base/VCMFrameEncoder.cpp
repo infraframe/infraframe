@@ -4,8 +4,8 @@
 
 #include <boost/make_shared.hpp>
 
-#include <webrtc/system_wrappers/include/cpu_info.h>
 #include <webrtc/modules/video_coding/codec_database.h>
+#include <webrtc/system_wrappers/include/cpu_info.h>
 
 #include "VCMFrameEncoder.h"
 
@@ -38,9 +38,9 @@ VCMFrameEncoder::VCMFrameEncoder(FrameFormat format, VideoCodecProfile profile, 
     m_bufferManager.reset(new I420BufferManager(3));
     m_converter.reset(new FrameConverter());
 
-    m_srv       = boost::make_shared<boost::asio::io_service>();
-    m_srvWork   = boost::make_shared<boost::asio::io_service::work>(*m_srv);
-    m_thread    = boost::make_shared<boost::thread>(boost::bind(&boost::asio::io_service::run, m_srv));
+    m_srv = boost::make_shared<boost::asio::io_service>();
+    m_srvWork = boost::make_shared<boost::asio::io_service::work>(*m_srv);
+    m_thread = boost::make_shared<boost::thread>(boost::bind(&boost::asio::io_service::run, m_srv));
 }
 
 VCMFrameEncoder::~VCMFrameEncoder()
@@ -52,7 +52,7 @@ VCMFrameEncoder::~VCMFrameEncoder()
 
     m_streamId = 0;
 
-    if(m_encoder) {
+    if (m_encoder) {
         m_encoder->Release();
         m_encoder.reset();
     }
@@ -87,7 +87,7 @@ int32_t VCMFrameEncoder::generateStream(uint32_t width, uint32_t height, uint32_
     uint32_t targetKbps = bitrateKbps;
 
     VideoCodec codecSettings;
-    uint8_t simulcastId {0};
+    uint8_t simulcastId { 0 };
     int ret;
 
     assert(frameRate != 0);
@@ -167,12 +167,12 @@ int32_t VCMFrameEncoder::generateStream(uint32_t width, uint32_t height, uint32_
         }
     }
 
-    codecSettings.startBitrate  = targetKbps;
+    codecSettings.startBitrate = targetKbps;
     codecSettings.targetBitrate = targetKbps;
-    codecSettings.maxBitrate    = targetKbps;
-    codecSettings.maxFramerate  = frameRate;
-    codecSettings.width         = width;
-    codecSettings.height        = height;
+    codecSettings.maxBitrate = targetKbps;
+    codecSettings.maxFramerate = frameRate;
+    codecSettings.width = width;
+    codecSettings.height = height;
 
     ret = m_encoder->InitEncode(&codecSettings, webrtc::CpuInfo::DetectNumberOfCores(), 0);
     if (ret) {
@@ -242,10 +242,9 @@ int32_t VCMFrameEncoder::generateStream(uint32_t width, uint32_t height, uint32_
 
     boost::shared_ptr<EncodeOut> encodeOut;
     encodeOut.reset(new EncodeOut(m_streamId, this, dest));
-    OutStream stream = {.width = width, .height = height, .simulcastId = simulcastId, .encodeOut = encodeOut};
+    OutStream stream = { .width = width, .height = height, .simulcastId = simulcastId, .encodeOut = encodeOut };
     m_streams[m_streamId] = stream;
-    ELOG_DEBUG_T("generateStream: {.width=%d, .height=%d, .frameRate=%d, .bitrateKbps=%d, .keyFrameIntervalSeconds=%d}, simulcastId=%d, adaptiveMode=%d"
-            , width, height, frameRate, bitrateKbps, keyFrameIntervalSeconds, simulcastId, m_isAdaptiveMode);
+    ELOG_DEBUG_T("generateStream: {.width=%d, .height=%d, .frameRate=%d, .bitrateKbps=%d, .keyFrameIntervalSeconds=%d}, simulcastId=%d, adaptiveMode=%d", width, height, frameRate, bitrateKbps, keyFrameIntervalSeconds, simulcastId, m_isAdaptiveMode);
 
     m_width = width;
     m_height = height;
@@ -323,7 +322,7 @@ void VCMFrameEncoder::onFrame(const Frame& frame)
 boost::shared_ptr<webrtc::VideoFrame> VCMFrameEncoder::frameConvert(const Frame& frame)
 {
     int32_t dstFrameWidth = m_isAdaptiveMode ? frame.additionalInfo.video.width : m_width;
-    int32_t dstFrameHeight = m_isAdaptiveMode ? frame.additionalInfo.video.height: m_height;
+    int32_t dstFrameHeight = m_isAdaptiveMode ? frame.additionalInfo.video.height : m_height;
 
     rtc::scoped_refptr<webrtc::I420Buffer> rawBuffer = m_bufferManager->getFreeBuffer(dstFrameWidth, dstFrameHeight);
     if (!rawBuffer) {
@@ -338,7 +337,7 @@ boost::shared_ptr<webrtc::VideoFrame> VCMFrameEncoder::frameConvert(const Frame&
         if (m_encodeFormat == FRAME_FORMAT_UNKNOWN)
             return NULL;
 
-        VideoFrame *inputFrame = reinterpret_cast<VideoFrame*>(frame.payload);
+        VideoFrame* inputFrame = reinterpret_cast<VideoFrame*>(frame.payload);
         rtc::scoped_refptr<webrtc::VideoFrameBuffer> inputBuffer = inputFrame->video_frame_buffer();
 
         if (!m_converter->convert(inputBuffer.get(), rawBuffer.get())) {
@@ -354,7 +353,7 @@ boost::shared_ptr<webrtc::VideoFrame> VCMFrameEncoder::frameConvert(const Frame&
         if (m_encodeFormat == FRAME_FORMAT_UNKNOWN)
             return NULL;
 
-        MsdkFrameHolder *holder = (MsdkFrameHolder *)frame.payload;
+        MsdkFrameHolder* holder = (MsdkFrameHolder*)frame.payload;
         boost::shared_ptr<MsdkFrame> msdkFrame = holder->frame;
 
         if (!m_converter->convert(msdkFrame.get(), rawBuffer.get())) {
@@ -425,8 +424,8 @@ void VCMFrameEncoder::encode(boost::shared_ptr<webrtc::VideoFrame> frame)
 }
 
 webrtc::EncodedImageCallback::Result VCMFrameEncoder::OnEncodedImage(const EncodedImage& encoded_frame,
-        const CodecSpecificInfo* codec_specific_info,
-        const RTPFragmentationHeader* fragmentation)
+    const CodecSpecificInfo* codec_specific_info,
+    const RTPFragmentationHeader* fragmentation)
 {
     boost::shared_lock<boost::shared_mutex> lock(m_mutex);
 
@@ -442,13 +441,12 @@ webrtc::EncodedImageCallback::Result VCMFrameEncoder::OnEncodedImage(const Encod
         frame.additionalInfo.video.isKeyFrame = (encoded_frame._frameType == kVideoFrameKey);
 
         ELOG_TRACE_T("SendData, %s, %dx%d, %s, length(%d), timestamp %d",
-                getFormatStr(frame.format),
-                frame.additionalInfo.video.width,
-                frame.additionalInfo.video.height,
-                frame.additionalInfo.video.isKeyFrame ? "key" : "delta",
-                frame.length,
-                frame.timeStamp / 90
-                );
+            getFormatStr(frame.format),
+            frame.additionalInfo.video.width,
+            frame.additionalInfo.video.height,
+            frame.additionalInfo.video.isKeyFrame ? "key" : "delta",
+            frame.length,
+            frame.timeStamp / 90);
 
         dump(frame.payload, frame.length);
 
@@ -462,14 +460,14 @@ webrtc::EncodedImageCallback::Result VCMFrameEncoder::OnEncodedImage(const Encod
     return webrtc::EncodedImageCallback::Result(webrtc::EncodedImageCallback::Result::OK);
 }
 
-void VCMFrameEncoder::dump(uint8_t *buf, int len)
+void VCMFrameEncoder::dump(uint8_t* buf, int len)
 {
     if (m_bsDumpfp) {
         if (m_encodeFormat == FRAME_FORMAT_VP8 || m_encodeFormat == FRAME_FORMAT_VP9) {
             unsigned char mem[4];
 
-            mem[0] = (len >>  0) & 0xff;
-            mem[1] = (len >>  8) & 0xff;
+            mem[0] = (len >> 0) & 0xff;
+            mem[1] = (len >> 8) & 0xff;
             mem[2] = (len >> 16) & 0xff;
             mem[3] = (len >> 24) & 0xff;
 

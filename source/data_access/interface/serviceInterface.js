@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
-var Service = require('./../model/serviceModel');
+"use strict";
+var Service = require("./../model/serviceModel");
 
 /*
  * Create Service.
@@ -19,25 +19,29 @@ exports.create = function (config, callback) {
  * List Service.
  */
 exports.list = function (callback) {
-  Service.find().lean().exec(function (err, services) {
-    callback(err, services);
-  });
+  Service.find()
+    .lean()
+    .exec(function (err, services) {
+      callback(err, services);
+    });
 };
 
 /*
  * Get Service.
  */
 exports.get = function (serviceId, callback) {
-  Service.findById(serviceId).lean().exec(function (err, service) {
-    callback(err, service);
-  });
+  Service.findById(serviceId)
+    .lean()
+    .exec(function (err, service) {
+      callback(err, service);
+    });
 };
 
 /*
  * Delete Service.
  */
 exports.delete = function (serviceId, callback) {
-  Service.deleteOne({_id: serviceId}, function(err, ret) {
+  Service.deleteOne({ _id: serviceId }, function (err, ret) {
     if (ret.n === 0) serviceId = null;
     callback(err, serviceId);
   });

@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
-var mongoose = require('mongoose');
-var Token = require('./../model/tokenModel');
-var Key = require('./../model/keyModel');
+"use strict";
+var mongoose = require("mongoose");
+var Token = require("./../model/tokenModel");
+var Key = require("./../model/keyModel");
 
 /*
  * Create a token.
@@ -28,23 +28,23 @@ exports.delete = function (tokenId) {
 
   return new Promise((resolve, reject) => {
     Token.findById(tokenId, function (errFind, token) {
-      Token.remove({
-        $or: [
-          {_id: tokenId},
-          {creationDate: {$lt: expireDate}}
-        ]},
+      Token.remove(
+        {
+          $or: [{ _id: tokenId }, { creationDate: { $lt: expireDate } }],
+        },
         function (errRemove, remove) {
           if (errFind || !token) {
-            console.log('err:', errFind || 'WrongToken');
+            console.log("err:", errFind || "WrongToken");
             reject(errFind);
           } else {
             if (token.creationDate < expireDate) {
-                reject({message:'Expired'});
+              reject({ message: "Expired" });
             } else {
-                resolve(token);
+              resolve(token);
             }
           }
-        });
+        }
+      );
     });
   });
 };
@@ -53,13 +53,18 @@ exports.delete = function (tokenId) {
  * Generate token key
  */
 exports.genKey = function (callback) {
-  var key = require('crypto').randomBytes(64).toString('hex');
+  var key = require("crypto").randomBytes(64).toString("hex");
   var newOne = new Key({ key: key });
-  Key.findOneAndUpdate({ _id: 0 }, newOne, { upsert: true }, function (err, saved) {
-    if (err) {
-      console.log('Save serverKey error:', err);
+  Key.findOneAndUpdate(
+    { _id: 0 },
+    newOne,
+    { upsert: true },
+    function (err, saved) {
+      if (err) {
+        console.log("Save serverKey error:", err);
+      }
     }
-  });
+  );
 };
 
 /*

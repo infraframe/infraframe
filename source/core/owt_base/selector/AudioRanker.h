@@ -5,13 +5,13 @@
 #ifndef OWT_BASE_SELECTOR_AUDIO_RANKER_H
 #define OWT_BASE_SELECTOR_AUDIO_RANKER_H
 
-#include <string>
-#include <vector>
 #include <map>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
-#include "MediaFramePipeline.h"
 #include "IOService.h"
+#include "MediaFramePipeline.h"
 
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
@@ -21,12 +21,14 @@ namespace owt_base {
 
 class AudioRanker {
     DECLARE_LOGGER();
+
 public:
     class Visitor {
     public:
         // Updates contain a vector of (streamId, ownerId) pairs
         virtual void onRankChange(
-            std::vector<std::pair<std::string, std::string>> updates) = 0;
+            std::vector<std::pair<std::string, std::string>> updates)
+            = 0;
     };
 
     class AudioLevelProcessor : public FrameDestination,
@@ -51,7 +53,9 @@ public:
         void deliverOwnerData();
 
         void setIter(std::multimap<int, std::shared_ptr<AudioLevelProcessor>>::iterator it)
-        { m_iter = it; }
+        {
+            m_iter = it;
+        }
         std::multimap<int, std::shared_ptr<AudioLevelProcessor>>::iterator iter() { return m_iter; }
 
     private:

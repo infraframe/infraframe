@@ -5,7 +5,7 @@
     "amqplib": "^0.7.0",
     "log4js": "*",
     "node-getopt": "*",
-    "event-loop-inspector" : "^1.2.2",
+    "event-loop-inspector": "^1.2.2",
     "toml": "*"
   },
   "devDependencies": {

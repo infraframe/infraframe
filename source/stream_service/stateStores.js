@@ -4,11 +4,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
+"use strict";
 
-const fs = require('fs');
-const MongoClient = require('mongodb').MongoClient;
-const cipher = require('./cipher');
+const fs = require("fs");
+const MongoClient = require("mongodb").MongoClient;
+const cipher = require("./cipher");
 
 const connectOption = {
   useUnifiedTopology: true,
@@ -17,11 +17,11 @@ const connectOption = {
 async function loadAuth() {
   return new Promise((resolve, reject) => {
     if (fs.existsSync(cipher.astore)) {
-      cipher.unlock(cipher.k, cipher.astore, function cb (err, authConfig) {
+      cipher.unlock(cipher.k, cipher.astore, function cb(err, authConfig) {
         if (!err) {
           resolve(authConfig.mongo);
         } else {
-          reject('Failed to get mongodb auth');
+          reject("Failed to get mongodb auth");
         }
       });
     }
@@ -31,16 +31,20 @@ async function loadAuth() {
 
 async function connect(dbURL, auth) {
   return new Promise((resolve, reject) => {
-    if (auth && !dbURL.includes('@')) {
-      dbURL = 'mongodb://' + auth.username
-        + ':' + auth.password
-        + '@' + dbURL.replace('mongodb://', '');
-    } else if (dbURL.indexOf('mongodb://') !== 0) {
-      dbURL = 'mongodb://' + dbURL;
+    if (auth && !dbURL.includes("@")) {
+      dbURL =
+        "mongodb://" +
+        auth.username +
+        ":" +
+        auth.password +
+        "@" +
+        dbURL.replace("mongodb://", "");
+    } else if (dbURL.indexOf("mongodb://") !== 0) {
+      dbURL = "mongodb://" + dbURL;
     }
-    MongoClient.connect(dbURL, connectOption, function(err, cli) {
+    MongoClient.connect(dbURL, connectOption, function (err, cli) {
       if (!err) {
-        resolve(cli)
+        resolve(cli);
       } else {
         reject(err);
       }
@@ -53,13 +57,15 @@ const PAGE_SIZE = 100;
 
 class StateStores {
   constructor(dbURL) {
-    this.prepare = loadAuth().then((auth) => {
-      return connect(dbURL, auth);
-    }).then((client) => {
-      this.client = client;
-      this.db = client.db();
-      return this.db;
-    });
+    this.prepare = loadAuth()
+      .then((auth) => {
+        return connect(dbURL, auth);
+      })
+      .then((client) => {
+        this.client = client;
+        this.db = client.db();
+        return this.db;
+      });
   }
 
   // CRUD operations
@@ -94,27 +100,27 @@ class StateStores {
     const db = await this.prepare;
     const count = await db.collection(type).countDocuments(query);
     const findConfig = {
-      sort: {_id: 1},
+      sort: { _id: 1 },
       limit: PAGE_SIZE,
-      skip: (config?.start || 0)
+      skip: config?.start || 0,
     };
     const cursor = db.collection(type).find(query, findConfig);
     const data = await cursor.toArray();
     return {
       total: count,
       start: findConfig.skip,
-      data
+      data,
     };
   }
   // update: {jsonPath: value}
   async update(type, filter, updates) {
     const db = await this.prepare;
     filter.id && (filter._id = filter.id);
-    const mongoUpdate = {'$set': updates};
+    const mongoUpdate = { $set: updates };
     for (const key in updates) {
       if (updates[key] === null) {
-        mongoUpdate['$unset'] = mongoUpdate['$unset'] ?? {};
-        mongoUpdate['$unset'][key] = '';
+        mongoUpdate["$unset"] = mongoUpdate["$unset"] ?? {};
+        mongoUpdate["$unset"][key] = "";
         delete updates[key];
       }
     }
@@ -145,7 +151,7 @@ class StateStores {
   async setAdd(type, filter, updates) {
     const db = await this.prepare;
     filter.id && (filter._id = filter.id);
-    const mongoUpdate = {'$addToSet': updates};
+    const mongoUpdate = { $addToSet: updates };
     return new Promise((resolve, reject) => {
       db.collection(type).updateOne(filter, mongoUpdate, (err, result) => {
         if (err) {
@@ -160,7 +166,7 @@ class StateStores {
   async setRemove(type, filter, updates) {
     const db = await this.prepare;
     filter.id && (filter._id = filter.id);
-    const mongoUpdate = {'$pull': updates};
+    const mongoUpdate = { $pull: updates };
     return new Promise((resolve, reject) => {
       db.collection(type).updateOne(filter, mongoUpdate, (err, result) => {
         if (err) {
@@ -181,9 +187,9 @@ class StateStores {
 class LocalState {
   static getKey(type, query) {
     if (!query.id) {
-      throw new Error('Missing id');
+      throw new Error("Missing id");
     }
-    return type + '.' + query.id;
+    return type + "." + query.id;
   }
 
   constructor() {
@@ -193,7 +199,7 @@ class LocalState {
   async create(type, value) {
     const key = getKey(type, value);
     if (this.state.has(key)) {
-      throw new Error('Duplicate key');
+      throw new Error("Duplicate key");
     }
     this.state.set(key, value);
     return value;
@@ -243,7 +249,7 @@ class LocalState {
     this.state.set(key, value);
   }
   createTransaction() {
-    throw new Error('Transaction not supported');
+    throw new Error("Transaction not supported");
   }
 }
 

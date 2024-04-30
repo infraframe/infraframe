@@ -7,8 +7,8 @@
 #include "libyuv/convert.h"
 #include "libyuv/scale.h"
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 #include <boost/make_shared.hpp>
 
@@ -28,11 +28,11 @@ AvatarManager::~AvatarManager()
 {
 }
 
-bool AvatarManager::getImageSize(const std::string &url, uint32_t *pWidth, uint32_t *pHeight)
+bool AvatarManager::getImageSize(const std::string& url, uint32_t* pWidth, uint32_t* pHeight)
 {
     uint32_t width, height;
     size_t begin, end;
-    char *str_end = NULL;
+    char* str_end = NULL;
 
     begin = url.find('.');
     if (begin == std::string::npos) {
@@ -72,7 +72,7 @@ bool AvatarManager::getImageSize(const std::string &url, uint32_t *pWidth, uint3
     return true;
 }
 
-boost::shared_ptr<webrtc::VideoFrame> AvatarManager::loadImage(const std::string &url)
+boost::shared_ptr<webrtc::VideoFrame> AvatarManager::loadImage(const std::string& url)
 {
     uint32_t width, height;
 
@@ -81,35 +81,34 @@ boost::shared_ptr<webrtc::VideoFrame> AvatarManager::loadImage(const std::string
 
     std::ifstream in(url, std::ios::in | std::ios::binary);
 
-    in.seekg (0, in.end);
+    in.seekg(0, in.end);
     uint32_t size = in.tellg();
-    in.seekg (0, in.beg);
+    in.seekg(0, in.beg);
 
     if (size <= 0 || ((width * height * 3 + 1) / 2) != size) {
-        ELOG_WARN("Open avatar image(%s) error, invalid size %d, expected size %d"
-                , url.c_str(), size, (width * height * 3 + 1) / 2);
+        ELOG_WARN("Open avatar image(%s) error, invalid size %d, expected size %d", url.c_str(), size, (width * height * 3 + 1) / 2);
         return NULL;
     }
 
-    char *image = new char [size];;
-    in.read (image, size);
+    char* image = new char[size];
+    ;
+    in.read(image, size);
     in.close();
 
     rtc::scoped_refptr<I420Buffer> i420Buffer = I420Buffer::Copy(
-            width, height,
-            reinterpret_cast<const uint8_t *>(image), width,
-            reinterpret_cast<const uint8_t *>(image + width * height), width / 2,
-            reinterpret_cast<const uint8_t *>(image + width * height * 5 / 4), width / 2
-            );
+        width, height,
+        reinterpret_cast<const uint8_t*>(image), width,
+        reinterpret_cast<const uint8_t*>(image + width * height), width / 2,
+        reinterpret_cast<const uint8_t*>(image + width * height * 5 / 4), width / 2);
 
     boost::shared_ptr<webrtc::VideoFrame> frame(new webrtc::VideoFrame(i420Buffer, webrtc::kVideoRotation_0, 0));
 
-    delete [] image;
+    delete[] image;
 
     return frame;
 }
 
-bool AvatarManager::setAvatar(uint8_t index, const std::string &url)
+bool AvatarManager::setAvatar(uint8_t index, const std::string& url)
 {
     boost::unique_lock<boost::shared_mutex> lock(m_mutex);
     ELOG_DEBUG("setAvatar(%d) = %s", index, url.c_str());
@@ -201,7 +200,7 @@ bool SoftInput::isActive(void)
     return m_active;
 }
 
-void SoftInput::pushInput(webrtc::VideoFrame *videoFrame)
+void SoftInput::pushInput(webrtc::VideoFrame* videoFrame)
 {
     {
         boost::unique_lock<boost::shared_mutex> lock(m_mutex);
@@ -232,7 +231,7 @@ boost::shared_ptr<VideoFrame> SoftInput::popInput()
 {
     boost::unique_lock<boost::shared_mutex> lock(m_mutex);
 
-    if(!m_active)
+    if (!m_active)
         return NULL;
 
     return m_busyFrame;
@@ -241,12 +240,12 @@ boost::shared_ptr<VideoFrame> SoftInput::popInput()
 DEFINE_LOGGER(SoftFrameGenerator, "mcu.media.SoftVideoCompositor.SoftFrameGenerator");
 
 SoftFrameGenerator::SoftFrameGenerator(
-            SoftVideoCompositor *owner,
-            owt_base::VideoSize &size,
-            owt_base::YUVColor &bgColor,
-            const bool crop,
-            const uint32_t maxFps,
-            const uint32_t minFps)
+    SoftVideoCompositor* owner,
+    owt_base::VideoSize& size,
+    owt_base::YUVColor& bgColor,
+    const bool crop,
+    const uint32_t maxFps,
+    const uint32_t minFps)
     : m_clock(Clock::GetRealTimeClock())
     , m_owner(owner)
     , m_maxSupportedFps(maxFps)
@@ -269,10 +268,7 @@ SoftFrameGenerator::SoftFrameGenerator(
         fps *= 2;
     }
     if (fps > m_maxSupportedFps) {
-        ELOG_WARN_T("Invalid fps min(%d), max(%d) --> mix(%d), max(%d)"
-                , m_minSupportedFps, m_maxSupportedFps
-                , m_minSupportedFps, m_minSupportedFps
-                );
+        ELOG_WARN_T("Invalid fps min(%d), max(%d) --> mix(%d), max(%d)", m_minSupportedFps, m_maxSupportedFps, m_minSupportedFps, m_minSupportedFps);
         m_maxSupportedFps = m_minSupportedFps;
     }
 
@@ -292,9 +288,9 @@ SoftFrameGenerator::SoftFrameGenerator(
     ELOG_DEBUG_T("hardware concurrency %d, parallel composition num %d", nThreads, m_parallelNum);
 
     if (m_parallelNum > 1) {
-        m_srv       = boost::make_shared<boost::asio::io_service>();
-        m_srvWork   = boost::make_shared<boost::asio::io_service::work>(*m_srv);
-        m_thrGrp    = boost::make_shared<boost::thread_group>();
+        m_srv = boost::make_shared<boost::asio::io_service>();
+        m_srvWork = boost::make_shared<boost::asio::io_service::work>(*m_srv);
+        m_thrGrp = boost::make_shared<boost::thread_group>();
 
         for (uint32_t i = 0; i < m_parallelNum; i++)
             m_thrGrp->create_thread(boost::bind(&boost::asio::io_service::run, m_srv));
@@ -325,7 +321,7 @@ SoftFrameGenerator::~SoftFrameGenerator()
         m_thrGrp.reset();
     }
 
-    for (uint32_t i = 0; i <  m_outputs.size(); i++) {
+    for (uint32_t i = 0; i < m_outputs.size(); i++) {
         if (m_outputs[i].size())
             ELOG_WARN_T("Outputs not empty!!!");
     }
@@ -335,8 +331,8 @@ void SoftFrameGenerator::updateLayoutSolution(LayoutSolution& solution)
 {
     boost::unique_lock<boost::shared_mutex> lock(m_configMutex);
 
-    m_newLayout         = solution;
-    m_configureChanged  = true;
+    m_newLayout = solution;
+    m_configureChanged = true;
 }
 
 bool SoftFrameGenerator::isSupported(uint32_t width, uint32_t height, uint32_t fps)
@@ -355,19 +351,21 @@ bool SoftFrameGenerator::isSupported(uint32_t width, uint32_t height, uint32_t f
     return false;
 }
 
-bool SoftFrameGenerator::addOutput(const uint32_t width, const uint32_t height, const uint32_t fps, owt_base::FrameDestination *dst) {
+bool SoftFrameGenerator::addOutput(const uint32_t width, const uint32_t height, const uint32_t fps, owt_base::FrameDestination* dst)
+{
     assert(isSupported(width, height, fps));
 
     boost::unique_lock<boost::shared_mutex> lock(m_outputMutex);
 
     int index = m_maxSupportedFps / fps - 1;
 
-    Output_t output{.width = width, .height = height, .fps = fps, .dest = dst};
+    Output_t output { .width = width, .height = height, .fps = fps, .dest = dst };
     m_outputs[index].push_back(output);
     return true;
 }
 
-bool SoftFrameGenerator::removeOutput(owt_base::FrameDestination *dst) {
+bool SoftFrameGenerator::removeOutput(owt_base::FrameDestination* dst)
+{
     boost::unique_lock<boost::shared_mutex> lock(m_outputMutex);
 
     for (uint32_t i = 0; i < m_outputs.size(); i++) {
@@ -402,10 +400,9 @@ void SoftFrameGenerator::onTimeout()
         rtc::scoped_refptr<webrtc::VideoFrameBuffer> compositeBuffer = generateFrame();
         if (compositeBuffer) {
             webrtc::VideoFrame compositeFrame(
-                    compositeBuffer,
-                    webrtc::kVideoRotation_0,
-                    m_clock->TimeInMilliseconds()
-                    );
+                compositeBuffer,
+                webrtc::kVideoRotation_0,
+                m_clock->TimeInMilliseconds());
             compositeFrame.set_timestamp(compositeFrame.timestamp_us() * kMsToRtpTimestamp);
 
             owt_base::Frame frame;
@@ -421,13 +418,12 @@ void SoftFrameGenerator::onTimeout()
 
             {
                 boost::unique_lock<boost::shared_mutex> lock(m_outputMutex);
-                for (uint32_t i = 0; i <  m_outputs.size(); i++) {
+                for (uint32_t i = 0; i < m_outputs.size(); i++) {
                     if (m_counter % (i + 1))
                         continue;
 
                     for (auto it = m_outputs[i].begin(); it != m_outputs[i].end(); ++it) {
-                        ELOG_TRACE_T("+++deliverFrame(%d), dst(%p), fps(%d), timestamp(%d)"
-                                , m_counter, it->dest, m_maxSupportedFps / (i + 1), frame.timeStamp / 90);
+                        ELOG_TRACE_T("+++deliverFrame(%d), dst(%p), fps(%d), timestamp(%d)", m_counter, it->dest, m_maxSupportedFps / (i + 1), frame.timeStamp / 90);
 
                         it->dest->onFrame(frame);
                     }
@@ -445,7 +441,7 @@ rtc::scoped_refptr<webrtc::VideoFrameBuffer> SoftFrameGenerator::generateFrame()
     return layout();
 }
 
-void SoftFrameGenerator::layout_regions(SoftFrameGenerator *t, rtc::scoped_refptr<webrtc::I420Buffer> compositeBuffer, const LayoutSolution &regions)
+void SoftFrameGenerator::layout_regions(SoftFrameGenerator* t, rtc::scoped_refptr<webrtc::I420Buffer> compositeBuffer, const LayoutSolution& regions)
 {
     uint32_t composite_width = compositeBuffer->width();
     uint32_t composite_height = compositeBuffer->height();
@@ -459,9 +455,9 @@ void SoftFrameGenerator::layout_regions(SoftFrameGenerator *t, rtc::scoped_refpt
         rtc::scoped_refptr<webrtc::VideoFrameBuffer> inputBuffer = inputFrame->video_frame_buffer();
 
         Region region = it->region;
-        uint32_t dst_x      = (uint64_t)composite_width * region.area.rect.left.numerator / region.area.rect.left.denominator;
-        uint32_t dst_y      = (uint64_t)composite_height * region.area.rect.top.numerator / region.area.rect.top.denominator;
-        uint32_t dst_width  = (uint64_t)composite_width * region.area.rect.width.numerator / region.area.rect.width.denominator;
+        uint32_t dst_x = (uint64_t)composite_width * region.area.rect.left.numerator / region.area.rect.left.denominator;
+        uint32_t dst_y = (uint64_t)composite_height * region.area.rect.top.numerator / region.area.rect.top.denominator;
+        uint32_t dst_width = (uint64_t)composite_width * region.area.rect.width.numerator / region.area.rect.width.denominator;
         uint32_t dst_height = (uint64_t)composite_height * region.area.rect.height.numerator / region.area.rect.height.denominator;
 
         if (dst_x + dst_width > composite_width)
@@ -477,45 +473,45 @@ void SoftFrameGenerator::layout_regions(SoftFrameGenerator *t, rtc::scoped_refpt
         uint32_t src_width;
         uint32_t src_height;
         if (t->m_crop) {
-            src_width   = std::min((uint32_t)inputBuffer->width(), dst_width * inputBuffer->height() / dst_height);
-            src_height  = std::min((uint32_t)inputBuffer->height(), dst_height * inputBuffer->width() / dst_width);
-            src_x       = (inputBuffer->width() - src_width) / 2;
-            src_y       = (inputBuffer->height() - src_height) / 2;
+            src_width = std::min((uint32_t)inputBuffer->width(), dst_width * inputBuffer->height() / dst_height);
+            src_height = std::min((uint32_t)inputBuffer->height(), dst_height * inputBuffer->width() / dst_width);
+            src_x = (inputBuffer->width() - src_width) / 2;
+            src_y = (inputBuffer->height() - src_height) / 2;
 
-            cropped_dst_width   = dst_width;
-            cropped_dst_height  = dst_height;
+            cropped_dst_width = dst_width;
+            cropped_dst_height = dst_height;
         } else {
-            src_width   = inputBuffer->width();
-            src_height  = inputBuffer->height();
-            src_x       = 0;
-            src_y       = 0;
+            src_width = inputBuffer->width();
+            src_height = inputBuffer->height();
+            src_x = 0;
+            src_y = 0;
 
-            cropped_dst_width   = std::min(dst_width, inputBuffer->width() * dst_height / inputBuffer->height());
-            cropped_dst_height  = std::min(dst_height, inputBuffer->height() * dst_width / inputBuffer->width());
+            cropped_dst_width = std::min(dst_width, inputBuffer->width() * dst_height / inputBuffer->height());
+            cropped_dst_height = std::min(dst_height, inputBuffer->height() * dst_width / inputBuffer->width());
         }
 
         dst_x += (dst_width - cropped_dst_width) / 2;
         dst_y += (dst_height - cropped_dst_height) / 2;
 
-        src_x               &= ~1;
-        src_y               &= ~1;
-        src_width           &= ~1;
-        src_height          &= ~1;
-        dst_x               &= ~1;
-        dst_y               &= ~1;
-        cropped_dst_width   &= ~1;
-        cropped_dst_height  &= ~1;
+        src_x &= ~1;
+        src_y &= ~1;
+        src_width &= ~1;
+        src_height &= ~1;
+        dst_x &= ~1;
+        dst_y &= ~1;
+        cropped_dst_width &= ~1;
+        cropped_dst_height &= ~1;
 
         int ret = libyuv::I420Scale(
-                inputBuffer->DataY() + src_y * inputBuffer->StrideY() + src_x, inputBuffer->StrideY(),
-                inputBuffer->DataU() + (src_y * inputBuffer->StrideU() + src_x) / 2, inputBuffer->StrideU(),
-                inputBuffer->DataV() + (src_y * inputBuffer->StrideV() + src_x) / 2, inputBuffer->StrideV(),
-                src_width, src_height,
-                compositeBuffer->MutableDataY() + dst_y * compositeBuffer->StrideY() + dst_x, compositeBuffer->StrideY(),
-                compositeBuffer->MutableDataU() + (dst_y * compositeBuffer->StrideU() + dst_x) / 2, compositeBuffer->StrideU(),
-                compositeBuffer->MutableDataV() + (dst_y * compositeBuffer->StrideV() + dst_x) / 2, compositeBuffer->StrideV(),
-                cropped_dst_width, cropped_dst_height,
-                libyuv::kFilterBox);
+            inputBuffer->DataY() + src_y * inputBuffer->StrideY() + src_x, inputBuffer->StrideY(),
+            inputBuffer->DataU() + (src_y * inputBuffer->StrideU() + src_x) / 2, inputBuffer->StrideU(),
+            inputBuffer->DataV() + (src_y * inputBuffer->StrideV() + src_x) / 2, inputBuffer->StrideV(),
+            src_width, src_height,
+            compositeBuffer->MutableDataY() + dst_y * compositeBuffer->StrideY() + dst_x, compositeBuffer->StrideY(),
+            compositeBuffer->MutableDataU() + (dst_y * compositeBuffer->StrideU() + dst_x) / 2, compositeBuffer->StrideU(),
+            compositeBuffer->MutableDataV() + (dst_y * compositeBuffer->StrideV() + dst_x) / 2, compositeBuffer->StrideV(),
+            cropped_dst_width, cropped_dst_height,
+            libyuv::kFilterBox);
         if (ret != 0)
             ELOG_ERROR("I420Scale failed, ret %d", ret);
     }
@@ -531,11 +527,11 @@ rtc::scoped_refptr<webrtc::VideoFrameBuffer> SoftFrameGenerator::layout()
 
     // Set the background color
     libyuv::I420Rect(
-            compositeBuffer->MutableDataY(), compositeBuffer->StrideY(),
-            compositeBuffer->MutableDataU(), compositeBuffer->StrideU(),
-            compositeBuffer->MutableDataV(), compositeBuffer->StrideV(),
-            0, 0, compositeBuffer->width(), compositeBuffer->height(),
-            m_bgColor.y, m_bgColor.cb, m_bgColor.cr);
+        compositeBuffer->MutableDataY(), compositeBuffer->StrideY(),
+        compositeBuffer->MutableDataU(), compositeBuffer->StrideU(),
+        compositeBuffer->MutableDataV(), compositeBuffer->StrideV(),
+        0, 0, compositeBuffer->width(), compositeBuffer->height(),
+        m_bgColor.y, m_bgColor.cb, m_bgColor.cr);
 
     bool isParallelFrameComposition = m_parallelNum > 1 && m_layout.size() > 4;
 
@@ -555,11 +551,10 @@ rtc::scoped_refptr<webrtc::VideoFrameBuffer> SoftFrameGenerator::layout()
             advance(regions_end, nParallelRegions);
 
             boost::shared_ptr<boost::packaged_task<void>> task = boost::make_shared<boost::packaged_task<void>>(
-                    boost::bind(SoftFrameGenerator::layout_regions,
-                        this,
-                        compositeBuffer,
-                        LayoutSolution(regions_begin, regions_end))
-                    );
+                boost::bind(SoftFrameGenerator::layout_regions,
+                    this,
+                    compositeBuffer,
+                    LayoutSolution(regions_begin, regions_end)));
             m_srv->post(boost::bind(&boost::packaged_task<void>::operator(), task));
             tasks.push_back(task);
 
@@ -672,7 +667,7 @@ void SoftVideoCompositor::pushInput(int input, const Frame& frame)
     m_inputs[input]->pushInput(i420Frame);
 }
 
-bool SoftVideoCompositor::addOutput(const uint32_t width, const uint32_t height, const uint32_t framerateFPS, owt_base::FrameDestination *dst)
+bool SoftVideoCompositor::addOutput(const uint32_t width, const uint32_t height, const uint32_t framerateFPS, owt_base::FrameDestination* dst)
 {
     ELOG_DEBUG("addOutput, %dx%d, fps(%d), dst(%p)", width, height, framerateFPS, dst);
 
@@ -686,7 +681,7 @@ bool SoftVideoCompositor::addOutput(const uint32_t width, const uint32_t height,
     return false;
 }
 
-bool SoftVideoCompositor::removeOutput(owt_base::FrameDestination *dst)
+bool SoftVideoCompositor::removeOutput(owt_base::FrameDestination* dst)
 {
     ELOG_DEBUG("removeOutput, dst(%p)", dst);
 

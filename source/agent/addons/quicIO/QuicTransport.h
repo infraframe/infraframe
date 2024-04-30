@@ -5,10 +5,10 @@
 #ifndef QUIC_TRANSPORT_H_
 #define QUIC_TRANSPORT_H_
 
-#include <string>
-#include <memory>
-#include "quic_raw_lib.h"
 #include "MediaFramePipeline.h"
+#include "quic_raw_lib.h"
+#include <memory>
+#include <string>
 
 #include <boost/asio.hpp>
 #include <boost/shared_array.hpp>
@@ -31,6 +31,7 @@ public:
     // Implements RQuicListener.
     void onReady() override;
     void onData(uint32_t session_id, uint32_t stream_id, char* data, uint32_t len) override;
+
 private:
     void dFrame(char* buf);
 
@@ -62,8 +63,8 @@ public:
     // Implements RQuicListener.
     void onReady() override;
     void onData(uint32_t session_id, uint32_t stream_id, char* data, uint32_t len) override;
-private:
 
+private:
     typedef struct {
         boost::shared_array<char> buffer;
         int length;
@@ -72,4 +73,4 @@ private:
     std::shared_ptr<net::RQuicClientInterface> client_;
 };
 
-#endif  // INTERNAL_QUIC_H_
+#endif // INTERNAL_QUIC_H_

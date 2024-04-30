@@ -12,12 +12,13 @@
 
 using namespace v8;
 
-void InitAll(Local<Object> exports) {
-  AudioFrameConstructor::Init(exports);
-  AudioFramePacketizer::Init(exports);
-  VideoFrameConstructor::Init(exports);
-  VideoFramePacketizer::Init(exports);
-  CallBase::Init(exports);
+void InitAll(Local<Object> exports)
+{
+    AudioFrameConstructor::Init(exports);
+    AudioFramePacketizer::Init(exports);
+    VideoFrameConstructor::Init(exports);
+    VideoFramePacketizer::Init(exports);
+    CallBase::Init(exports);
 }
 
 NODE_MODULE(addon, InitAll)

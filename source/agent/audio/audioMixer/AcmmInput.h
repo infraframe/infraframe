@@ -25,13 +25,13 @@ class AcmmInput : public MixerParticipant {
     DECLARE_LOGGER();
 
 public:
-    AcmmInput(int32_t id, const std::string &name);
+    AcmmInput(int32_t id, const std::string& name);
     ~AcmmInput();
 
-    int32_t id() {return m_id;}
-    const std::string &name() {return m_name;}
+    int32_t id() { return m_id; }
+    const std::string& name() { return m_name; }
 
-    bool isActive() {return m_active;}
+    bool isActive() { return m_active; }
 
     bool setSource(FrameFormat format, FrameSource* source);
     void unsetSource();
@@ -49,7 +49,7 @@ private:
     bool m_active;
 
     FrameFormat m_srcFormat;
-    FrameSource *m_source;
+    FrameSource* m_source;
 
     boost::shared_ptr<AudioDecoder> m_decoder;
 };

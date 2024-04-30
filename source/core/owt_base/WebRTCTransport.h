@@ -5,16 +5,16 @@
 #ifndef WebRTCTransport_h
 #define WebRTCTransport_h
 
-#include <MediaDefinitions.h>
 #include <MediaDefinitionExtra.h>
-#include <rtputils.h>
-#include <common_types.h>
+#include <MediaDefinitions.h>
 #include <api/call/transport.h>
+#include <common_types.h>
 #include <rtc_base/location.h>
+#include <rtputils.h>
 
 namespace owt_base {
 
-template<erizoExtra::DataType dataType>
+template <erizoExtra::DataType dataType>
 class WebRTCTransport : public webrtc::Transport, public erizo::FeedbackSource {
 public:
     WebRTCTransport(erizoExtra::RTPDataReceiver*, erizo::FeedbackSink*);
@@ -22,23 +22,24 @@ public:
 
     virtual bool SendRtp(const uint8_t* data, size_t len, const webrtc::PacketOptions& options);
     virtual bool SendRtcp(const uint8_t* data, size_t len);
+
 private:
     erizoExtra::RTPDataReceiver* m_rtpReceiver;
 };
 
-template<erizoExtra::DataType dataType>
+template <erizoExtra::DataType dataType>
 WebRTCTransport<dataType>::WebRTCTransport(erizoExtra::RTPDataReceiver* rtpReceiver, erizo::FeedbackSink* feedbackSink)
     : m_rtpReceiver(rtpReceiver)
 {
     fb_sink_ = feedbackSink;
 }
 
-template<erizoExtra::DataType dataType>
+template <erizoExtra::DataType dataType>
 WebRTCTransport<dataType>::~WebRTCTransport()
 {
 }
 
-template<erizoExtra::DataType dataType>
+template <erizoExtra::DataType dataType>
 inline bool WebRTCTransport<dataType>::SendRtp(const uint8_t* data, size_t len, const webrtc::PacketOptions& options)
 {
     //Ignore PacketOption here, and pass a fake channel id to receiver
@@ -50,7 +51,7 @@ inline bool WebRTCTransport<dataType>::SendRtp(const uint8_t* data, size_t len, 
     return ret;
 }
 
-template<erizoExtra::DataType dataType>
+template <erizoExtra::DataType dataType>
 inline bool WebRTCTransport<dataType>::SendRtcp(const uint8_t* data, size_t len)
 {
     // FIXME: We need add a new interface to the RTPDataReceiver for RTCP Sender Reports.

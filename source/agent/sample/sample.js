@@ -1,8 +1,8 @@
 // Sample Agent Server
 
-'use strict';
+"use strict";
 
-const log = require('./logger').logger.getLogger('SampleNode');
+const log = require("./logger").logger.getLogger("SampleNode");
 
 /*
  * {rpcClient} is the object used send RPC request.
@@ -11,13 +11,13 @@ const log = require('./logger').logger.getLogger('SampleNode');
  * {clusterWorkerIP} is the IP saved in cluster.
  */
 function RPCInterface(rpcClient, rpcID, parentID, clusterWorkerIP) {
-  log.info('Sample RPC:', rpcID, parentID, clusterWorkerIP);
+  log.info("Sample RPC:", rpcID, parentID, clusterWorkerIP);
   const that = {};
   let receiver = null;
 
   that.process = function (data, callback) {
-    log.info('Process:', data);
-    callback('callback', 'ok');
+    log.info("Process:", data);
+    callback("callback", "ok");
   };
 
   return that;

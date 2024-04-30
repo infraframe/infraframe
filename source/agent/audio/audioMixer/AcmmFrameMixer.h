@@ -5,17 +5,17 @@
 #ifndef AcmmFrameMixer_h
 #define AcmmFrameMixer_h
 
+#include <EventRegistry.h>
+#include <JobTimer.h>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <logger.h>
-#include <JobTimer.h>
-#include <EventRegistry.h>
 
 #include <webrtc/modules/audio_conference_mixer/include/audio_conference_mixer.h>
 #include <webrtc/modules/audio_conference_mixer/include/audio_conference_mixer_defines.h>
 
-#include "MediaFramePipeline.h"
 #include "AudioFrameMixer.h"
+#include "MediaFramePipeline.h"
 
 #include "AcmmBroadcastGroup.h"
 #include "AcmmGroup.h"
@@ -35,7 +35,7 @@ class AcmmFrameMixer : public AudioFrameMixer,
 
     struct OutputInfo {
         owt_base::FrameFormat format;
-        owt_base::FrameDestination *dest;
+        owt_base::FrameDestination* dest;
     };
 
 public:
@@ -62,20 +62,20 @@ public:
 
     // Implements AudioMixerOutputReceiver
     virtual void NewMixedAudio(
-            int32_t id,
-            const AudioFrame& generalAudioFrame,
-            const AudioFrame** uniqueAudioFrames,
-            uint32_t size) override;
+        int32_t id,
+        const AudioFrame& generalAudioFrame,
+        const AudioFrame** uniqueAudioFrames,
+        uint32_t size) override;
 
     // Implements AudioMixerVadReceiver
     virtual void VadParticipants(
-            const ParticipantVadStatistics *statistics,
-            const uint32_t size) override;
+        const ParticipantVadStatistics* statistics,
+        const uint32_t size) override;
 
 protected:
     void performMix();
 
-    bool getFreeGroupId(uint16_t *id);
+    bool getFreeGroupId(uint16_t* id);
 
     boost::shared_ptr<AcmmGroup> addGroup(const std::string& group);
     void removeGroup(const std::string& group);
@@ -88,7 +88,7 @@ protected:
     void statistics();
 
 private:
-    EventRegistry *m_asyncHandle;
+    EventRegistry* m_asyncHandle;
     boost::scoped_ptr<JobTimer> m_jobTimer;
     boost::shared_ptr<AudioConferenceMixer> m_mixerModule;
 

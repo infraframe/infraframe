@@ -1,10 +1,10 @@
 #!/bin/bash -e
-SCRIPT=`pwd`/$0
-FILENAME=`basename $SCRIPT`
-PATHNAME=`dirname $SCRIPT`
+SCRIPT=$(pwd)/$0
+FILENAME=$(basename $SCRIPT)
+PATHNAME=$(dirname $SCRIPT)
 ROOT=$PATHNAME/..
 BUILD_DIR=$ROOT/build
-CURRENT_DIR=`pwd`
+CURRENT_DIR=$(pwd)
 
 LIB_DIR=$BUILD_DIR/libdeps
 PREFIX_DIR=$LIB_DIR/build/
@@ -25,7 +25,7 @@ if [[ $EUID -ne 0 ]]; then
   SUDO="sudo -E"
 fi
 
-print_help(){
+print_help() {
   echo
   echo "Install Dependency Script"
   echo "Usage:"
@@ -39,27 +39,27 @@ print_help(){
   exit 0
 }
 
-parse_arguments(){
+parse_arguments() {
   while [ "$1" != "" ]; do
     case $1 in
-      "--with-nonfree-libs")
-        DISABLE_NONFREE=false
-        ;;
-      "--cleanup")
-        CLEANUP=true
-        ;;
-      "--nightly")
-        NIGHTLY=true
-        ;;
-      "--no-internal")
-        NO_INTERNAL=true
-        ;;
-      "--incremental")
-        INCR_INSTALL=true
-        ;;
-      "--check")
-        CHECK_INSTALL=true
-        ;;
+    "--with-nonfree-libs")
+      DISABLE_NONFREE=false
+      ;;
+    "--cleanup")
+      CLEANUP=true
+      ;;
+    "--nightly")
+      NIGHTLY=true
+      ;;
+    "--no-internal")
+      NO_INTERNAL=true
+      ;;
+    "--incremental")
+      INCR_INSTALL=true
+      ;;
+    "--check")
+      CHECK_INSTALL=true
+      ;;
     esac
     shift
   done
@@ -67,8 +67,8 @@ parse_arguments(){
 
 parse_arguments $*
 
-OS=`$PATHNAME/detectOS.sh | awk '{print tolower($0)}'`
-OS_VERSION=`$PATHNAME/detectOS.sh | awk '{print tolower($2)}'`
+OS=$($PATHNAME/detectOS.sh | awk '{print tolower($0)}')
+OS_VERSION=$($PATHNAME/detectOS.sh | awk '{print tolower($2)}')
 echo $OS
 
 cd $PATHNAME
@@ -76,8 +76,7 @@ cd $PATHNAME
 
 mkdir -p $PREFIX_DIR
 
-if [[ "$OS" =~ .*centos.* ]]
-then
+if [[ "$OS" =~ .*centos.* ]]; then
   . installCentOSDeps.sh
   if [ "$NIGHTLY" != "true" ]; then
     [ "$CHECK_INSTALL" != true ] && installRepo
@@ -86,13 +85,11 @@ then
     install_glibc
     install_python3
   fi
-elif [[ "$OS" =~ .*ubuntu.* ]]
-then
+elif [[ "$OS" =~ .*ubuntu.* ]]; then
   . installUbuntuDeps.sh
   if [ "$NIGHTLY" != "true" ]; then
     [ "$CHECK_INSTALL" != true ] && install_apt_deps
-    if [[ "$OS_VERSION" =~ 20.04.* ]]
-    then
+    if [[ "$OS_VERSION" =~ 20.04.* ]]; then
       install_gcc_7
       if [ "$GITHUB_ACTIONS" != "true" ]; then
         install_boost

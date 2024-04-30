@@ -7,8 +7,7 @@ MAC_CMD="/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Can
 UBUNTU_CMD="/usr/bin/google-chrome-stable"
 
 # Test OS
-if [ -f "$MAC_CMD" ]
-then
+if [ -f "$MAC_CMD" ]; then
 	CMD="$MAC_CMD"
 else
 	CMD="$UBUNTU_CMD"
@@ -21,5 +20,5 @@ fi
 
 # Execute the command
 export DISPLAY=:0
-exec "$CMD" --user-data-dir="$USER_DIR" --enable-logging --v=1 --allow-file-access-from-files  --proxy-auto-detect --no-sandbox --use-fake-ui-for-media-stream --disable-user-media-security --no-default-browser-check --no-first-run --disable-default-apps --disable-popup-blocking  --use-fake-device-for-media-stream "$@"
+exec "$CMD" --user-data-dir="$USER_DIR" --enable-logging --v=1 --allow-file-access-from-files --proxy-auto-detect --no-sandbox --use-fake-ui-for-media-stream --disable-user-media-security --no-default-browser-check --no-first-run --disable-default-apps --disable-popup-blocking --use-fake-device-for-media-stream "$@"
 #exec "$CMD" --user-data-dir="$USER_DIR" --no-default-browser-check --no-first-run --disable-default-apps "$@"

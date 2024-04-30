@@ -1,14 +1,14 @@
 #ifndef ERIZOAPI_MEDIADEFINITIONS_H_
 #define ERIZOAPI_MEDIADEFINITIONS_H_
 
-#include <nan.h>
 #include <MediaDefinitions.h>
+#include <nan.h>
 
 /*
  * Wrapper class of erizo::MediaSink
  */
 class MediaSink : public Nan::ObjectWrap {
- public:
+public:
     erizo::MediaSink* msink;
 };
 
@@ -16,7 +16,7 @@ class MediaSink : public Nan::ObjectWrap {
  * Wrapper class of erizo::MediaSource
  */
 class MediaSource : public Nan::ObjectWrap {
- public:
+public:
     erizo::MediaSource* msource;
 };
 
@@ -24,9 +24,9 @@ class MediaSource : public Nan::ObjectWrap {
  * Wrapper class of both erizo::MediaSink and erizo::MediaSource
  */
 class MediaFilter : public Nan::ObjectWrap {
- public:
+public:
     erizo::MediaSink* msink;
     erizo::MediaSource* msource;
 };
 
-#endif  // ERIZOAPI_MEDIADEFINITIONS_H_
+#endif // ERIZOAPI_MEDIADEFINITIONS_H_

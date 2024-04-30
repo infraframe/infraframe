@@ -97,8 +97,7 @@ int32_t VideoReceiveAdapterImpl::AdapterDecoder::Decode(const webrtc::EncodedIma
     frame.timeStamp = encodedImage.Timestamp();
     frame.additionalInfo.video.width = m_width;
     frame.additionalInfo.video.height = m_height;
-    frame.additionalInfo.video.isKeyFrame =
-        (encodedImage._frameType == webrtc::VideoFrameType::kVideoFrameKey);
+    frame.additionalInfo.video.isKeyFrame = (encodedImage._frameType == webrtc::VideoFrameType::kVideoFrameKey);
 
     if (m_parent) {
         if (m_parent->m_frameListener) {
@@ -173,7 +172,7 @@ VideoReceiveAdapterImpl::~VideoReceiveAdapterImpl()
     f.wait();
 }
 
-void VideoReceiveAdapterImpl::OnFrame(const webrtc::VideoFrame& video_frame) {}
+void VideoReceiveAdapterImpl::OnFrame(const webrtc::VideoFrame& video_frame) { }
 
 void VideoReceiveAdapterImpl::CreateReceiveVideo()
 {
@@ -267,7 +266,7 @@ void VideoReceiveAdapterImpl::setPreferredLayers(int spatialId, int temporalId)
 
 std::vector<webrtc::SdpVideoFormat> VideoReceiveAdapterImpl::GetSupportedFormats() const
 {
-    return std::vector<webrtc::SdpVideoFormat>{
+    return std::vector<webrtc::SdpVideoFormat> {
         webrtc::SdpVideoFormat(
             webrtc::CodecTypeToPayloadString(webrtc::VideoCodecType::kVideoCodecVP8)),
         webrtc::SdpVideoFormat(
@@ -290,28 +289,18 @@ std::unique_ptr<webrtc::VideoDecoder> VideoReceiveAdapterImpl::CreateVideoDecode
 int VideoReceiveAdapterImpl::onRtpData(char* data, int len)
 {
     rtc::CopyOnWriteBuffer buffer(data, len);
-    if (m_format == FRAME_FORMAT_VP9 &&
-        (m_preferredTemporalId >= 0 || m_preferredSpatialId >= 0)) {
+    if (m_format == FRAME_FORMAT_VP9 && (m_preferredTemporalId >= 0 || m_preferredSpatialId >= 0)) {
         webrtc::RtpPacket rtpPacket;
         webrtc::RTPVideoHeader video_header;
-        if (rtpPacket.Parse((const uint8_t*) data, len)) {
-            if (rtpPacket.PayloadType() == VP9_90000_PT &&
-                webrtc::VideoRtpDepacketizerVp9::ParseRtpPayload(
-                rtpPacket.PayloadBuffer(), &video_header) > 0) {
-                webrtc::RTPVideoHeaderVP9* vp9_header =
-                    absl::get_if<webrtc::RTPVideoHeaderVP9>(
-                        &(video_header.video_type_header));
+        if (rtpPacket.Parse((const uint8_t*)data, len)) {
+            if (rtpPacket.PayloadType() == VP9_90000_PT && webrtc::VideoRtpDepacketizerVp9::ParseRtpPayload(rtpPacket.PayloadBuffer(), &video_header) > 0) {
+                webrtc::RTPVideoHeaderVP9* vp9_header = absl::get_if<webrtc::RTPVideoHeaderVP9>(
+                    &(video_header.video_type_header));
                 if (vp9_header) {
-                    if ((m_preferredSpatialId >= 0 &&
-                        vp9_header->spatial_idx <= kMaxSpatialLayers &&
-                        vp9_header->spatial_idx > m_preferredSpatialId) ||
-                        (m_preferredTemporalId >= 0 &&
-                        vp9_header->temporal_idx <= kMaxTemporalLayers &&
-                        vp9_header->temporal_idx > m_preferredTemporalId)) {
+                    if ((m_preferredSpatialId >= 0 && vp9_header->spatial_idx <= kMaxSpatialLayers && vp9_header->spatial_idx > m_preferredSpatialId) || (m_preferredTemporalId >= 0 && vp9_header->temporal_idx <= kMaxTemporalLayers && vp9_header->temporal_idx > m_preferredTemporalId)) {
                         return len;
                     }
-                    if (vp9_header->spatial_idx == m_preferredSpatialId &&
-                        vp9_header->end_of_frame && !rtpPacket.Marker()) {
+                    if (vp9_header->spatial_idx == m_preferredSpatialId && vp9_header->end_of_frame && !rtpPacket.Marker()) {
                         // Set Marker
                         rtpPacket.SetMarker(true);
                         buffer = rtpPacket.Buffer();

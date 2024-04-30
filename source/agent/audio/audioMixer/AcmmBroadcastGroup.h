@@ -35,7 +35,7 @@ public:
     void NewMixedAudio(const AudioFrame* audioFrame);
 
 protected:
-    bool getFreeOutputId(uint16_t *id);
+    bool getFreeOutputId(uint16_t* id);
 
 private:
     const uint16_t m_groupId;

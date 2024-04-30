@@ -61,6 +61,7 @@ private:
             webrtc::DecodedImageCallback* callback) override { return 0; }
 
         int32_t Release() override { return 0; }
+
     private:
         VideoReceiveAdapterImpl* m_parent;
         webrtc::VideoCodecType m_codec;

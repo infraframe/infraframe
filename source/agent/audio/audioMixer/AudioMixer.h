@@ -8,8 +8,8 @@
 #include <EventRegistry.h>
 #include <logger.h>
 
-#include "MediaFramePipeline.h"
 #include "AudioFrameMixer.h"
+#include "MediaFramePipeline.h"
 
 namespace mcu {
 

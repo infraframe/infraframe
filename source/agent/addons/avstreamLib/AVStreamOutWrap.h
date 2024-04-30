@@ -14,19 +14,19 @@
  * Wrapper class of owt_base::AVStreamOut
  */
 class AVStreamOutWrap : public FrameDestination, public NodeEventRegistry {
- public:
-  static void Init(v8::Local<v8::Object>);
-  static void Init(v8::Local<v8::Object>, v8::Local<v8::Object>);
-  owt_base::AVStreamOut* me;
+public:
+    static void Init(v8::Local<v8::Object>);
+    static void Init(v8::Local<v8::Object>, v8::Local<v8::Object>);
+    owt_base::AVStreamOut* me;
 
- private:
-  AVStreamOutWrap();
-  ~AVStreamOutWrap();
-  static v8::Persistent<v8::Function> constructor;
+private:
+    AVStreamOutWrap();
+    ~AVStreamOutWrap();
+    static v8::Persistent<v8::Function> constructor;
 
-  static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void close(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void addEventListener(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void close(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void addEventListener(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
 #endif // AVStreamOutWrap_h

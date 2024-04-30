@@ -5,167 +5,191 @@
 /*
  * Request Data Format for version 1.0 - 1.1
  */
-'use strict';
+"use strict";
 
 const {
   StreamControlInfo,
   SubscriptionControlInfo,
-} = require('./requestFormatV1-0');
+} = require("./requestFormatV1-0");
 
 const Resolution = {
-  id: '/Resolution',
-  type: 'object',
+  id: "/Resolution",
+  type: "object",
   properties: {
-    'width': { type: 'number' },
-    'height': { type: 'number' }
+    width: { type: "number" },
+    height: { type: "number" },
   },
   additionalProperties: false,
-  required: ['width', 'height']
+  required: ["width", "height"],
 };
 
 const TransportOptions = {
-  type: 'object',
+  type: "object",
   properties: {
-    'type': { enum: ["webrtc", "quic"] },
-    'id': { type: 'string' }
-  }
+    type: { enum: ["webrtc", "quic"] },
+    id: { type: "string" },
+  },
 };
 
 // PublcationRequest
 const PublicationRequest = {
   anyOf: [
-    { // Webrtc Publication
-      type: 'object',
+    {
+      // Webrtc Publication
+      type: "object",
       properties: {
-        'media': { $ref: '#/definitions/WebRTCMediaOptions' },
-        'attributes': { type: 'object' },
-        'data': {type: 'boolean'},
-        'transport': {
-          type: 'object',
+        media: { $ref: "#/definitions/WebRTCMediaOptions" },
+        attributes: { type: "object" },
+        data: { type: "boolean" },
+        transport: {
+          type: "object",
           properties: {
-            'type': {type: 'string'},
-            'id': {type: 'string'},
+            type: { type: "string" },
+            id: { type: "string" },
           },
           additionalProperties: false,
         },
       },
       additionalProperties: false,
-      required: ['media']
-    }
+      required: ["media"],
+    },
   ],
 
   definitions: {
-    'WebRTCMediaOptions': {
-      type: ['object', 'null'],
+    WebRTCMediaOptions: {
+      type: ["object", "null"],
       properties: {
-        'tracks': {
-          type: 'array',
+        tracks: {
+          type: "array",
           items: {
-            type: 'object',
+            type: "object",
             properties: {
-              'type': { enum: ["audio", "video"] },
-              'mid': { type: 'string' },
-              'source': { enum: ["mic", "camera", "screen-cast", "raw-file", "encoded-file"] },
-            }
-          }
-        }
+              type: { enum: ["audio", "video"] },
+              mid: { type: "string" },
+              source: {
+                enum: [
+                  "mic",
+                  "camera",
+                  "screen-cast",
+                  "raw-file",
+                  "encoded-file",
+                ],
+              },
+            },
+          },
+        },
       },
       additionalProperties: false,
-      required: ['tracks']
-    }
-  }
+      required: ["tracks"],
+    },
+  },
 };
 
 // SubscriptionRequest
 const SubscriptionRequest = {
   anyOf: [
-    { // Webrtc Subscription
-      type: 'object',
+    {
+      // Webrtc Subscription
+      type: "object",
       properties: {
-        'media': { $ref: '#/definitions/MediaSubOptions' },
-        'transport': {
-          type: 'object',
+        media: { $ref: "#/definitions/MediaSubOptions" },
+        transport: {
+          type: "object",
           properties: {
-            'type': {type: 'string'},
-            'id': {type: 'string'},
+            type: { type: "string" },
+            id: { type: "string" },
           },
           additionalProperties: false,
         },
-        'data': { $ref: '#/definitions/DataSubOptions' },
+        data: { $ref: "#/definitions/DataSubOptions" },
       },
       additionalProperties: false,
-      required: ['media']
-    }
+      required: ["media"],
+    },
   ],
 
   definitions: {
-    'MediaSubOptions': {
-      type: ['object', 'null'],
+    MediaSubOptions: {
+      type: ["object", "null"],
       properties: {
-        'tracks': {
-          type: 'array',
+        tracks: {
+          type: "array",
           items: {
-            type: 'object',
+            type: "object",
             properties: {
-              'type': { enum: ["audio", "video"] },
-              'mid': { type: 'string' },
-              'from': { type: 'string' },
-              'format': {
+              type: { enum: ["audio", "video"] },
+              mid: { type: "string" },
+              from: { type: "string" },
+              format: {
                 anyOf: [
-                  { $ref: '#/definitions/AudioFormat' },
-                  { $ref: '#/definitions/VideoFormat' },
-                ]
+                  { $ref: "#/definitions/AudioFormat" },
+                  { $ref: "#/definitions/VideoFormat" },
+                ],
               },
-              'parameters': { $ref: '#/definitions/VideoParametersSpecification' },
-            }
-          }
-        }
+              parameters: {
+                $ref: "#/definitions/VideoParametersSpecification",
+              },
+            },
+          },
+        },
       },
       additionalProperties: false,
-      required: ['tracks']
+      required: ["tracks"],
     },
 
-    'DataSubOptions': {
-      type: 'object',
+    DataSubOptions: {
+      type: "object",
       properties: {
-        'from': {type: 'string'}
+        from: { type: "string" },
       },
       additionalProperties: false,
-      required: ['from']
+      required: ["from"],
     },
 
-    'AudioFormat': {
-      type: 'object',
+    AudioFormat: {
+      type: "object",
       properties: {
-        'codec': { enum: ['pcmu', 'pcma', 'opus', 'g722', 'iSAC', 'iLBC', 'aac', 'ac3', 'nellymoser'] },
-        'sampleRate': { type: 'number' },
-        'channelNum': { type: 'number' }
+        codec: {
+          enum: [
+            "pcmu",
+            "pcma",
+            "opus",
+            "g722",
+            "iSAC",
+            "iLBC",
+            "aac",
+            "ac3",
+            "nellymoser",
+          ],
+        },
+        sampleRate: { type: "number" },
+        channelNum: { type: "number" },
       },
       additionalProperties: false,
-      required: ['codec']
+      required: ["codec"],
     },
 
-    'VideoFormat': {
-      type: 'object',
+    VideoFormat: {
+      type: "object",
       properties: {
-        'codec': { enum: ['h264', 'h265', 'vp8', 'vp9'] },
-        'profile': { enum: ['CB', 'B', 'M', 'E', 'H'] }
+        codec: { enum: ["h264", "h265", "vp8", "vp9"] },
+        profile: { enum: ["CB", "B", "M", "E", "H"] },
       },
       additionalProperties: false,
-      required: ['codec']
+      required: ["codec"],
     },
 
-    'VideoParametersSpecification': {
-      type: 'object',
+    VideoParametersSpecification: {
+      type: "object",
       properties: {
-        'resolution': Resolution,
-        'framerate': { type: 'number' },
-        'bitrate': { type: ['string', 'number'] },
-        'keyFrameInterval': { type: 'number' }
+        resolution: Resolution,
+        framerate: { type: "number" },
+        bitrate: { type: ["string", "number"] },
+        keyFrameInterval: { type: "number" },
       },
-      additionalProperties: false
-    }
-  }
+      additionalProperties: false,
+    },
+  },
 };
 
 // SubscriptionControlInfo

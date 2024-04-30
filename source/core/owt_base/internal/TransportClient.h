@@ -5,6 +5,8 @@
 #ifndef TransportClient_h
 #define TransportClient_h
 
+#include "RawTransport.h"
+#include "TransportBase.h"
 #include <boost/asio.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_array.hpp>
@@ -12,8 +14,6 @@
 #include <boost/thread/mutex.hpp>
 #include <logger.h>
 #include <memory>
-#include "RawTransport.h"
-#include "TransportBase.h"
 #include <unordered_map>
 
 namespace owt_base {
@@ -25,6 +25,7 @@ using boost::asio::ip::tcp;
  */
 class TransportClient : public TransportSession::Listener {
     DECLARE_LOGGER();
+
 public:
     class Listener {
     public:
@@ -40,7 +41,7 @@ public:
     void createConnection(const std::string& ip, uint32_t port);
     void sendData(const uint8_t*, uint32_t len);
     void sendData(const uint8_t* header, uint32_t headerLength,
-                  const uint8_t* payload, uint32_t payloadLength);
+        const uint8_t* payload, uint32_t payloadLength);
     void close();
     bool initTicket(const std::string& ticket) { return true; }
 

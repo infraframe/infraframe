@@ -2,16 +2,22 @@
 # Copyright (C) <2019> Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
-this=`dirname "$0"`
-this=`cd "$this"; pwd`
-ROOT=`cd "${this}/.."; pwd`
+this=$(dirname "$0")
+this=$(
+  cd "$this"
+  pwd
+)
+ROOT=$(
+  cd "${this}/.."
+  pwd
+)
 
 export OWT_HOME=${ROOT}
 
 LogDir=${OWT_HOME}/logs
 SUDO=""
 if [[ $EUID -ne 0 ]]; then
-   SUDO="sudo -E"
+  SUDO="sudo -E"
 fi
 
 MONGO_INIT_INSTALL=false
@@ -46,21 +52,19 @@ create_user() {
 init_mongo() {
   read -t 10 -p "Create MongoDB Account? [Yes/no]" yn
   case $yn in
-    [Nn]* ) ;;
-    [Yy]* ) create_user;;
-    * ) create_user;;
+  [Nn]*) ;;
+  [Yy]*) create_user ;;
+  *) create_user ;;
   esac
 }
 
-
 install_deps() {
   local CHECK_INSTALLED=""
-  local OS=`${this}/detectOS.sh | awk '{print tolower($0)}'`
+  local OS=$(${this}/detectOS.sh | awk '{print tolower($0)}')
   echo $OS
 
-  if [[ "$OS" =~ .*centos.* ]]
-  then
-    CHECK_INSTALLED=`rpm -qa | grep mongodb-server`
+  if [[ "$OS" =~ .*centos.* ]]; then
+    CHECK_INSTALLED=$(rpm -qa | grep mongodb-server)
     if [[ -z "$CHECK_INSTALLED" ]]; then
       echo -e "\x1b[32mInstalling dependent components and libraries via yum...\x1b[0m"
       wget -c http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
@@ -71,9 +75,8 @@ install_deps() {
     else
       echo -e "\x1b[mMongoDB already installed\x1b[0m"
     fi
-  elif [[ "$OS" =~ .*ubuntu.* ]]
-  then
-    CHECK_INSTALLED=`dpkg -l | grep -E '^ii' | grep mongodb-server`
+  elif [[ "$OS" =~ .*ubuntu.* ]]; then
+    CHECK_INSTALLED=$(dpkg -l | grep -E '^ii' | grep mongodb-server)
     if [[ -z "$CHECK_INSTALLED" ]]; then
       echo -e "\x1b[32mInstalling dependent components and libraries via apt-get...\x1b[0m"
       ${SUDO} apt-get update
@@ -89,20 +92,18 @@ install_deps() {
 
 install_db() {
   echo -e "\x1b[32mInitializing mongodb...\x1b[0m"
-  if ! pgrep -x mongod &> /dev/null; then
+  if ! pgrep -x mongod &>/dev/null; then
     if ! hash mongod 2>/dev/null; then
-        echo >&2 "Error: mongodb not found."
-        return 1
+      echo >&2 "Error: mongodb not found."
+      return 1
     fi
 
-    local OS=`${this}/detectOS.sh | awk '{print tolower($0)}'`
+    local OS=$(${this}/detectOS.sh | awk '{print tolower($0)}')
     # Use default configuration
-    if [[ "$OS" =~ .*centos.* ]]
-    then
+    if [[ "$OS" =~ .*centos.* ]]; then
       echo "Start mongodb - \"systemctl start mongod\""
       ${SUDO} systemctl start mongod
-    elif [[ "$OS" =~ .*ubuntu.* ]]
-    then
+    elif [[ "$OS" =~ .*ubuntu.* ]]; then
       echo "Start mongodb - \"service mongodb start\""
       ${SUDO} service mongodb start
     else
@@ -119,13 +120,13 @@ INSTALL_DEPS=false
 shopt -s extglob
 while [[ $# -gt 0 ]]; do
   case $1 in
-    *(-)deps )
-      INSTALL_DEPS=true
-      ;;
-    *(-)help )
-      usage
-      exit 0
-      ;;
+  *(-)deps)
+    INSTALL_DEPS=true
+    ;;
+  *(-)help)
+    usage
+    exit 0
+    ;;
   esac
   shift
 done

@@ -8,10 +8,11 @@
 namespace owt_base {
 
 static int partial_linear_bitrate[][2] = {
-    {0, 0}, {76800, 400}, {307200, 800}, {921600, 2000}, {2073600, 4000}, {8294400, 16000}
+    { 0, 0 }, { 76800, 400 }, { 307200, 800 }, { 921600, 2000 }, { 2073600, 4000 }, { 8294400, 16000 }
 };
 
-inline unsigned int calcBitrate(unsigned int width, unsigned int height, float framerate = 30) {
+inline unsigned int calcBitrate(unsigned int width, unsigned int height, float framerate = 30)
+{
     unsigned int bitrate = 0;
     unsigned int prev = 0;
     unsigned int next = 0;
@@ -22,10 +23,10 @@ inline unsigned int calcBitrate(unsigned int width, unsigned int height, float f
     // find the partial linear section and calculate bitrate
     for (int i = 0; i < lines - 1; i++) {
         prev = partial_linear_bitrate[i][0];
-        next = partial_linear_bitrate[i+1][0];
+        next = partial_linear_bitrate[i + 1][0];
         if (def > prev && def <= next) {
             portion = static_cast<float>(def - prev) / (next - prev);
-            bitrate = partial_linear_bitrate[i][1] + (partial_linear_bitrate[i+1][1] - partial_linear_bitrate[i][1]) * portion;
+            bitrate = partial_linear_bitrate[i][1] + (partial_linear_bitrate[i + 1][1] - partial_linear_bitrate[i][1]) * portion;
             break;
         }
     }
@@ -69,8 +70,7 @@ inline int findNALU(uint8_t* buf, int size, int* nal_start, int* nal_end, int* s
     *nal_start = i;
 
     /*( next_bits( 24 ) != {0, 0, 1} )*/
-    while ((size > i + 2) &&
-           (buf[i] != 0 || buf[i + 1] != 0 || buf[i + 2] != 1))
+    while ((size > i + 2) && (buf[i] != 0 || buf[i + 1] != 0 || buf[i + 2] != 1))
         ++i;
 
     if (size <= i + 2)

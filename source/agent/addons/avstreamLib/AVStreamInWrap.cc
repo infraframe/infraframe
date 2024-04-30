@@ -4,21 +4,22 @@
 
 #include "AVStreamInWrap.h"
 #include "../../addons/common/MediaFramePipelineWrapper.h"
-#include <MediaFileIn.h>
 #include <LiveStreamIn.h>
+#include <MediaFileIn.h>
 
 using namespace v8;
 
-static std::string getString(v8::Local<v8::Value> value) {
-  Nan::Utf8String value_str(Nan::To<v8::String>(value).ToLocalChecked());
-  return std::string(*value_str);
+static std::string getString(v8::Local<v8::Value> value)
+{
+    Nan::Utf8String value_str(Nan::To<v8::String>(value).ToLocalChecked());
+    return std::string(*value_str);
 }
 
 Persistent<Function> AVStreamInWrap::constructor;
 AVStreamInWrap::AVStreamInWrap()
 {
 }
-AVStreamInWrap::~AVStreamInWrap() {}
+AVStreamInWrap::~AVStreamInWrap() { }
 
 void AVStreamInWrap::Init(Local<Object> exports, Local<Object> module)
 {
@@ -71,7 +72,7 @@ void AVStreamInWrap::New(const FunctionCallbackInfo<Value>& args)
     Local<String> keyBufferSize = Nan::New("buffer_size").ToLocalChecked();
     Local<String> keyAudio = Nan::New("has_audio").ToLocalChecked();
     Local<String> keyVideo = Nan::New("has_video").ToLocalChecked();
-    owt_base::LiveStreamIn::Options param{};
+    owt_base::LiveStreamIn::Options param {};
     Local<Object> options = Nan::To<v8::Object>(args[0]).ToLocalChecked();
     if (Nan::Has(options, keyUrl).FromMaybe(false))
         param.url = getString(Nan::Get(options, keyUrl).ToLocalChecked());
@@ -79,7 +80,7 @@ void AVStreamInWrap::New(const FunctionCallbackInfo<Value>& args)
         param.transport = getString(Nan::Get(options, keyTransport).ToLocalChecked());
     if (Nan::Has(options, keyBufferSize).FromMaybe(false))
         param.bufferSize = Nan::To<int32_t>(Nan::Get(options, keyBufferSize).ToLocalChecked())
-                           .FromJust();
+                               .FromJust();
     if (Nan::Has(options, keyAudio).FromMaybe(false))
         param.enableAudio = getString(Nan::Get(options, keyAudio).ToLocalChecked());
     if (Nan::Has(options, keyVideo).FromMaybe(false))
@@ -87,7 +88,7 @@ void AVStreamInWrap::New(const FunctionCallbackInfo<Value>& args)
 
     AVStreamInWrap* obj = new AVStreamInWrap();
     std::string type = getString(Nan::Get(options, Nan::New("type").ToLocalChecked())
-                                 .ToLocalChecked());
+                                     .ToLocalChecked());
     if (type.compare("streaming") == 0)
         obj->me = new owt_base::LiveStreamIn(param, obj);
     else if (type.compare("file") == 0)
@@ -99,7 +100,7 @@ void AVStreamInWrap::New(const FunctionCallbackInfo<Value>& args)
 
     if (args.Length() > 1 && args[1]->IsFunction()) {
         Nan::Set(Local<Object>::New(isolate, obj->m_store),
-                 Nan::New("status").ToLocalChecked(), args[1]);
+            Nan::New("status").ToLocalChecked(), args[1]);
     }
 
     obj->Wrap(args.This());

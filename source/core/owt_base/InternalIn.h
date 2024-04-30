@@ -14,7 +14,7 @@ class InternalIn : public FrameSource, public RawTransportListener {
 public:
     InternalIn(const std::string& protocol, unsigned int minPort = 0, unsigned int maxPort = 0);
     InternalIn(const std::string& protocol, const std::string& ticket,
-               unsigned int minPort = 0, unsigned int maxPort = 0);
+        unsigned int minPort = 0, unsigned int maxPort = 0);
     virtual ~InternalIn();
 
     unsigned int getListeningPort();

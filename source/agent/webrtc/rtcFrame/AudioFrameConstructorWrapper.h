@@ -5,57 +5,57 @@
 #ifndef AUDIOFRAMECONSTRUCTORWRAPPER_H
 #define AUDIOFRAMECONSTRUCTORWRAPPER_H
 
-#include "MediaWrapper.h"
 #include "../../addons/common/MediaFramePipelineWrapper.h"
+#include "MediaWrapper.h"
 #include <AudioFrameConstructor.h>
+#include <nan.h>
 #include <node.h>
 #include <node_object_wrap.h>
-#include <nan.h>
 
 /*
  * Wrapper class of owt_base::AudioFrameConstructor
  */
 class AudioFrameConstructor : public MediaSink {
- public:
-  static NAN_MODULE_INIT(Init);
-  owt_base::AudioFrameConstructor* me;
-  owt_base::FrameSource* src;
+public:
+    static NAN_MODULE_INIT(Init);
+    owt_base::AudioFrameConstructor* me;
+    owt_base::FrameSource* src;
 
- private:
-  AudioFrameConstructor();
-  ~AudioFrameConstructor();
+private:
+    AudioFrameConstructor();
+    ~AudioFrameConstructor();
 
-  static NAN_METHOD(New);
+    static NAN_METHOD(New);
 
-  static NAN_METHOD(close);
+    static NAN_METHOD(close);
 
-  static NAN_METHOD(bindTransport);
-  static NAN_METHOD(unbindTransport);
+    static NAN_METHOD(bindTransport);
+    static NAN_METHOD(unbindTransport);
 
-  static NAN_METHOD(enable);
+    static NAN_METHOD(enable);
 
-  static NAN_METHOD(addDestination);
-  static NAN_METHOD(removeDestination);
+    static NAN_METHOD(addDestination);
+    static NAN_METHOD(removeDestination);
 
-  static NAN_METHOD(source);
+    static NAN_METHOD(source);
 
-  static Nan::Persistent<v8::Function> constructor;
+    static Nan::Persistent<v8::Function> constructor;
 };
 
 class AudioFrameSource : public FrameSource {
- public:
-  static NAN_MODULE_INIT(Init);
-  owt_base::AudioFrameConstructor* me;
+public:
+    static NAN_MODULE_INIT(Init);
+    owt_base::AudioFrameConstructor* me;
 
- private:
-  AudioFrameSource() {};
-  ~AudioFrameSource() {};
+private:
+    AudioFrameSource() {};
+    ~AudioFrameSource() {};
 
-  static NAN_METHOD(New);
+    static NAN_METHOD(New);
 
-  static Nan::Persistent<v8::Function> constructor;
+    static Nan::Persistent<v8::Function> constructor;
 
-  friend class AudioFrameConstructor;
+    friend class AudioFrameConstructor;
 };
 
 #endif

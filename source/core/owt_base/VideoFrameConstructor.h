@@ -20,13 +20,13 @@ namespace owt_base {
 
 class VideoInfoListener {
 public:
-    virtual ~VideoInfoListener(){};
+    virtual ~VideoInfoListener() {};
     virtual void onVideoInfo(const std::string& videoInfoJSON) = 0;
 };
 
 class KeyFrameRequester {
 public:
-    virtual ~KeyFrameRequester(){}
+    virtual ~KeyFrameRequester() { }
     virtual int32_t RequestKeyFrame() = 0;
 };
 
@@ -51,8 +51,8 @@ public:
 
     VideoFrameConstructor(VideoInfoListener*, uint32_t transportccExtId = 0);
     VideoFrameConstructor(std::shared_ptr<rtc_adapter::RtcAdapter>,
-                          VideoInfoListener*,
-                          uint32_t transportccExtId = 0);
+        VideoInfoListener*,
+        uint32_t transportccExtId = 0);
     VideoFrameConstructor(KeyFrameRequester* requester);
     virtual ~VideoFrameConstructor();
 

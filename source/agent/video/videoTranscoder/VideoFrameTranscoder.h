@@ -17,24 +17,26 @@ public:
 
 #ifndef BUILD_FOR_ANALYTICS
     virtual bool addOutput(int output,
-            owt_base::FrameFormat,
-            const owt_base::VideoCodecProfile profile,
-            const owt_base::VideoSize&,
-            const unsigned int framerateFPS,
-            const unsigned int bitrateKbps,
-            const unsigned int keyFrameIntervalSeconds,
-            owt_base::FrameDestination*) = 0;
+        owt_base::FrameFormat,
+        const owt_base::VideoCodecProfile profile,
+        const owt_base::VideoSize&,
+        const unsigned int framerateFPS,
+        const unsigned int bitrateKbps,
+        const unsigned int keyFrameIntervalSeconds,
+        owt_base::FrameDestination*)
+        = 0;
 #else
     virtual bool addOutput(int output,
-            owt_base::FrameFormat,
-            const owt_base::VideoCodecProfile profile,
-            const owt_base::VideoSize&,
-            const unsigned int framerateFPS,
-            const unsigned int bitrateKbps,
-            const unsigned int keyFrameIntervalSeconds,
-            const std::string& algorithm,
-            const std::string& pluginName,
-            owt_base::FrameDestination*) = 0;
+        owt_base::FrameFormat,
+        const owt_base::VideoCodecProfile profile,
+        const owt_base::VideoSize&,
+        const unsigned int framerateFPS,
+        const unsigned int bitrateKbps,
+        const unsigned int keyFrameIntervalSeconds,
+        const std::string& algorithm,
+        const std::string& pluginName,
+        owt_base::FrameDestination*)
+        = 0;
 #endif
     virtual void removeOutput(int output) = 0;
 

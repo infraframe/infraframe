@@ -2,104 +2,121 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
+"use strict";
 var Url = require("url");
-const crypto = require('crypto');
+const crypto = require("crypto");
 
-var restClient = function(spec) {
+var restClient = function (spec) {
+  var version = "v1";
 
-    var version = 'v1';
+  var that = {},
+    restservice = spec.service,
+    restkey = spec.key,
+    resturl = spec.url.endsWith("/")
+      ? spec.url + version + "/"
+      : spec.url + "/" + version + "/",
+    rejectUnauthorizedCert = spec.rejectUnauthorizedCert;
 
-    var that = {},
-        restservice = spec.service,
-        restkey = spec.key,
-        resturl = (spec.url.endsWith('/') ? (spec.url + version + '/') : (spec.url + '/' + version + '/')),
-        rejectUnauthorizedCert = spec.rejectUnauthorizedCert;
+  console.log(
+    "spec url is:",
+    resturl,
+    " service is:",
+    restservice,
+    " key is:",
+    restkey
+  );
+  var version = "v1";
 
-    console.log("spec url is:", resturl, " service is:", restservice, " key is:", restkey);
-    var version = 'v1';
+  function calculateSignature(toSign, key) {
+    const hash = crypto.createHmac("sha256", key).update(toSign);
+    const hex = hash.digest("hex");
+    return Buffer.from(hex).toString("base64");
+  }
 
-    function calculateSignature(toSign, key) {
-        const hash = crypto.createHmac("sha256", key).update(toSign);
-        const hex = hash.digest('hex');
-        return Buffer.from(hex).toString('base64');
+  var send = function (method, resource, body, onOK, onError) {
+    console.log(
+      "url before is:",
+      resturl,
+      " service is:",
+      restservice,
+      " key is:",
+      restkey
+    );
+    var url = Url.parse(resturl + resource);
+    console.log("url is:", url);
+    var ssl = url.protocol === "https:" ? true : false;
+    var timestamp = new Date().getTime();
+    var cnounce = require("crypto").randomBytes(8).toString("hex");
+    var toSign = timestamp + "," + cnounce;
+    var header =
+      "MAuth realm=http://marte3.dit.upm.es,mauth_signature_method=HMAC_SHA256";
+
+    header += ",mauth_serviceid=";
+    header += restservice;
+    header += ",mauth_cnonce=";
+    header += cnounce;
+    header += ",mauth_timestamp=";
+    header += timestamp;
+    header += ",mauth_signature=";
+    header += calculateSignature(toSign, restkey);
+
+    var options = {
+      hostname: url.hostname,
+      port: url.port || (ssl ? 443 : 80),
+      path: url.pathname + (url.search ? url.search : ""),
+      method: method,
+      headers: {
+        Host: url.hostname,
+        Authorization: header,
+      },
+    };
+    ssl &&
+      rejectUnauthorizedCert !== undefined &&
+      (options.rejectUnauthorized = rejectUnauthorizedCert);
+
+    var bodyJSON;
+    if (body) {
+      bodyJSON = JSON.stringify(body);
+      options.headers["Content-Type"] = "application/json";
+      options.headers["Content-Length"] = Buffer.byteLength(bodyJSON);
+    } else {
+      options.headers["Content-Type"] = "text/plain;charset=UTF-8";
     }
 
-    var send = function(method, resource, body, onOK, onError) {
-        console.log("url before is:", resturl, " service is:", restservice, " key is:", restkey);
-        var url = Url.parse(resturl + resource);
-        console.log("url is:", url);
-        var ssl = (url.protocol === 'https:' ? true : false);
-        var timestamp = new Date().getTime();
-        var cnounce = require('crypto').randomBytes(8).toString('hex');
-        var toSign = timestamp + ',' + cnounce;
-        var header = 'MAuth realm=http://marte3.dit.upm.es,mauth_signature_method=HMAC_SHA256';
+    var doRequest = ssl ? require("https").request : require("http").request;
+    var req = doRequest(options, (res) => {
+      res.setEncoding("utf8");
+      var resTxt = "";
+      var status = res.statusCode;
 
-        header += ',mauth_serviceid=';
-        header += restservice;
-        header += ',mauth_cnonce=';
-        header += cnounce;
-        header += ',mauth_timestamp=';
-        header += timestamp;
-        header += ',mauth_signature=';
-        header += calculateSignature(toSign, restkey);
+      res.on("data", (chunk) => {
+        resTxt += chunk;
+      });
 
-        var options = {
-            hostname: url.hostname,
-            port: url.port || (ssl ? 443 : 80),
-            path: url.pathname + (url.search ? url.search : ''),
-            method: method,
-            headers: {
-                'Host': url.hostname,
-                'Authorization': header
-            }
-        };
-        ssl && (rejectUnauthorizedCert !== undefined) && (options.rejectUnauthorized = rejectUnauthorizedCert);
-
-        var bodyJSON;
-        if (body) {
-            bodyJSON = JSON.stringify(body);
-            options.headers['Content-Type'] = 'application/json';
-            options.headers['Content-Length'] = Buffer.byteLength(bodyJSON);
+      res.on("end", () => {
+        if (status === 100 || (status >= 200 && status <= 205)) {
+          onOK(resTxt);
         } else {
-            options.headers['Content-Type'] = 'text/plain;charset=UTF-8';
+          onError(status, resTxt);
         }
+      });
 
-        var doRequest = (ssl ? require('https').request : require('http').request);
-        var req = doRequest(options, (res) => {
-            res.setEncoding("utf8");
-            var resTxt = '';
-            var status = res.statusCode;
+      req.on("error", (err) => {
+        console.error("Send http(s) error:", err);
+        onError(503, err);
+      });
+    }).on("error", (err) => {
+      console.error("Build http(s) req error:", err);
+      onError(503, err);
+    });
 
-            res.on('data', (chunk) => {
-                resTxt += chunk;
-            });
+    console.log("send bodyjson:", bodyJSON, " options are:", options);
+    bodyJSON && req.write(bodyJSON);
 
-            res.on('end', () => {
-                if (status === 100 || (status >= 200 && status <= 205)) {
-                    onOK(resTxt);
-                } else {
-                    onError(status, resTxt);
-                }
-            });
+    req.end();
+  };
 
-            req.on('error', (err) => {
-                console.error('Send http(s) error:', err);
-                onError(503, err);
-            });
-        }).on('error', (err) => {
-            console.error('Build http(s) req error:', err);
-            onError(503, err);
-        });
-
-        console.log("send bodyjson:", bodyJSON, " options are:", options);
-        bodyJSON && req.write(bodyJSON);
-
-        req.end();
-    };
-
-
-    /**
+  /**
        * @function createRoom
        * @desc This function creates a room.
        <br><b>Remarks:</b><br>
@@ -254,42 +271,60 @@ var restClient = function(spec) {
       console.log ('Error:', err);
     });
        */
-    that.createRoom = function(name, options, callback, callbackError) {
-        if (!options) {
-            options = {};
-        }
-
-        if (options.viewports) {
-            options.views = viewportsToViews(options.viewports);
-            delete options.viewports;
-        }
-
-        send('POST', 'rooms', {
-            name: name,
-            options: options
-        }, function(roomRtn) {
-            var room = JSON.parse(roomRtn);
-            callback(room);
-        }, callbackError);
-    };
-
-    that.startEventCascading = function(room, options, callback, callbackError) {
-        send('POST', 'rooms/' + room + '/cascading', {
-            options: options
-        }, function(result) {
-            callback(result);
-        }, callbackError);
+  that.createRoom = function (name, options, callback, callbackError) {
+    if (!options) {
+      options = {};
     }
 
-    that.getBridges = function(room, clusterID, callback, callbackError) {
-        send('GET', 'rooms/' + room + '/bridges', {
-            targetCluster: clusterID
-        }, function(result) {
-            callback(result);
-        }, callbackError);
+    if (options.viewports) {
+      options.views = viewportsToViews(options.viewports);
+      delete options.viewports;
     }
 
-    /**
+    send(
+      "POST",
+      "rooms",
+      {
+        name: name,
+        options: options,
+      },
+      function (roomRtn) {
+        var room = JSON.parse(roomRtn);
+        callback(room);
+      },
+      callbackError
+    );
+  };
+
+  that.startEventCascading = function (room, options, callback, callbackError) {
+    send(
+      "POST",
+      "rooms/" + room + "/cascading",
+      {
+        options: options,
+      },
+      function (result) {
+        callback(result);
+      },
+      callbackError
+    );
+  };
+
+  that.getBridges = function (room, clusterID, callback, callbackError) {
+    send(
+      "GET",
+      "rooms/" + room + "/bridges",
+      {
+        targetCluster: clusterID,
+      },
+      function (result) {
+        callback(result);
+      },
+      callbackError
+    );
+  };
+
+  /**
        * @function getRoom
        * @desc This function returns information on the specified room.
        * @memberOf OWT_REST.API
@@ -305,38 +340,58 @@ var restClient = function(spec) {
       console.log(status, error);
     });
        */
-    that.getRoom = function(room, callback, callbackError) {
-        if (typeof room !== 'string') {
-            callbackError(401, 'Invalid room ID.');
-            return;
-        }
-        if (room.trim() === '') {
-            callbackError(401, 'Empty room ID');
-            return;
-        }
-        send('GET', 'rooms/' + room, undefined, function(roomRtn) {
-            var room = JSON.parse(roomRtn);
-            callback(room);
-        }, callbackError);
-    };
+  that.getRoom = function (room, callback, callbackError) {
+    if (typeof room !== "string") {
+      callbackError(401, "Invalid room ID.");
+      return;
+    }
+    if (room.trim() === "") {
+      callbackError(401, "Empty room ID");
+      return;
+    }
+    send(
+      "GET",
+      "rooms/" + room,
+      undefined,
+      function (roomRtn) {
+        var room = JSON.parse(roomRtn);
+        callback(room);
+      },
+      callbackError
+    );
+  };
 
-    that.createToken = function(room, user, role, preference, callback, callbackError) {
-        if (typeof room !== 'string' || typeof user !== 'string' || typeof role !== 'string') {
-            if (typeof callbackError === 'function')
-                callbackError(400, 'Invalid argument.');
-            return;
-        }
-        send('POST', 'rooms/' + room + '/tokens/', {
-            preference: preference,
-            user: user,
-            role: role
-        }, callback, callbackError);
-    };
+  that.createToken = function (
+    room,
+    user,
+    role,
+    preference,
+    callback,
+    callbackError
+  ) {
+    if (
+      typeof room !== "string" ||
+      typeof user !== "string" ||
+      typeof role !== "string"
+    ) {
+      if (typeof callbackError === "function")
+        callbackError(400, "Invalid argument.");
+      return;
+    }
+    send(
+      "POST",
+      "rooms/" + room + "/tokens/",
+      {
+        preference: preference,
+        user: user,
+        role: role,
+      },
+      callback,
+      callbackError
+    );
+  };
 
-
-    return that;
+  return that;
 };
-
-
 
 module.exports = restClient;

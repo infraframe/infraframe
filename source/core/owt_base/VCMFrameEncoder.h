@@ -5,24 +5,24 @@
 #ifndef VCMFrameEncoder_h
 #define VCMFrameEncoder_h
 
-#include <map>
 #include <atomic>
+#include <map>
 
+#include <boost/asio.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/asio.hpp>
 #include <boost/thread.hpp>
 
 #include <webrtc/modules/video_coding/codecs/h264/include/h264.h>
+#include <webrtc/modules/video_coding/codecs/i420/include/i420.h>
 #include <webrtc/modules/video_coding/codecs/vp8/include/vp8.h>
 #include <webrtc/modules/video_coding/codecs/vp8/temporal_layers.h>
 #include <webrtc/modules/video_coding/codecs/vp9/include/vp9.h>
-#include <webrtc/modules/video_coding/codecs/i420/include/i420.h>
 
-#include "logger.h"
+#include "FrameConverter.h"
 #include "I420BufferManager.h"
 #include "MediaFramePipeline.h"
-#include "FrameConverter.h"
+#include "logger.h"
 
 using namespace webrtc;
 
@@ -31,14 +31,19 @@ namespace owt_base {
 class EncodeOut : public FrameSource {
 public:
     EncodeOut(int32_t streamId, owt_base::VideoFrameEncoder* owner, owt_base::FrameDestination* dest)
-        : m_streamId(streamId), m_owner(owner), m_out(dest) {
+        : m_streamId(streamId)
+        , m_owner(owner)
+        , m_out(dest)
+    {
         addVideoDestination(dest);
     }
-    virtual ~EncodeOut() {
+    virtual ~EncodeOut()
+    {
         removeVideoDestination(m_out);
     }
 
-    void onFeedback(const owt_base::FeedbackMsg& msg) {
+    void onFeedback(const owt_base::FeedbackMsg& msg)
+    {
         if (msg.type == owt_base::VIDEO_FEEDBACK) {
             if (msg.cmd == REQUEST_KEY_FRAME) {
                 m_owner->requestKeyFrame(m_streamId);
@@ -48,7 +53,8 @@ public:
         }
     }
 
-    void onEncoded(const owt_base::Frame& frame) {
+    void onEncoded(const owt_base::Frame& frame)
+    {
         deliverFrame(frame);
     }
 
@@ -68,18 +74,19 @@ public:
     VCMFrameEncoder(FrameFormat format, VideoCodecProfile profile, bool useSimulcast = false);
     ~VCMFrameEncoder();
 
-    static bool supportFormat(FrameFormat format) {
+    static bool supportFormat(FrameFormat format)
+    {
         return (format == FRAME_FORMAT_VP8
-                || format == FRAME_FORMAT_VP9
-                || format == FRAME_FORMAT_H264);
+            || format == FRAME_FORMAT_VP9
+            || format == FRAME_FORMAT_H264);
     }
 
-    FrameFormat getInputFormat() {return FRAME_FORMAT_I420;}
+    FrameFormat getInputFormat() { return FRAME_FORMAT_I420; }
 
     // Implements DecodedImageCallback.
     webrtc::EncodedImageCallback::Result OnEncodedImage(const EncodedImage& encoded_frame,
-            const CodecSpecificInfo* codec_specific_info,
-            const RTPFragmentationHeader* fragmentation) override;
+        const CodecSpecificInfo* codec_specific_info,
+        const RTPFragmentationHeader* fragmentation) override;
 
     // Implements VideoFrameEncoder.
     void onFrame(const Frame&);
@@ -91,23 +98,23 @@ public:
     void requestKeyFrame(int32_t streamId);
 
 protected:
-    static void Encode(VCMFrameEncoder *This, boost::shared_ptr<webrtc::VideoFrame> videoFrame) {This->encode(videoFrame);};
+    static void Encode(VCMFrameEncoder* This, boost::shared_ptr<webrtc::VideoFrame> videoFrame) { This->encode(videoFrame); };
     void encode(boost::shared_ptr<webrtc::VideoFrame> videoFrame);
 
     boost::shared_ptr<webrtc::VideoFrame> frameConvert(const Frame& frame);
 
-    void dump(uint8_t *buf, int len);
+    void dump(uint8_t* buf, int len);
 
 private:
     struct OutStream {
         uint32_t width;
         uint32_t height;
-        int32_t  simulcastId;
+        int32_t simulcastId;
         boost::shared_ptr<EncodeOut> encodeOut;
     };
 
     int32_t m_streamId;
-    std::map<int32_t/*streamId*/, OutStream> m_streams;
+    std::map<int32_t /*streamId*/, OutStream> m_streams;
 
     FrameFormat m_encodeFormat;
     VideoCodecProfile m_profile;
@@ -134,7 +141,7 @@ private:
     boost::scoped_ptr<FrameConverter> m_converter;
 
     bool m_enableBsDump;
-    FILE *m_bsDumpfp;
+    FILE* m_bsDumpfp;
 };
 
 } /* namespace owt_base */

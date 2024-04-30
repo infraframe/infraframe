@@ -9,7 +9,7 @@
 
 class EventRegistry {
 public:
-    virtual ~EventRegistry() {}
+    virtual ~EventRegistry() { }
     // `notifyAsyncEvent()' sends a notification to the event handler, which would be handled with FIFO rule.
     virtual bool notifyAsyncEvent(const std::string& event, const std::string& data) = 0;
     // In contrast to `notifyAsyncEvent()', `notifyAsyncEventInEmergency()' sends a notification to the event handler,

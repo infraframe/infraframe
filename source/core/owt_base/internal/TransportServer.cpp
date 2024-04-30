@@ -24,15 +24,14 @@ TransportServer::TransportServer(
     , m_acceptor(m_service->service())
     , m_isClosed(false)
     , m_listener(listener)
-{}
+{
+}
 
 TransportServer::~TransportServer()
 {
     close();
     ELOG_DEBUG("Destructor end");
 }
-
-
 
 bool TransportServer::enableSecure()
 {
@@ -43,8 +42,7 @@ bool TransportServer::enableSecure()
         ELOG_WARN("Failed to enable secure, server already start");
         return false;
     }
-    if (!std::fstream{kServerCrt} ||
-        !std::fstream{kServerKey}) {
+    if (!std::fstream { kServerCrt } || !std::fstream { kServerKey }) {
         ELOG_WARN("Failed to enable secure, missing cert files");
         return false;
     }
@@ -63,7 +61,7 @@ bool TransportServer::enableSecure()
 
     m_sslContext->use_certificate_chain_file(kServerCrt);
     m_sslContext->use_private_key_file(kServerKey, boost::asio::ssl::context::pem);
-    if (std::fstream{kDHParams}) {
+    if (std::fstream { kDHParams }) {
         m_sslContext->use_tmp_dh_file(kDHParams);
     }
     m_sslContext->load_verify_file(kServerCrt);
@@ -120,9 +118,8 @@ void TransportServer::acceptHandler(const boost::system::error_code& ec)
         } else {
             m_socket.set_option(tcp::no_delay(true));
             int sessionId = m_nextSessionId++;
-            m_sessions[sessionId] =
-                std::make_shared<TransportSession>(
-                    sessionId, m_service, std::move(m_socket), this);
+            m_sessions[sessionId] = std::make_shared<TransportSession>(
+                sessionId, m_service, std::move(m_socket), this);
             m_sessions[sessionId]->start();
             ELOG_DEBUG("Accept session %d", sessionId);
             if (m_listener) {
@@ -137,13 +134,12 @@ void TransportServer::acceptHandler(const boost::system::error_code& ec)
 }
 
 void TransportServer::handshakeHandler(std::shared_ptr<SSLSocket> sock,
-                                       const boost::system::error_code& ec)
+    const boost::system::error_code& ec)
 {
     if (!ec) {
         int sessionId = m_nextSessionId++;
-        m_sessions[sessionId] =
-            std::make_shared<TransportSession>(
-                sessionId, m_service, sock, this);
+        m_sessions[sessionId] = std::make_shared<TransportSession>(
+            sessionId, m_service, sock, this);
         m_sessions[sessionId]->start();
         ELOG_DEBUG("accept secure session %d", sessionId);
         if (m_listener) {
@@ -153,7 +149,6 @@ void TransportServer::handshakeHandler(std::shared_ptr<SSLSocket> sock,
         ELOG_WARN("Error during handshake: %s", ec.message().c_str());
     }
 }
-
 
 void TransportServer::listenTo(uint32_t port)
 {
@@ -240,14 +235,14 @@ void TransportServer::onSessionRemoved(int id)
 
 void TransportServer::sendData(const uint8_t* data, uint32_t len)
 {
-    TransportData tData{data, len};
+    TransportData tData { data, len };
     for (auto it = m_sessions.begin(); it != m_sessions.end(); it++) {
         it->second->sendData(tData);
     }
 }
 
 void TransportServer::sendData(const uint8_t* header, uint32_t headerLength,
-                               const uint8_t* payload, uint32_t payloadLength)
+    const uint8_t* payload, uint32_t payloadLength)
 {
     TransportData data;
     data.buffer.reset(new uint8_t[headerLength + payloadLength]);
@@ -262,7 +257,7 @@ void TransportServer::sendData(const uint8_t* header, uint32_t headerLength,
 
 void TransportServer::sendSessionData(int id, const uint8_t* data, uint32_t len)
 {
-    TransportData tData{data, len};
+    TransportData tData { data, len };
     if (m_sessions.count(id)) {
         m_sessions[id]->sendData(tData);
     }
@@ -275,7 +270,6 @@ void TransportServer::closeSession(int id)
         m_sessions.erase(id);
     }
 }
-
 
 void TransportServer::close()
 {

@@ -24,7 +24,7 @@ QuicTransportFrameSource::QuicTransportFrameSource()
 {
 }
 
-QuicTransportFrameSource::~QuicTransportFrameSource(){}
+QuicTransportFrameSource::~QuicTransportFrameSource() { }
 
 NAN_MODULE_INIT(QuicTransportFrameSource::init)
 {

@@ -17,7 +17,7 @@ InternalSctp::~InternalSctp()
     m_transport->close();
 }
 
-void InternalSctp::connect(const std::string &ip, unsigned int udpPort, unsigned int sctpPort)
+void InternalSctp::connect(const std::string& ip, unsigned int udpPort, unsigned int sctpPort)
 {
     m_transport->connect(ip, udpPort, sctpPort);
 }
@@ -44,15 +44,15 @@ void InternalSctp::onTransportData(char* buf, int len)
 {
     Frame* frame = nullptr;
     switch (buf[0]) {
-        case TDT_MEDIA_FRAME:
-            frame = reinterpret_cast<Frame*>(buf + 1);
-            frame->payload = reinterpret_cast<uint8_t*>(buf + 1 + sizeof(Frame));
-            deliverFrame(*frame);
-            break;
-        case TDT_FEEDBACK_MSG:
-            deliverFeedbackMsg(*(reinterpret_cast<FeedbackMsg*>(buf + 1)));
-        default:
-            break;
+    case TDT_MEDIA_FRAME:
+        frame = reinterpret_cast<Frame*>(buf + 1);
+        frame->payload = reinterpret_cast<uint8_t*>(buf + 1 + sizeof(Frame));
+        deliverFrame(*frame);
+        break;
+    case TDT_FEEDBACK_MSG:
+        deliverFeedbackMsg(*(reinterpret_cast<FeedbackMsg*>(buf + 1)));
+    default:
+        break;
     }
 }
 

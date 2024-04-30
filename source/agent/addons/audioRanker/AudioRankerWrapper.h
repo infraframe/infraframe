@@ -8,7 +8,6 @@
 #include <AudioRanker.h>
 #include <nan.h>
 
-
 /*
  * Wrapper class of owt_base::AudioRanker
  */
@@ -28,9 +27,9 @@ private:
     AudioRanker();
     ~AudioRanker();
 
-    Nan::Callback *callback_;
+    Nan::Callback* callback_;
     uv_async_t async_;
-    Nan::AsyncResource *asyncResource_;
+    Nan::AsyncResource* asyncResource_;
 
     static Nan::Persistent<v8::Function> constructor;
 
@@ -45,7 +44,6 @@ private:
     static NAN_METHOD(removeInput);
 
     static NAUV_WORK_CB(Callback);
-
 };
 
 #endif

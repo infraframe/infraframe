@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
+"use strict";
 
 /**
  * NodeJs LayoutProcessor
@@ -15,10 +15,9 @@
  */
 
 // Logger
-const log = require('../logger').logger.getLogger('LayoutProcessor');
-const util = require('util');
-const EventEmitter = require('events').EventEmitter;
-
+const log = require("../logger").logger.getLogger("LayoutProcessor");
+const util = require("util");
+const EventEmitter = require("events").EventEmitter;
 
 /**
  * @typedef Rational
@@ -43,19 +42,19 @@ const EventEmitter = require('events').EventEmitter;
  * @property {object} options.area
  */
 function Region(options = {}) {
-    this.id = options.id;
-    if (options.area && options.shape) {
-        this.shape = options.shape;
-        this.area = options.area;
-    }
+  this.id = options.id;
+  if (options.area && options.shape) {
+    this.shape = options.shape;
+    this.area = options.area;
+  }
 }
 
 /**
  * @function validate
  * @return {boolean}
  */
-Region.prototype.validate = function() {
-    return true;
+Region.prototype.validate = function () {
+  return true;
 };
 
 /**
@@ -64,36 +63,36 @@ Region.prototype.validate = function() {
  * @param {Region[][]} layouts: the array of layouts templates
  */
 function LayoutProcessor(layouts) {
-    EventEmitter.call(this);
-    this.templates = {};
-    this.maxCover = 0;
-    this.inputList = [];
-    this.currentRegions = [];
-    this.layoutSolution = [];
+  EventEmitter.call(this);
+  this.templates = {};
+  this.maxCover = 0;
+  this.inputList = [];
+  this.currentRegions = [];
+  this.layoutSolution = [];
 
-    var self = this;
-    var numOfRegions;
-    var validRegions;
-    var region;
+  var self = this;
+  var numOfRegions;
+  var validRegions;
+  var region;
 
-    // Parse templates
-    if (Array.isArray(layouts)) {
-        layouts.forEach(function(layout) {
-            numOfRegions = layout.region.length;
-            validRegions = [];
-            layout.region.forEach(function(regObj) {
-                region = new Region(regObj);
-                if (region.validate()) {
-                    validRegions.push(region);
-                }
-            });
+  // Parse templates
+  if (Array.isArray(layouts)) {
+    layouts.forEach(function (layout) {
+      numOfRegions = layout.region.length;
+      validRegions = [];
+      layout.region.forEach(function (regObj) {
+        region = new Region(regObj);
+        if (region.validate()) {
+          validRegions.push(region);
+        }
+      });
 
-            self.templates[numOfRegions] = validRegions;
-            if (self.maxCover < numOfRegions) self.maxCover = numOfRegions;
-        });
-    } else {
-        this.emit('error', new Error('Invalid layout'));
-    }
+      self.templates[numOfRegions] = validRegions;
+      if (self.maxCover < numOfRegions) self.maxCover = numOfRegions;
+    });
+  } else {
+    this.emit("error", new Error("Invalid layout"));
+  }
 }
 util.inherits(LayoutProcessor, EventEmitter);
 
@@ -103,20 +102,20 @@ util.inherits(LayoutProcessor, EventEmitter);
  * @param {boolean} front: whether add to front
  * @return {void}
  */
-LayoutProcessor.prototype.addInput = function(inputId, front) {
-    var oldPos = this.inputList.indexOf(inputId);
-    if (oldPos >= 0) {
-        // Already exists
-        return;
-    }
+LayoutProcessor.prototype.addInput = function (inputId, front) {
+  var oldPos = this.inputList.indexOf(inputId);
+  if (oldPos >= 0) {
+    // Already exists
+    return;
+  }
 
-    if (front) {
-        this.inputList.unshift(inputId);
-    } else {
-        this.inputList.push(inputId);
-    }
-    this.choseTemplate(this.inputList.length);
-    this.updateInputPositions();
+  if (front) {
+    this.inputList.unshift(inputId);
+  } else {
+    this.inputList.push(inputId);
+  }
+  this.choseTemplate(this.inputList.length);
+  this.updateInputPositions();
 };
 
 /**
@@ -124,13 +123,13 @@ LayoutProcessor.prototype.addInput = function(inputId, front) {
  * @param {number} inputId: inputID
  * @return {void}
  */
-LayoutProcessor.prototype.removeInput = function(inputId) {
-    var pos = this.inputList.indexOf(inputId);
-    if (pos >= 0) {
-        this.inputList.splice(pos, 1);
-        this.choseTemplate(this.inputList.length);
-        this.updateInputPositions();
-    }
+LayoutProcessor.prototype.removeInput = function (inputId) {
+  var pos = this.inputList.indexOf(inputId);
+  if (pos >= 0) {
+    this.inputList.splice(pos, 1);
+    this.choseTemplate(this.inputList.length);
+    this.updateInputPositions();
+  }
 };
 
 /**
@@ -139,50 +138,53 @@ LayoutProcessor.prototype.removeInput = function(inputId) {
  * @param {string} regionId: regionID
  * @return {boolean}
  */
-LayoutProcessor.prototype.specifyInputRegion = function(inputId, regionId) {
-    var inputPos;
-    var regionPos;
-    var tmpInput;
-    inputPos = this.inputList.indexOf(inputId);
-    for (regionPos = 0; regionPos < this.currentRegions.length; regionPos++) {
-        if (this.currentRegions[regionPos].id === regionId) break;
-    }
+LayoutProcessor.prototype.specifyInputRegion = function (inputId, regionId) {
+  var inputPos;
+  var regionPos;
+  var tmpInput;
+  inputPos = this.inputList.indexOf(inputId);
+  for (regionPos = 0; regionPos < this.currentRegions.length; regionPos++) {
+    if (this.currentRegions[regionPos].id === regionId) break;
+  }
 
-    if (inputPos === regionPos) {
-        // Already match input - region
-        return true;
-    }
+  if (inputPos === regionPos) {
+    // Already match input - region
+    return true;
+  }
 
-    if (inputPos >= 0 && regionPos < this.currentRegions.length
-            && regionPos < this.inputList.length) {
-        // Swap in inputList
-        tmpInput = this.inputList[inputPos];
-        this.inputList[inputPos] = this.inputList[regionPos];
-        this.inputList[regionPos] = tmpInput;
-        this.updateInputPositions();
-        return true;
-    }
-    return false;
+  if (
+    inputPos >= 0 &&
+    regionPos < this.currentRegions.length &&
+    regionPos < this.inputList.length
+  ) {
+    // Swap in inputList
+    tmpInput = this.inputList[inputPos];
+    this.inputList[inputPos] = this.inputList[regionPos];
+    this.inputList[regionPos] = tmpInput;
+    this.updateInputPositions();
+    return true;
+  }
+  return false;
 };
 
 /**
  * @function setPrimary
  * @param {number} inputId: inputID
  */
-LayoutProcessor.prototype.setPrimary = function(inputId) {
-    var inputPos;
-    var tmpInput;
-    inputPos = this.inputList.indexOf(inputId);
-    if (inputPos <= 0 || this.inputList.length <= 1) {
-        // No input or at head
-        return;
-    }
+LayoutProcessor.prototype.setPrimary = function (inputId) {
+  var inputPos;
+  var tmpInput;
+  inputPos = this.inputList.indexOf(inputId);
+  if (inputPos <= 0 || this.inputList.length <= 1) {
+    // No input or at head
+    return;
+  }
 
-    // Swap with first in inputList
-    tmpInput = this.inputList[inputPos];
-    this.inputList[inputPos] = this.inputList[0];
-    this.inputList[0] = tmpInput;
-    this.updateInputPositions();
+  // Swap with first in inputList
+  tmpInput = this.inputList[inputPos];
+  this.inputList[inputPos] = this.inputList[0];
+  this.inputList[0] = tmpInput;
+  this.updateInputPositions();
 };
 
 /**
@@ -190,12 +192,12 @@ LayoutProcessor.prototype.setPrimary = function(inputId) {
  * @param {number} inputId: inputID
  * @return {Region}
  */
-LayoutProcessor.prototype.getRegion = function(inputId) {
-    var inputPos = this.inputList.indexOf(inputId);
-    if (inputPos >= 0) {
-        return this.currentRegions[inputPos];
-    }
-    return undefined;
+LayoutProcessor.prototype.getRegion = function (inputId) {
+  var inputPos = this.inputList.indexOf(inputId);
+  if (inputPos >= 0) {
+    return this.currentRegions[inputPos];
+  }
+  return undefined;
 };
 
 /**
@@ -203,15 +205,15 @@ LayoutProcessor.prototype.getRegion = function(inputId) {
  * @param {string} regionId
  * @return {number} inputId
  */
-LayoutProcessor.prototype.getInput = function(regionId) {
-    var i;
-    for (i = 0; i < this.inputList.length; i++) {
-        if (this.currentRegions[i].id === regionId) {
-            break;
-        }
+LayoutProcessor.prototype.getInput = function (regionId) {
+  var i;
+  for (i = 0; i < this.inputList.length; i++) {
+    if (this.currentRegions[i].id === regionId) {
+      break;
     }
+  }
 
-    return (i < this.inputList.length) ? this.inputList[i] : -1;
+  return i < this.inputList.length ? this.inputList[i] : -1;
 };
 
 /**
@@ -219,14 +221,14 @@ LayoutProcessor.prototype.getInput = function(regionId) {
  * @param {number} regionNum
  * @return {void}
  */
-LayoutProcessor.prototype.choseTemplate = function(regionNum) {
-    var cand;
-    for (cand = regionNum; cand <= this.maxCover; cand++) {
-        if (this.templates[cand]) {
-            this.currentRegions = this.templates[cand];
-            break;
-        }
+LayoutProcessor.prototype.choseTemplate = function (regionNum) {
+  var cand;
+  for (cand = regionNum; cand <= this.maxCover; cand++) {
+    if (this.templates[cand]) {
+      this.currentRegions = this.templates[cand];
+      break;
     }
+  }
 };
 
 /**
@@ -234,23 +236,23 @@ LayoutProcessor.prototype.choseTemplate = function(regionNum) {
  * @param {void}
  * @return {void}
  */
-LayoutProcessor.prototype.updateInputPositions = function() {
-    var i;
-    this.layoutSolution = [];
-    for (i = 0; i < this.currentRegions.length; i++) {
-        if (typeof this.inputList[i] === 'number') {
-            this.layoutSolution.push({
-                input: this.inputList[i],
-                region: this.currentRegions[i]
-            });
-        } else {
-            this.layoutSolution.push({
-                region: this.currentRegions[i]
-            });
-        }
+LayoutProcessor.prototype.updateInputPositions = function () {
+  var i;
+  this.layoutSolution = [];
+  for (i = 0; i < this.currentRegions.length; i++) {
+    if (typeof this.inputList[i] === "number") {
+      this.layoutSolution.push({
+        input: this.inputList[i],
+        region: this.currentRegions[i],
+      });
+    } else {
+      this.layoutSolution.push({
+        region: this.currentRegions[i],
+      });
     }
-    // Trigger "layoutChange" event
-    this.emit('layoutChange', this.layoutSolution);
+  }
+  // Trigger "layoutChange" event
+  this.emit("layoutChange", this.layoutSolution);
 };
 
 /**
@@ -258,15 +260,17 @@ LayoutProcessor.prototype.updateInputPositions = function() {
  * @param {void}
  * @return {Region[]}
  */
-LayoutProcessor.prototype.getRegions = function() {
-    return this.currentRegions;
+LayoutProcessor.prototype.getRegions = function () {
+  return this.currentRegions;
 };
 
-LayoutProcessor.prototype.setLayout = function(layout, on_ok, on_error) {
-  log.debug('setLayout, layout:', JSON.stringify(layout));
+LayoutProcessor.prototype.setLayout = function (layout, on_ok, on_error) {
+  log.debug("setLayout, layout:", JSON.stringify(layout));
   this.templates = {};
   this.maxCover = layout.length;
-  this.templates[layout.length] = layout.map((obj) => {return obj.region;});
+  this.templates[layout.length] = layout.map((obj) => {
+    return obj.region;
+  });
   this.currentRegions = this.templates[layout.length];
 
   this.inputList = [];
@@ -278,7 +282,7 @@ LayoutProcessor.prototype.setLayout = function(layout, on_ok, on_error) {
   });
 
   on_ok(this.layoutSolution);
-  this.emit('layoutChange', this.layoutSolution);
+  this.emit("layoutChange", this.layoutSolution);
 };
 
 exports.LayoutProcessor = LayoutProcessor;

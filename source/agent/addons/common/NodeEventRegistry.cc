@@ -19,8 +19,8 @@ NodeEventRegistry* NodeEventRegistry::New(const Local<Function>& f)
 }
 
 NodeEventRegistry::NodeEventRegistry()
-    : m_store{ Isolate::GetCurrent(), Object::New(Isolate::GetCurrent()) }
-    , m_uvHandle{ reinterpret_cast<uv_async_t*>(malloc(sizeof(uv_async_t))) }
+    : m_store { Isolate::GetCurrent(), Object::New(Isolate::GetCurrent()) }
+    , m_uvHandle { reinterpret_cast<uv_async_t*>(malloc(sizeof(uv_async_t))) }
 {
     if (m_uvHandle) {
         m_uvHandle->data = this;
@@ -30,8 +30,8 @@ NodeEventRegistry::NodeEventRegistry()
 }
 
 NodeEventRegistry::NodeEventRegistry(Isolate* isolate, const Local<Function>& f)
-    : m_store{ Isolate::GetCurrent(), f }
-    , m_uvHandle{ reinterpret_cast<uv_async_t*>(malloc(sizeof(uv_async_t))) }
+    : m_store { Isolate::GetCurrent(), f }
+    , m_uvHandle { reinterpret_cast<uv_async_t*>(malloc(sizeof(uv_async_t))) }
 {
     if (m_uvHandle) {
         m_uvHandle->data = this;
@@ -66,8 +66,8 @@ void NodeEventRegistry::process(const Data& data)
 
     if (store->IsFunction()) {
         Nan::Call(Local<Function>::Cast(store),
-                  isolate->GetCurrentContext()->Global(),
-                  argc, argv);
+            isolate->GetCurrentContext()->Global(),
+            argc, argv);
         if (try_catch.HasCaught()) {
             node::FatalException(isolate, try_catch);
         }
@@ -76,12 +76,12 @@ void NodeEventRegistry::process(const Data& data)
     }
 
     Local<Value> val = Nan::Get(store, Nan::New(data.event.c_str()).ToLocalChecked())
-                       .ToLocalChecked();
+                           .ToLocalChecked();
     if (!val->IsFunction())
         return;
     Nan::Call(Local<Function>::Cast(val),
-              isolate->GetCurrentContext()->Global(),
-              argc, argv);
+        isolate->GetCurrentContext()->Global(),
+        argc, argv);
     if (try_catch.HasCaught()) {
         node::FatalException(isolate, try_catch);
     }
@@ -116,7 +116,7 @@ bool NodeEventRegistry::notifyAsyncEvent(const std::string& event, const std::st
     if (m_uvHandle && uv_is_active(reinterpret_cast<uv_handle_t*>(m_uvHandle))) {
         {
             std::lock_guard<std::mutex> lock(m_lock);
-            m_buffer.push_back(Data{ event, data });
+            m_buffer.push_back(Data { event, data });
         }
         uv_async_send(m_uvHandle);
         return true;
@@ -130,7 +130,7 @@ bool NodeEventRegistry::notifyAsyncEventInEmergency(const std::string& event, co
     if (m_uvHandle && uv_is_active(reinterpret_cast<uv_handle_t*>(m_uvHandle))) {
         {
             std::lock_guard<std::mutex> lock(m_lock);
-            m_buffer.push_front(Data{ event, data });
+            m_buffer.push_front(Data { event, data });
         }
         uv_async_send(m_uvHandle);
         return true;
@@ -154,7 +154,7 @@ void NodeEventRegistry::callback(uv_async_t* handle)
 }
 
 NodeEventedObjectWrap::NodeEventedObjectWrap()
-    : NodeEventRegistry{}
+    : NodeEventRegistry {}
 {
 }
 

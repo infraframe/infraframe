@@ -12,8 +12,8 @@
 
 #include <logger.h>
 
-#include "MediaFramePipeline.h"
 #include "AudioEncoder.h"
+#include "MediaFramePipeline.h"
 
 namespace mcu {
 using namespace owt_base;
@@ -27,7 +27,7 @@ public:
     ~PcmEncoder();
 
     bool init() override;
-    bool addAudioFrame(const AudioFrame *audioFrame) override;
+    bool addAudioFrame(const AudioFrame* audioFrame) override;
 
 private:
     FrameFormat m_format;

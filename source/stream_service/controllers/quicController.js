@@ -5,19 +5,18 @@
 // This file was initially copied from rtcController. But a lot of changes were made for QuicTransport.
 // The design for *Controllers is a little bit confused. It would be better to have a single controller manages all sessions.
 
-'use strict';
+"use strict";
 
-const log = require('../logger').logger.getLogger('QuicController');
-const {TypeController} = require('./typeController');
-const {Publication, Subscription} = require('../stateTypes')
+const log = require("../logger").logger.getLogger("QuicController");
+const { TypeController } = require("./typeController");
+const { Publication, Subscription } = require("../stateTypes");
 
 // Transport/Operation state
-const INITIALIZING = 'initializing';
-const COMPLETED = 'completed';
-const PENDING = 'pending';
+const INITIALIZING = "initializing";
+const COMPLETED = "completed";
+const PENDING = "pending";
 
 class Transport {
-
   constructor(id, owner, origin) {
     this.id = id;
     this.owner = owner;
@@ -41,13 +40,14 @@ class Operation {
     this.tracks = tracks;
     this.data = data;
     this.promise = Promise.resolve();
-    this.tracks = this.tracks ? this.tracks.map(t => {
-        if (t.type === 'video') {
-            t.format = { codec : 'h264', profile : 'B' };
-        }
-        return t;
-    })
-                              : undefined;
+    this.tracks = this.tracks
+      ? this.tracks.map((t) => {
+          if (t.type === "video") {
+            t.format = { codec: "h264", profile: "B" };
+          }
+          return t;
+        })
+      : undefined;
   }
 }
 
@@ -78,34 +78,34 @@ class QuicController extends TypeController {
     return this.operations.get(operationId);
   }
 
-  onSessionProgress(sessionId, status)
-  {
-      if (!status.data) {
-          log.error('QUIC agent only support data forwarding.');
-          return;
+  onSessionProgress(sessionId, status) {
+    if (!status.data) {
+      log.error("QUIC agent only support data forwarding.");
+      return;
+    }
+    if (status.type === "ready") {
+      if (!this.operations.get(sessionId)) {
+        log.error("Invalid session ID.");
+        return;
       }
-      if (status.type === 'ready') {
-          if (!this.operations.get(sessionId)) {
-              log.error('Invalid session ID.');
-              return;
-          }
-          this.emit('session-established', this.operations.get(sessionId));
-      }
+      this.emit("session-established", this.operations.get(sessionId));
+    }
   }
 
   async _createTransportIfNeeded(ownerId, domain, tId, origin) {
     if (!this.transports.has(tId)) {
       this.transports.set(tId, new Transport(tId, ownerId, origin));
-      const locality = await this.getWorkerNode('quic', domain, tId, origin);
+      const locality = await this.getWorkerNode("quic", domain, tId, origin);
       if (!this.transports.has(tId)) {
         log.debug(`Transport destroyed after getWorkerNode ${tId}`);
-        this.recycleWorkerNode(locality, domain, tId)
-          .catch(reason => {
-            log.debug('AccessNode not recycled', locality);
-          });
-        throw new Error('Session has been aborted');
+        this.recycleWorkerNode(locality, domain, tId).catch((reason) => {
+          log.debug("AccessNode not recycled", locality);
+        });
+        throw new Error("Session has been aborted");
       }
-      log.debug(`getWorkerNode ok, sessionId: ${sessionId}, locality: ${locality}`);
+      log.debug(
+        `getWorkerNode ok, sessionId: ${sessionId}, locality: ${locality}`
+      );
       this.transports.get(tId).setup(locality);
       this.transports.get(tId).domain = domain;
       return this.transports.get(tId);
@@ -137,8 +137,12 @@ class QuicController extends TypeController {
     const transportId = config.transport?.id || config.id;
     const owner = config.participant;
     const transport = await this._createTransportIfNeeded(
-      owner, config.domain, transportId, config.info.origin);
-    log.debug('Success create transport.');
+      owner,
+      config.domain,
+      transportId,
+      config.info.origin
+    );
+    log.debug("Success create transport.");
     if (transport.state !== PENDING && transport.state !== COMPLETED) {
       throw new Error(`Transport ${transportId} is not ready`);
     }
@@ -151,11 +155,16 @@ class QuicController extends TypeController {
     const op = new Operation(sessionId, transport, direction, tracks, data);
     this.operations.set(sessionId, op);
     // Save promise for this operation
-    const options = {transport:{id:transportId, type:'quic'}, tracks, controller: this.selfId, data};
+    const options = {
+      transport: { id: transportId, type: "quic" },
+      tracks,
+      controller: this.selfId,
+      data,
+    };
     // Make RPC call
     const rpcNode = locality.node;
-    const method = direction === 'in' ? 'publish' : 'subscribe';
-    return this.makeRPC(rpcNode, method, [sessionId, 'quic', options]);
+    const method = direction === "in" ? "publish" : "subscribe";
+    return this.makeRPC(rpcNode, method, [sessionId, "quic", options]);
   }
 
   async removeSession(sessionId, direction, reason) {
@@ -167,24 +176,26 @@ class QuicController extends TypeController {
     const operation = this.operations.get(sessionId);
     const transport = this.transports.get(operation.transportId);
     const locality = transport.locality;
-    operation.promise = operation.promise.then(() => {
-      if (!this.operations.has(sessionId)) {
-        log.debug(`operation does NOT exist:${sessionId}`);
-        return Promise.reject(`operation does NOT exist:${sessionId}`);
-      }
-      const method = direction === 'in' ? 'unpublish' : 'unsubscribe';
-      return this.makeRPC(locality.node, method, [sessionId])
-    }).then(() => {
-      if (this.operations.has(sessionId)) {
-        const owner = transport.owner;
-        const abortData = { direction: operation.direction, owner, reason };
-        this.emit('session-aborted', sessionId, abortData);
-        this.operations.delete(sessionId);
-      }
-    })
-    .catch(reason => {
-      log.debug(`Operation terminate failed ${operation}, ${reason}`);
-    });
+    operation.promise = operation.promise
+      .then(() => {
+        if (!this.operations.has(sessionId)) {
+          log.debug(`operation does NOT exist:${sessionId}`);
+          return Promise.reject(`operation does NOT exist:${sessionId}`);
+        }
+        const method = direction === "in" ? "unpublish" : "unsubscribe";
+        return this.makeRPC(locality.node, method, [sessionId]);
+      })
+      .then(() => {
+        if (this.operations.has(sessionId)) {
+          const owner = transport.owner;
+          const abortData = { direction: operation.direction, owner, reason };
+          this.emit("session-aborted", sessionId, abortData);
+          this.operations.delete(sessionId);
+        }
+      })
+      .catch((reason) => {
+        log.debug(`Operation terminate failed ${operation}, ${reason}`);
+      });
     return operation.promise;
   }
 
@@ -205,12 +216,16 @@ class QuicController extends TypeController {
     this.operations.forEach((operation, operationId) => {
       const transport = this.transports.get(operation.transportId);
       if (transport.owner === ownerId) {
-        const p = this.removeSession(operationId, operation.direction, 'Owner leave');
+        const p = this.removeSession(
+          operationId,
+          operation.direction,
+          "Owner leave"
+        );
         terminations.push(p);
       }
     });
     return Promise.all(terminations);
-  };
+  }
 
   terminateByLocality(type, id) {
     log.debug(`terminateByLocality ${type} ${id}`);
@@ -219,19 +234,23 @@ class QuicController extends TypeController {
     this.operations.forEach((operation, operationId) => {
       const l = this.transports.get(operation.transportId).locality;
       if (l) {
-        if ((type === 'worker' && l.agent === id) ||
-            (type === 'node' && l.node === id)) {
-          const p = this.removeSession(operationId, operation.direction, 'Node lost');
+        if (
+          (type === "worker" && l.agent === id) ||
+          (type === "node" && l.node === id)
+        ) {
+          const p = this.removeSession(
+            operationId,
+            operation.direction,
+            "Node lost"
+          );
           terminations.push(p);
         }
       }
     });
     return Promise.all(terminations);
-  };
-
-  onFaultDetected(type, id) {
-
   }
+
+  onFaultDetected(type, id) {}
 
   destroy() {
     log.debug(`destroy`);
@@ -241,9 +260,7 @@ class QuicController extends TypeController {
       // const p = this.rpcReq.destroyTransport(transportId);
     });
     return Promise.all(terminations);
-  };
-
-
+  }
 }
 
 exports.QuicController = QuicController;

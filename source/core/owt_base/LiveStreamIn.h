@@ -5,18 +5,18 @@
 #ifndef LiveStreamIn_h
 #define LiveStreamIn_h
 
-#include <boost/thread.hpp>
+#include "MediaFramePipeline.h"
+#include <EventRegistry.h>
 #include <boost/asio.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_array.hpp>
-#include <EventRegistry.h>
+#include <boost/thread.hpp>
 #include <logger.h>
 #include <string>
-#include "MediaFramePipeline.h"
 
 extern "C" {
 #include <libavformat/avformat.h>
-#include<libavutil/intreadwrite.h>
+#include <libavutil/intreadwrite.h>
 }
 
 #include <fstream>
@@ -35,7 +35,12 @@ static inline int64_t currentTimeMillis()
 
 class TimeoutHandler {
 public:
-    TimeoutHandler(int32_t timeout = 100000) : m_valid(true), m_timeout(timeout), m_lastTime(currentTimeMillis()) { }
+    TimeoutHandler(int32_t timeout = 100000)
+        : m_valid(true)
+        , m_timeout(timeout)
+        , m_lastTime(currentTimeMillis())
+    {
+    }
 
     void reset(int32_t timeout)
     {
@@ -50,7 +55,7 @@ public:
 
     static int checkInterrupt(void* handler)
     {
-        return handler && static_cast<TimeoutHandler *>(handler)->isTimeout();
+        return handler && static_cast<TimeoutHandler*>(handler)->isTimeout();
     }
 
 private:
@@ -67,20 +72,21 @@ private:
 
 class FramePacket {
 public:
-    FramePacket (AVPacket *packet);
-    virtual ~FramePacket ();
+    FramePacket(AVPacket* packet);
+    virtual ~FramePacket();
 
-    AVPacket *getAVPacket() {return m_packet;}
+    AVPacket* getAVPacket() { return m_packet; }
+
 private:
-    AVPacket *m_packet;
+    AVPacket* m_packet;
 };
 
 class FramePacketBuffer {
 public:
-    FramePacketBuffer () { }
+    FramePacketBuffer() { }
     virtual ~FramePacketBuffer() { }
 
-    void pushPacket(boost::shared_ptr<FramePacket> &FramePacket);
+    void pushPacket(boost::shared_ptr<FramePacket>& FramePacket);
     boost::shared_ptr<FramePacket> popPacket(bool noWait = true);
 
     boost::shared_ptr<FramePacket> frontPacket(bool noWait = true);
@@ -97,32 +103,33 @@ private:
 
 class JitterBufferListener {
 public:
-    virtual void onDeliverFrame(JitterBuffer *jitterBuffer, AVPacket *pkt) = 0;
-    virtual void onSyncTimeChanged(JitterBuffer *jitterBuffer, int64_t syncTimestamp) = 0;
+    virtual void onDeliverFrame(JitterBuffer* jitterBuffer, AVPacket* pkt) = 0;
+    virtual void onSyncTimeChanged(JitterBuffer* jitterBuffer, int64_t syncTimestamp) = 0;
 };
 
 class JitterBuffer {
     DECLARE_LOGGER();
+
 public:
     enum SyncMode {
         SYNC_MODE_MASTER,
         SYNC_MODE_SLAVE,
     };
 
-    JitterBuffer (std::string name, SyncMode syncMode, JitterBufferListener *listener, int64_t maxBufferingMs = 1000);
-    virtual ~JitterBuffer ();
+    JitterBuffer(std::string name, SyncMode syncMode, JitterBufferListener* listener, int64_t maxBufferingMs = 1000);
+    virtual ~JitterBuffer();
 
     void start(uint32_t delay = 0);
     void stop();
     void drain();
     uint32_t sizeInMs();
 
-    void insert(AVPacket &pkt);
-    void setSyncTime(int64_t &syncTimestamp, boost::posix_time::ptime &syncLocalTime);
+    void insert(AVPacket& pkt);
+    void setSyncTime(int64_t& syncTimestamp, boost::posix_time::ptime& syncLocalTime);
 
 protected:
     void onTimeout(const boost::system::error_code& ec);
-    int64_t getNextTime(AVPacket *pkt);
+    int64_t getNextTime(AVPacket* pkt);
     void handleJob();
 
 private:
@@ -133,7 +140,7 @@ private:
     bool m_isRunning;
     int64_t m_lastInterval;
     std::atomic<bool> m_isFirstFramePacket;
-    JitterBufferListener *m_listener;
+    JitterBufferListener* m_listener;
 
     FramePacketBuffer m_buffer;
 
@@ -154,6 +161,7 @@ class LiveStreamIn : public FrameSource, public JitterBufferListener {
     DECLARE_LOGGER();
 
     static const uint32_t DEFAULT_UDP_BUF_SIZE = 8 * 1024 * 1024;
+
 public:
     struct Options {
         std::string url;
@@ -161,22 +169,30 @@ public:
         uint32_t bufferSize;
         std::string enableAudio;
         std::string enableVideo;
-        Options() : url{""}, transport{"tcp"}, bufferSize{DEFAULT_UDP_BUF_SIZE}, enableAudio{"no"}, enableVideo{"no"} { }
+        Options()
+            : url { "" }
+            , transport { "tcp" }
+            , bufferSize { DEFAULT_UDP_BUF_SIZE }
+            , enableAudio { "no" }
+            , enableVideo { "no" }
+        {
+        }
     };
 
-    LiveStreamIn (const Options&, EventRegistry*);
+    LiveStreamIn(const Options&, EventRegistry*);
     virtual ~LiveStreamIn();
 
     void setEventRegistry(EventRegistry* handle) { m_asyncHandle = handle; }
 
-    void onDeliverFrame(JitterBuffer *jitterBuffer, AVPacket *pkt);
-    void onSyncTimeChanged(JitterBuffer *jitterBuffer, int64_t syncTimestamp);
+    void onDeliverFrame(JitterBuffer* jitterBuffer, AVPacket* pkt);
+    void onSyncTimeChanged(JitterBuffer* jitterBuffer, int64_t syncTimestamp);
 
     void deliverNullVideoFrame();
-    void deliverVideoFrame(AVPacket *pkt);
-    void deliverAudioFrame(AVPacket *pkt);
+    void deliverVideoFrame(AVPacket* pkt);
+    void deliverAudioFrame(AVPacket* pkt);
 
-    void onFeedback(const owt_base::FeedbackMsg& msg) {
+    void onFeedback(const owt_base::FeedbackMsg& msg)
+    {
         if (msg.type == owt_base::VIDEO_FEEDBACK) {
             if (msg.cmd == REQUEST_KEY_FRAME) {
                 requestKeyFrame();
@@ -203,7 +219,7 @@ private:
     uint32_t m_videoHeight;
     bool m_needCheckVBS;
     bool m_needApplyVBSF;
-    AVBSFContext *m_vbsf;
+    AVBSFContext* m_vbsf;
 
     int m_audioStreamIndex;
     FrameFormat m_audioFormat;
@@ -226,13 +242,13 @@ private:
     int m_sps_pps_buffer_length;
 
     char m_errbuff[500];
-    char *ff_err2str(int errRet);
+    char* ff_err2str(int errRet);
 
     std::ostringstream m_AsyncEvent;
 
-    bool isRtsp() {return (m_url.compare(0, 7, "rtsp://") == 0);}
-    bool isFileInput() {return (m_url.compare(0, 7, "file://") == 0
-            || m_url.compare(0, 1, "/") == 0 || m_url.compare(0, 1, ".") == 0);}
+    bool isRtsp() { return (m_url.compare(0, 7, "rtsp://") == 0); }
+    bool isFileInput() { return (m_url.compare(0, 7, "file://") == 0
+        || m_url.compare(0, 1, "/") == 0 || m_url.compare(0, 1, ".") == 0); }
 
     void requestKeyFrame();
 
@@ -240,10 +256,10 @@ private:
     bool reconnect();
     void receiveLoop();
 
-    void checkVideoBitstream(AVStream *st, const AVPacket *pkt);
-    bool parse_avcC(AVPacket *pkt);
-    bool filterVBS(AVStream *st, AVPacket *pkt);
-    bool filterPS(AVStream *st, AVPacket *pkt);
+    void checkVideoBitstream(AVStream* st, const AVPacket* pkt);
+    bool parse_avcC(AVPacket* pkt);
+    bool filterVBS(AVStream* st, AVPacket* pkt);
+    bool filterPS(AVStream* st, AVPacket* pkt);
 };
 
 }

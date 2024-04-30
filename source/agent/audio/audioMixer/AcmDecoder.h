@@ -12,8 +12,8 @@
 
 #include <logger.h>
 
-#include "MediaFramePipeline.h"
 #include "AudioDecoder.h"
+#include "MediaFramePipeline.h"
 
 namespace mcu {
 using namespace owt_base;
@@ -27,7 +27,7 @@ public:
     ~AcmDecoder();
 
     bool init() override;
-    bool getAudioFrame(AudioFrame *audioFrame) override;
+    bool getAudioFrame(AudioFrame* audioFrame) override;
 
     // Implements owt_base::FrameDestination
     void onFrame(const Frame& frame) override;

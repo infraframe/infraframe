@@ -2,18 +2,20 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
+"use strict";
 
-const {randomUUID} = require('crypto');
-const log = require('./logger').logger.getLogger('DomainHandler');
+const { randomUUID } = require("crypto");
+const log = require("./logger").logger.getLogger("DomainHandler");
 
 const FORMAT_PREFERENCE = {
-  audio: {optional: [{codec: 'opus', sampleRate: 48000, channelNum: 2}]},
-  video: {optional: [
-    {codec: 'vp8'},
-    {codec: 'h264', profile: 'CB'},
-    {codec: 'h264', profile: 'B'}
-  ]},
+  audio: { optional: [{ codec: "opus", sampleRate: 48000, channelNum: 2 }] },
+  video: {
+    optional: [
+      { codec: "vp8" },
+      { codec: "h264", profile: "CB" },
+      { codec: "h264", profile: "B" },
+    ],
+  },
 };
 
 // Up level controller for certain domain streams
@@ -28,17 +30,17 @@ class DomainHandler {
   // Join from portal
   // req = {id, domain}
   async join(req) {
-    log.debug('join:', req);
+    log.debug("join:", req);
     if (!this.domain) {
       // Init
-      log.debug('Init handler:', req.domain);
+      log.debug("Init handler:", req.domain);
       this.domain = req.domain;
     }
     if (req.domain !== this.domain) {
-      throw new Error('Invalid domain');
+      throw new Error("Invalid domain");
     }
     if (this.participants.has(req.id)) {
-      throw new Error('Duplicate join ID');
+      throw new Error("Duplicate join ID");
     }
     req.notifying = true;
     this.participants.set(req.id, req);
@@ -50,9 +52,9 @@ class DomainHandler {
 
   // Leave from portal
   async leave(req) {
-    log.debug('leave:', req);
+    log.debug("leave:", req);
     if (!this.participants.has(req.id)) {
-      throw new Error('Invalid leave ID');
+      throw new Error("Invalid leave ID");
     }
     // Clean up streams & subscriptions
     this.participants.delete(req.id);
@@ -60,52 +62,52 @@ class DomainHandler {
 
   // Publish from portal
   async publish(req) {
-    log.debug('publish:', req);
+    log.debug("publish:", req);
     // Validate request
     if (!this.participants.has(req.participant)) {
-      throw new Error('Invalid participant ID');
+      throw new Error("Invalid participant ID");
     }
-    req.id = req.id || randomUUID().replace(/-/g, '');
+    req.id = req.id || randomUUID().replace(/-/g, "");
     req.info = {
       owner: this.participant,
       type: req.type,
       attributes: req.attributes,
       formatPreference: FORMAT_PREFERENCE,
-      origin: {domain: this.domain},
+      origin: { domain: this.domain },
     };
     return req;
   }
   // Subscribe from portal
   async subscribe(req) {
-    log.debug('subscribe:', req);
+    log.debug("subscribe:", req);
     // Validate request
     if (!this.participants.has(req.participant)) {
-      throw new Error('Invalid pariticpant ID');
+      throw new Error("Invalid pariticpant ID");
     }
-    req.id = req.id || randomUUID().replace(/-/g, '');
+    req.id = req.id || randomUUID().replace(/-/g, "");
     req.info = {
       owner: this.participant,
       type: req.type,
       formatPreference: FORMAT_PREFERENCE,
-      origin: {domain: this.domain},
+      origin: { domain: this.domain },
     };
     return req;
   }
   // StreamControl from portal
   async streamControl(req) {
-    log.debug('streamControl:', req);
+    log.debug("streamControl:", req);
     // Validate request
     if (!this.participants.has(req.participant)) {
-      throw new Error('Invalid pariticpant ID');
+      throw new Error("Invalid pariticpant ID");
     }
     return req;
   }
   // SubscriptionControl from portal
   async subscriptionControl(req) {
-    log.debug('subscriptionControl:', req);
+    log.debug("subscriptionControl:", req);
     // Validate request
     if (!this.participants.has(req.participant)) {
-      throw new Error('Invalid pariticpant ID');
+      throw new Error("Invalid pariticpant ID");
     }
     return req;
   }
@@ -119,40 +121,40 @@ class DomainHandler {
   }
   */
   async onStatus(req) {
-    log.debug('onStatus:', req);
-    if (req.type === 'publication') {
+    log.debug("onStatus:", req);
+    if (req.type === "publication") {
       const pub = req.data;
-      if (req.status === 'add') {
+      if (req.status === "add") {
         this.streams.set(pub.id, pub);
-      } else if (req.status === 'remove') {
+      } else if (req.status === "remove") {
         this.streams.delete(pub.id);
       }
-    } else if (req.type === 'subscription') {
+    } else if (req.type === "subscription") {
       const sub = req.data;
-      if (req.status === 'add') {
+      if (req.status === "add") {
         this.subscriptions.set(sub.id, sub);
-      } else if (req.status === 'remove') {
+      } else if (req.status === "remove") {
         this.subscriptions.delete(sub.id);
       }
     }
   }
   // Add processor request
   async addProcessor(req) {
-    req.id = req.id || randomUUID().replace(/-/g, '');
+    req.id = req.id || randomUUID().replace(/-/g, "");
     return req;
   }
 }
 
 class RemoteDomainHandler {
   static supportedMethods = [
-    'join',
-    'leave',
-    'publish',
-    'subscribe',
-    'streamControl',
-    'subscriptionControl',
-    'onStatus',
-    'addProcessor',
+    "join",
+    "leave",
+    "publish",
+    "subscribe",
+    "streamControl",
+    "subscriptionControl",
+    "onStatus",
+    "addProcessor",
   ];
 
   constructor(locality, rpcChannel) {
@@ -173,8 +175,7 @@ class RemoteDomainHandler {
     if (!this.locality?.node) {
       throw new Error(`Locality ${locality} is invalid`);
     }
-    return this.rpcChannel.makeRPC(
-      this.locality.node, method, [req]);
+    return this.rpcChannel.makeRPC(this.locality.node, method, [req]);
   }
 }
 

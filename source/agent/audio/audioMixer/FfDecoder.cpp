@@ -62,7 +62,7 @@ FfDecoder::~FfDecoder()
         m_audioFifo = NULL;
     }
     if (m_audioFrame) {
-        av_frame_free(&m_audioFrame );
+        av_frame_free(&m_audioFrame);
         m_audioFrame = NULL;
     }
 
@@ -132,22 +132,22 @@ bool FfDecoder::initDecoder(FrameFormat format, uint32_t sampleRate, uint32_t ch
 {
     int ret;
     AVCodecID decId;
-    AVCodec *dec = NULL;
+    AVCodec* dec = NULL;
 
-    switch(format) {
-        case FRAME_FORMAT_AAC:
-        case FRAME_FORMAT_AAC_48000_2:
-            decId = AV_CODEC_ID_AAC;
-            break;
-        case FRAME_FORMAT_AC3:
-            decId = AV_CODEC_ID_AC3;
-            break;
-        case FRAME_FORMAT_NELLYMOSER:
-            decId = AV_CODEC_ID_NELLYMOSER;
-            break;
-        default:
-            ELOG_WARN_T("Invalid format(%s)", getFormatStr(format));
-            return false;
+    switch (format) {
+    case FRAME_FORMAT_AAC:
+    case FRAME_FORMAT_AAC_48000_2:
+        decId = AV_CODEC_ID_AAC;
+        break;
+    case FRAME_FORMAT_AC3:
+        decId = AV_CODEC_ID_AC3;
+        break;
+    case FRAME_FORMAT_NELLYMOSER:
+        decId = AV_CODEC_ID_NELLYMOSER;
+        break;
+    default:
+        ELOG_WARN_T("Invalid format(%s)", getFormatStr(format));
+        return false;
     }
 
     dec = avcodec_find_decoder(decId);
@@ -157,17 +157,17 @@ bool FfDecoder::initDecoder(FrameFormat format, uint32_t sampleRate, uint32_t ch
     }
 
     m_decCtx = avcodec_alloc_context3(dec);
-    if (!m_decCtx ) {
+    if (!m_decCtx) {
         ELOG_ERROR_T("Could not alloc ffmpeg decoder context");
         return false;
     }
 
-    m_decCtx->sample_fmt        = AV_SAMPLE_FMT_FLT;
-    m_decCtx->sample_rate       = sampleRate;
-    m_decCtx->channels          = channels;
-    m_decCtx->channel_layout    = av_get_default_channel_layout(m_decCtx->channels);
+    m_decCtx->sample_fmt = AV_SAMPLE_FMT_FLT;
+    m_decCtx->sample_rate = sampleRate;
+    m_decCtx->channels = channels;
+    m_decCtx->channel_layout = av_get_default_channel_layout(m_decCtx->channels);
 
-    ret = avcodec_open2(m_decCtx, dec , NULL);
+    ret = avcodec_open2(m_decCtx, dec, NULL);
     if (ret < 0) {
         ELOG_ERROR_T("Could not open ffmpeg decoder context, %s", ff_err2str(ret));
         return false;
@@ -181,15 +181,15 @@ bool FfDecoder::initDecoder(FrameFormat format, uint32_t sampleRate, uint32_t ch
 
     memset(&m_packet, 0, sizeof(m_packet));
 
-    m_inSampleFormat    = m_decCtx->sample_fmt;
-    m_inSampleRate      = m_decCtx->sample_rate;
-    m_inChannels        = m_decCtx->channels;
+    m_inSampleFormat = m_decCtx->sample_fmt;
+    m_inSampleRate = m_decCtx->sample_rate;
+    m_inChannels = m_decCtx->channels;
 
     return true;
 }
 
 bool FfDecoder::initResampler(enum AVSampleFormat inSampleFormat, int inSampleRate, int inChannels,
-        enum AVSampleFormat outSampleFormat, int outSampleRate, int outChannels)
+    enum AVSampleFormat outSampleFormat, int outSampleRate, int outChannels)
 {
     int ret;
 
@@ -200,14 +200,7 @@ bool FfDecoder::initResampler(enum AVSampleFormat inSampleFormat, int inSampleRa
 
     m_needResample = true;
 
-    ELOG_INFO_T("Init resampler %s-%d-%d -> %s-%d-%d"
-            , av_get_sample_fmt_name(inSampleFormat)
-            , inSampleRate
-            , inChannels
-            , av_get_sample_fmt_name(outSampleFormat)
-            , outSampleRate
-            , outChannels
-            );
+    ELOG_INFO_T("Init resampler %s-%d-%d -> %s-%d-%d", av_get_sample_fmt_name(inSampleFormat), inSampleRate, inChannels, av_get_sample_fmt_name(outSampleFormat), outSampleRate, outChannels);
 
     m_swrCtx = swr_alloc();
     if (!m_swrCtx) {
@@ -216,12 +209,12 @@ bool FfDecoder::initResampler(enum AVSampleFormat inSampleFormat, int inSampleRa
     }
 
     /* set options */
-    av_opt_set_sample_fmt(m_swrCtx, "in_sample_fmt",      inSampleFormat,       0);
-    av_opt_set_int       (m_swrCtx, "in_sample_rate",     inSampleRate,         0);
-    av_opt_set_int       (m_swrCtx, "in_channel_count",   inChannels,           0);
-    av_opt_set_sample_fmt(m_swrCtx, "out_sample_fmt",     outSampleFormat,    0);
-    av_opt_set_int       (m_swrCtx, "out_sample_rate",    outSampleRate,      0);
-    av_opt_set_int       (m_swrCtx, "out_channel_count",  outChannels,        0);
+    av_opt_set_sample_fmt(m_swrCtx, "in_sample_fmt", inSampleFormat, 0);
+    av_opt_set_int(m_swrCtx, "in_sample_rate", inSampleRate, 0);
+    av_opt_set_int(m_swrCtx, "in_channel_count", inChannels, 0);
+    av_opt_set_sample_fmt(m_swrCtx, "out_sample_fmt", outSampleFormat, 0);
+    av_opt_set_int(m_swrCtx, "out_sample_rate", outSampleRate, 0);
+    av_opt_set_int(m_swrCtx, "out_channel_count", outChannels, 0);
 
     ret = swr_init(m_swrCtx);
     if (ret < 0) {
@@ -234,7 +227,7 @@ bool FfDecoder::initResampler(enum AVSampleFormat inSampleFormat, int inSampleRa
 
     m_swrSamplesCount = 2048;
     ret = av_samples_alloc_array_and_samples(&m_swrSamplesData, &m_swrSamplesLinesize, outChannels,
-            m_swrSamplesCount, outSampleFormat, 0);
+        m_swrSamplesCount, outSampleFormat, 0);
     if (ret < 0) {
         ELOG_ERROR_T("Could not allocate swr samples data, %s", ff_err2str(ret));
 
@@ -256,16 +249,16 @@ bool FfDecoder::initFifo(enum AVSampleFormat sampleFmt, uint32_t sampleRate, uin
         return false;
     }
 
-    m_audioFrame  = av_frame_alloc();
+    m_audioFrame = av_frame_alloc();
     if (!m_audioFrame) {
         ELOG_ERROR_T("Cannot allocate audio frame");
         return false;
     }
 
-    m_audioFrame->nb_samples        = sampleRate / 100; //10ms
-    m_audioFrame->format            = sampleFmt;
-    m_audioFrame->channel_layout    = av_get_default_channel_layout(channels);
-    m_audioFrame->sample_rate       = sampleRate;
+    m_audioFrame->nb_samples = sampleRate / 100; //10ms
+    m_audioFrame->format = sampleFmt;
+    m_audioFrame->channel_layout = av_get_default_channel_layout(channels);
+    m_audioFrame->sample_rate = sampleRate;
 
     ret = av_frame_get_buffer(m_audioFrame, 0);
     if (ret < 0) {
@@ -276,7 +269,7 @@ bool FfDecoder::initFifo(enum AVSampleFormat sampleFmt, uint32_t sampleRate, uin
     return true;
 }
 
-bool FfDecoder::resampleFrame(AVFrame *frame, uint8_t **pOutData, int *pOutNbSamples)
+bool FfDecoder::resampleFrame(AVFrame* frame, uint8_t** pOutData, int* pOutNbSamples)
 {
     int ret;
     int dst_nb_samples;
@@ -286,10 +279,7 @@ bool FfDecoder::resampleFrame(AVFrame *frame, uint8_t **pOutData, int *pOutNbSam
 
     /* compute destination number of samples */
     dst_nb_samples = av_rescale_rnd(
-            swr_get_delay(m_swrCtx, m_inSampleRate) + frame->nb_samples
-            , m_outSampleRate
-            , m_inSampleRate
-            , AV_ROUND_UP);
+        swr_get_delay(m_swrCtx, m_inSampleRate) + frame->nb_samples, m_outSampleRate, m_inSampleRate, AV_ROUND_UP);
 
     if (dst_nb_samples > m_swrSamplesCount) {
         int newSize = 2 * dst_nb_samples;
@@ -298,7 +288,7 @@ bool FfDecoder::resampleFrame(AVFrame *frame, uint8_t **pOutData, int *pOutNbSam
 
         av_freep(&m_swrSamplesData[0]);
         ret = av_samples_alloc(m_swrSamplesData, &m_swrSamplesLinesize, m_outChannels,
-                newSize, m_outSampleFormat, 1);
+            newSize, m_outSampleFormat, 1);
         if (ret < 0) {
             ELOG_ERROR_T("Fail to realloc swr samples, %s", ff_err2str(ret));
             return false;
@@ -307,27 +297,27 @@ bool FfDecoder::resampleFrame(AVFrame *frame, uint8_t **pOutData, int *pOutNbSam
     }
 
     /* convert to destination format */
-    ret = swr_convert(m_swrCtx, m_swrSamplesData, dst_nb_samples, (const uint8_t **)frame->data, frame->nb_samples);
+    ret = swr_convert(m_swrCtx, m_swrSamplesData, dst_nb_samples, (const uint8_t**)frame->data, frame->nb_samples);
     if (ret < 0) {
         ELOG_ERROR_T("Error while converting, %s", ff_err2str(ret));
         return false;
     }
 
-    *pOutData       = m_swrSamplesData[0];
-    *pOutNbSamples  = ret;
+    *pOutData = m_swrSamplesData[0];
+    *pOutNbSamples = ret;
     return true;
 }
 
-bool FfDecoder::addFrameToFifo(AVFrame *frame)
+bool FfDecoder::addFrameToFifo(AVFrame* frame)
 {
-    uint8_t *data;
+    uint8_t* data;
     int samples_per_channel;
 
     if (m_needResample) {
-         if (!resampleFrame(frame, &data, &samples_per_channel))
+        if (!resampleFrame(frame, &data, &samples_per_channel))
             return false;
     } else {
-        data = (uint8_t *)frame->data;
+        data = (uint8_t*)frame->data;
         samples_per_channel = frame->nb_samples;
     }
 
@@ -387,7 +377,7 @@ void FfDecoder::onFrame(const Frame& frame)
     if (ret == AVERROR(EAGAIN)) {
         ELOG_DEBUG_T("Error while receive frame(%d), %s", ret, ff_err2str(ret));
         return;
-    }else if (ret < 0) {
+    } else if (ret < 0) {
         ELOG_ERROR_T("Error while receive frame(%d), %s", ret, ff_err2str(ret));
         return;
     }
@@ -419,27 +409,25 @@ void FfDecoder::onFrame(const Frame& frame)
             outFrame.timeStamp = m_timestamp * outFrame.additionalInfo.audio.sampleRate / 1000;
 
             ELOG_TRACE_T("deliverFrame(%s), sampleRate(%d), channels(%d), timeStamp(%d), length(%d), %s",
-                    getFormatStr(outFrame.format),
-                    outFrame.additionalInfo.audio.sampleRate,
-                    outFrame.additionalInfo.audio.channels,
-                    outFrame.timeStamp * 1000 / outFrame.additionalInfo.audio.sampleRate,
-                    outFrame.length,
-                    outFrame.additionalInfo.audio.isRtpPacket ? "RtpPacket" : "NonRtpPacket"
-                    );
+                getFormatStr(outFrame.format),
+                outFrame.additionalInfo.audio.sampleRate,
+                outFrame.additionalInfo.audio.channels,
+                outFrame.timeStamp * 1000 / outFrame.additionalInfo.audio.sampleRate,
+                outFrame.length,
+                outFrame.additionalInfo.audio.isRtpPacket ? "RtpPacket" : "NonRtpPacket");
 
             deliverFrame(outFrame);
         } else {
             AudioFrame audioFrame;
             audioFrame.UpdateFrame(
-                    -1,
-                    (uint32_t)m_timestamp * m_audioFrame->nb_samples / 1000,
-                    (const int16_t*)m_audioFrame->data[0],
-                    (size_t)m_audioFrame->nb_samples,
-                    m_outSampleRate,
-                    AudioFrame::kNormalSpeech,
-                    AudioFrame::kVadPassive,
-                    (size_t)m_outChannels
-                    );
+                -1,
+                (uint32_t)m_timestamp * m_audioFrame->nb_samples / 1000,
+                (const int16_t*)m_audioFrame->data[0],
+                (size_t)m_audioFrame->nb_samples,
+                m_outSampleRate,
+                AudioFrame::kNormalSpeech,
+                AudioFrame::kVadPassive,
+                (size_t)m_outChannels);
             m_output->addAudioFrame(&audioFrame);
         }
         m_timestamp += 1000 * m_audioFrame->nb_samples / m_outSampleRate;
@@ -456,7 +444,7 @@ bool FfDecoder::getAudioFrame(AudioFrame* audioFrame)
     return m_input->getAudioFrame(audioFrame);
 }
 
-char *FfDecoder::ff_err2str(int errRet)
+char* FfDecoder::ff_err2str(int errRet)
 {
     av_strerror(errRet, (char*)(&m_errbuff), 500);
     return m_errbuff;

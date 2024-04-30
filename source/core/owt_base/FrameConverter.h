@@ -30,15 +30,14 @@ public:
     ~FrameConverter();
 
 #ifdef ENABLE_MSDK
-    bool convert(MsdkFrame *srcMsdkFrame, webrtc::I420Buffer *dstI420Buffer);
-    bool convert(MsdkFrame *srcMsdkFrame, MsdkFrame *dstMsdkFrame);
+    bool convert(MsdkFrame* srcMsdkFrame, webrtc::I420Buffer* dstI420Buffer);
+    bool convert(MsdkFrame* srcMsdkFrame, MsdkFrame* dstMsdkFrame);
 
-    bool convert(webrtc::VideoFrameBuffer *srcBuffer, MsdkFrame *dstMsdkFrame);
+    bool convert(webrtc::VideoFrameBuffer* srcBuffer, MsdkFrame* dstMsdkFrame);
 #endif
-    bool convert(webrtc::VideoFrameBuffer *srcBuffer, webrtc::I420Buffer *dstI420Buffer);
+    bool convert(webrtc::VideoFrameBuffer* srcBuffer, webrtc::I420Buffer* dstI420Buffer);
 
 protected:
-
 private:
 #ifdef ENABLE_MSDK
     boost::scoped_ptr<MsdkScaler> m_scaler;
@@ -50,4 +49,3 @@ private:
 } /* namespace owt_base */
 
 #endif /* FrameConverter_h */
-

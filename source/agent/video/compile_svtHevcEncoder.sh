@@ -9,7 +9,7 @@ this=$(pwd)
 DOWNLOAD_DIR="${this}/svt_hevc_encoder"
 PREFIX_DIR="${DOWNLOAD_DIR}/install"
 
-install_svt_hevc(){
+install_svt_hevc() {
     pushd $DOWNLOAD_DIR
     rm -rf SVT-HEVC
     git clone https://github.com/intel/SVT-HEVC.git
@@ -27,7 +27,7 @@ install_svt_hevc(){
     popd >/dev/null
 }
 
-[[ ! -d ${DOWNLOAD_DIR} ]] && mkdir ${DOWNLOAD_DIR};
+[[ ! -d ${DOWNLOAD_DIR} ]] && mkdir ${DOWNLOAD_DIR}
 pushd ${DOWNLOAD_DIR}
 install_svt_hevc
 popd

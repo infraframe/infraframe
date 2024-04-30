@@ -10,10 +10,10 @@
 #include <MediaDefinitionExtra.h>
 #include <MediaDefinitions.h>
 
+#include <JobTimer.h>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/shared_mutex.hpp>
-#include <JobTimer.h>
 #include <logger.h>
 
 #include <RtcAdapter.h>

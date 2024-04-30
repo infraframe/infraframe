@@ -13,20 +13,20 @@
  * Wrapper class of owt_base::FrameSource
  */
 class AVStreamInWrap : public NodeEventedObjectWrap {
- public:
-  static void Init(v8::Local<v8::Object>);
-  static void Init(v8::Local<v8::Object>, v8::Local<v8::Object>);
-  owt_base::FrameSource* me;
+public:
+    static void Init(v8::Local<v8::Object>);
+    static void Init(v8::Local<v8::Object>, v8::Local<v8::Object>);
+    owt_base::FrameSource* me;
 
- private:
-  AVStreamInWrap();
-  ~AVStreamInWrap();
-  static v8::Persistent<v8::Function> constructor;
+private:
+    AVStreamInWrap();
+    ~AVStreamInWrap();
+    static v8::Persistent<v8::Function> constructor;
 
-  static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void close(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void addDestination(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void removeDestination(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void close(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void addDestination(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void removeDestination(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
 #endif // AVStreamInWrap_h

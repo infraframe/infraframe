@@ -38,8 +38,8 @@ bool FrameProcesser::init(FrameFormat format, const uint32_t width, const uint32
     }
 
 #ifdef ENABLE_MSDK
-    MsdkBase *msdkBase = MsdkBase::get();
-    if(msdkBase == NULL) {
+    MsdkBase* msdkBase = MsdkBase::get();
+    if (msdkBase == NULL) {
         ELOG_ERROR_T("Get MSDK failed.");
         return false;
     }
@@ -79,19 +79,15 @@ bool FrameProcesser::filterFrame(const Frame& frame)
 {
 #ifdef ENABLE_MSDK
     if (frame.format == FRAME_FORMAT_MSDK) {
-        MsdkFrameHolder *holder = (MsdkFrameHolder *)frame.payload;
+        MsdkFrameHolder* holder = (MsdkFrameHolder*)frame.payload;
         if (holder->cmd != MsdkCmd_NONE)
             return true;
     }
 #endif
 
     if (m_lastWidth != frame.additionalInfo.video.width
-            || m_lastHeight != frame.additionalInfo.video.height) {
-        ELOG_DEBUG_T("Stream(%s) resolution changed, %dx%d -> %dx%d"
-                , getFormatStr(frame.format)
-                , m_lastWidth, m_lastHeight
-                , frame.additionalInfo.video.width, frame.additionalInfo.video.height
-                );
+        || m_lastHeight != frame.additionalInfo.video.height) {
+        ELOG_DEBUG_T("Stream(%s) resolution changed, %dx%d -> %dx%d", getFormatStr(frame.format), m_lastWidth, m_lastHeight, frame.additionalInfo.video.width, frame.additionalInfo.video.height);
 
         m_lastWidth = frame.additionalInfo.video.width;
         m_lastHeight = frame.additionalInfo.video.height;
@@ -106,13 +102,13 @@ boost::shared_ptr<owt_base::MsdkFrame> FrameProcesser::getMsdkFrame(const uint32
     int32_t nullIndex = -1;
     int32_t freeIndex = -1;
 
-    for(uint32_t i = 0; i < m_framePool.size(); i++) {
+    for (uint32_t i = 0; i < m_framePool.size(); i++) {
         if (!m_framePool[i]) {
             nullIndex = i;
             continue;
         }
 
-        if(m_framePool[i].use_count() == 1 && m_framePool[i]->isFree()) {
+        if (m_framePool[i].use_count() == 1 && m_framePool[i]->isFree()) {
             freeIndex = i;
             if (m_framePool[i]->getWidth() >= width && m_framePool[i]->getHeight() >= height) {
                 if (m_framePool[i]->getVideoWidth() != width || m_framePool[i]->getVideoHeight() != height)
@@ -145,17 +141,12 @@ void FrameProcesser::onFrame(const Frame& frame)
     if (filterFrame(frame))
         return;
 
-    ELOG_TRACE_T("onFrame, format(%s), resolution(%dx%d), timestamp(%u)"
-            , getFormatStr(frame.format)
-            , frame.additionalInfo.video.width
-            , frame.additionalInfo.video.height
-            , frame.timeStamp / 90
-            );
+    ELOG_TRACE_T("onFrame, format(%s), resolution(%dx%d), timestamp(%u)", getFormatStr(frame.format), frame.additionalInfo.video.width, frame.additionalInfo.video.height, frame.timeStamp / 90);
 
     if (!m_outFrameRate) {
         if (frame.format == m_format
-                && (m_outWidth == frame.additionalInfo.video.width || m_outWidth == 0)
-                && (m_outHeight == frame.additionalInfo.video.height || m_outHeight == 0)) {
+            && (m_outWidth == frame.additionalInfo.video.width || m_outWidth == 0)
+            && (m_outHeight == frame.additionalInfo.video.height || m_outHeight == 0)) {
             deliverFrame(frame);
             return;
         }
@@ -173,14 +164,14 @@ void FrameProcesser::onFrame(const Frame& frame)
         }
 
         if (frame.format == FRAME_FORMAT_I420) {
-            VideoFrame *srcFrame = (reinterpret_cast<VideoFrame *>(frame.payload));
+            VideoFrame* srcFrame = (reinterpret_cast<VideoFrame*>(frame.payload));
 
             if (!m_converter->convert(srcFrame->video_frame_buffer().get(), msdkFrame.get())) {
                 ELOG_ERROR_T("Failed to convert frame");
                 return;
             }
         } else {
-            MsdkFrameHolder *holder = (MsdkFrameHolder *)frame.payload;
+            MsdkFrameHolder* holder = (MsdkFrameHolder*)frame.payload;
             boost::shared_ptr<MsdkFrame> srcMsdkFrame = holder->frame;
 
             if (!m_converter->convert(srcMsdkFrame.get(), msdkFrame.get())) {
@@ -208,7 +199,7 @@ void FrameProcesser::onFrame(const Frame& frame)
         }
 
         if (frame.format == FRAME_FORMAT_I420) {
-            VideoFrame *srcFrame = (reinterpret_cast<VideoFrame *>(frame.payload));
+            VideoFrame* srcFrame = (reinterpret_cast<VideoFrame*>(frame.payload));
             if (!m_converter->convert(srcFrame->video_frame_buffer().get(), i420Buffer.get())) {
                 ELOG_ERROR_T("Failed to convert frame");
                 return;
@@ -216,7 +207,7 @@ void FrameProcesser::onFrame(const Frame& frame)
         }
 #ifdef ENABLE_MSDK
         else {
-            MsdkFrameHolder *holder = (MsdkFrameHolder *)frame.payload;
+            MsdkFrameHolder* holder = (MsdkFrameHolder*)frame.payload;
             boost::shared_ptr<MsdkFrame> srcMsdkFrame = holder->frame;
             if (!m_converter->convert(srcMsdkFrame.get(), i420Buffer.get())) {
                 ELOG_ERROR_T("Failed to convert frame");
@@ -234,10 +225,7 @@ void FrameProcesser::onFrame(const Frame& frame)
 
         return;
     } else {
-        ELOG_ERROR_T("Invalid format, input %d(%s), output %d(%s)"
-                , frame.format, getFormatStr(frame.format)
-                , m_format, getFormatStr(m_format)
-                );
+        ELOG_ERROR_T("Invalid format, input %d(%s), output %d(%s)", frame.format, getFormatStr(frame.format), m_format, getFormatStr(m_format));
 
         return;
     }
@@ -262,8 +250,8 @@ void FrameProcesser::SendFrame(boost::shared_ptr<owt_base::MsdkFrame> msdkFrame,
     outFrame.timeStamp = timeStamp;
 
     ELOG_TRACE_T("sendMsdkFrame, %dx%d",
-            outFrame.additionalInfo.video.width,
-            outFrame.additionalInfo.video.height);
+        outFrame.additionalInfo.video.width,
+        outFrame.additionalInfo.video.height);
 
     deliverFrame(outFrame);
 }
@@ -286,8 +274,8 @@ void FrameProcesser::SendFrame(rtc::scoped_refptr<webrtc::I420Buffer> i420Buffer
     m_textDrawer->drawFrame(outFrame);
 
     ELOG_TRACE_T("sendI420Frame, %dx%d",
-            outFrame.additionalInfo.video.width,
-            outFrame.additionalInfo.video.height);
+        outFrame.additionalInfo.video.width,
+        outFrame.additionalInfo.video.height);
 
     deliverFrame(outFrame);
 }
@@ -305,7 +293,8 @@ void FrameProcesser::clearText()
 
 void FrameProcesser::onTimeout()
 {
-    uint32_t timeStamp = kMsToRtpTimestamp * m_clock->TimeInMilliseconds();;
+    uint32_t timeStamp = kMsToRtpTimestamp * m_clock->TimeInMilliseconds();
+    ;
 
 #ifdef ENABLE_MSDK
     if (m_format == FRAME_FORMAT_MSDK) {
@@ -332,4 +321,4 @@ void FrameProcesser::onTimeout()
     }
 }
 
-}//namespace owt_base
+} //namespace owt_base

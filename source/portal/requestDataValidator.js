@@ -6,7 +6,7 @@
  * JSON Validator for Request Data
  */
 
-const Ajv = require('ajv');
+const Ajv = require("ajv");
 // Using json schema validate with 'defaults' and 'removeAdditional' properties
 const ajv = new Ajv({ useDefaults: true });
 
@@ -25,18 +25,18 @@ function generateValidator(schema) {
 
 function getErrorMessage(errors) {
   var error = errors.shift();
-  var message = '';
+  var message = "";
   var messages = [];
   while (error) {
-    if (error.keyword === 'anyOf') {
+    if (error.keyword === "anyOf") {
       error = errors.shift();
       continue;
     }
-    var message = 'request' + error.dataPath + ' ' + error.message;
+    var message = "request" + error.dataPath + " " + error.message;
     for (let key in error.params) {
       let param = error.params[key];
       if (param) {
-        message += ' ' + JSON.stringify(param);
+        message += " " + JSON.stringify(param);
       }
     }
 
@@ -44,308 +44,320 @@ function getErrorMessage(errors) {
     error = errors.shift();
   }
 
-  return messages.join(',');
+  return messages.join(",");
 }
 
 const Resolution = {
-  $id: 'Resolution.json',
-  type: 'object',
+  $id: "Resolution.json",
+  type: "object",
   properties: {
-    'width': { type: 'number' },
-    'height': { type: 'number' }
+    width: { type: "number" },
+    height: { type: "number" },
   },
   additionalProperties: false,
-  required: ['width', 'height']
+  required: ["width", "height"],
 };
 ajv.addSchema(Resolution);
 
 // PublcationRequest
 const PublicationRequest = {
   anyOf: [
-    { // Webrtc Publication
-      type: 'object',
+    {
+      // Webrtc Publication
+      type: "object",
       properties: {
-        'media': { $ref: '#/definitions/WebRTCMediaOptions' },
-        'data': {type: 'boolean' },
-        'attributes': { type: 'object' },
-        'transport': {
-          type: 'object',
+        media: { $ref: "#/definitions/WebRTCMediaOptions" },
+        data: { type: "boolean" },
+        attributes: { type: "object" },
+        transport: {
+          type: "object",
           properties: {
-            'type': {type: 'string'},
-            'id': {type: 'string'},
+            type: { type: "string" },
+            id: { type: "string" },
           },
           additionalProperties: false,
-        }
+        },
       },
       additionalProperties: false,
-      required: ['media']
-    }
+      required: ["media"],
+    },
   ],
 
   definitions: {
-    'WebRTCMediaOptions': {
-      type: ['object', 'null'],
+    WebRTCMediaOptions: {
+      type: ["object", "null"],
       properties: {
-        'audio': {
+        audio: {
           anyOf: [
             {
-              type: 'object',
+              type: "object",
               properties: {
-                'source': { enum: ["mic", "screen-cast", "raw-file", "encoded-file"] }
+                source: {
+                  enum: ["mic", "screen-cast", "raw-file", "encoded-file"],
+                },
               },
               additionalProperties: false,
-              required: ['source']
+              required: ["source"],
             },
-            { 'const': false }
-          ]
+            { const: false },
+          ],
         },
-        'video': {
+        video: {
           anyOf: [
             {
-              type: 'object',
+              type: "object",
               properties: {
-                'source': { enum: ["camera", "screen-cast", "raw-file", "encoded-file"] },
-                'parameters': {
-                  type: 'object',
+                source: {
+                  enum: ["camera", "screen-cast", "raw-file", "encoded-file"],
+                },
+                parameters: {
+                  type: "object",
                   properties: {
-                    'resolution': { $ref: 'Resolution.json' },
-                    'framerate': { type: 'number' }
-                  }
-                }
+                    resolution: { $ref: "Resolution.json" },
+                    framerate: { type: "number" },
+                  },
+                },
               },
               additionalProperties: false,
-              required: ['source']
+              required: ["source"],
             },
-            { 'const': false }
-          ]
-        }
+            { const: false },
+          ],
+        },
       },
       additionalProperties: false,
-      required: ['audio', 'video']
-    }
-  }
+      required: ["audio", "video"],
+    },
+  },
 };
 
 // StreamControlInfo
 const StreamControlInfo = {
-  type: 'object',
+  type: "object",
   anyOf: [
     {
       properties: {
-        'id': { type: 'string', require: true },
-        'operation': { enum: ['mix', 'unmix', 'get-region'] },
-        'data': { type: 'string' }
-      },
-      additionalProperties: false
-    },
-    {
-      properties: {
-        'id': { type: 'string', require: true },
-        'operation': { enum: ['set-region'] },
-        'data': { $ref: '#/definitions/RegionSetting' }
-      },
-      additionalProperties: false
-    },
-    {
-      properties: {
-        'id': { type: 'string', require: true },
-        'operation': { enum: ['pause', 'play'] },
-        'data': { enum: ['audio', 'video', 'av'] }
-      },
-      additionalProperties: false
-    },
-  ],
-  required: ['id', 'operation', 'data'],
-
-  definitions: {
-    'RegionSetting': {
-      type: 'object',
-      properties: {
-        'view': { type: 'string' },
-        'region': { type: 'string',  minLength: 1}
+        id: { type: "string", require: true },
+        operation: { enum: ["mix", "unmix", "get-region"] },
+        data: { type: "string" },
       },
       additionalProperties: false,
-      required: ['view', 'region']
-    }
-  }
+    },
+    {
+      properties: {
+        id: { type: "string", require: true },
+        operation: { enum: ["set-region"] },
+        data: { $ref: "#/definitions/RegionSetting" },
+      },
+      additionalProperties: false,
+    },
+    {
+      properties: {
+        id: { type: "string", require: true },
+        operation: { enum: ["pause", "play"] },
+        data: { enum: ["audio", "video", "av"] },
+      },
+      additionalProperties: false,
+    },
+  ],
+  required: ["id", "operation", "data"],
+
+  definitions: {
+    RegionSetting: {
+      type: "object",
+      properties: {
+        view: { type: "string" },
+        region: { type: "string", minLength: 1 },
+      },
+      additionalProperties: false,
+      required: ["view", "region"],
+    },
+  },
 };
 
 // SubscriptionRequest
 const SubscriptionRequest = {
   anyOf: [
-    { // Webrtc Subscription
-      type: 'object',
+    {
+      // Webrtc Subscription
+      type: "object",
       properties: {
-        'media': { $ref: '#/definitions/MediaSubOptions' },
-        'data': { $ref: '#/definitions/DataSubOptions' },
-        'transport': {
-          type: 'object',
+        media: { $ref: "#/definitions/MediaSubOptions" },
+        data: { $ref: "#/definitions/DataSubOptions" },
+        transport: {
+          type: "object",
           properties: {
-            'type': {type: 'string'},
-            'id': {type: 'string'},
+            type: { type: "string" },
+            id: { type: "string" },
           },
         },
       },
       additionalProperties: false,
-      required: ['media']
-    }
+      required: ["media"],
+    },
   ],
 
   definitions: {
-    'MediaSubOptions': {
-      type: ['object', 'null'],
+    MediaSubOptions: {
+      type: ["object", "null"],
       properties: {
-        'audio': {
-          anyOf: [
-            { $ref: '#/definitions/AudioSubOptions'},
-            { 'const': false }
-          ]
+        audio: {
+          anyOf: [{ $ref: "#/definitions/AudioSubOptions" }, { const: false }],
         },
-        'video': {
-          anyOf: [
-            { $ref: '#/definitions/VideoSubOptions'},
-            { 'const': false }
-          ]
-        }
+        video: {
+          anyOf: [{ $ref: "#/definitions/VideoSubOptions" }, { const: false }],
+        },
       },
       additionalProperties: false,
-      required: ['audio', 'video']
+      required: ["audio", "video"],
     },
 
-    'DataSubOptions': {
-      type: 'object',
+    DataSubOptions: {
+      type: "object",
       properties: {
-        'from': {type: 'string'}
+        from: { type: "string" },
       },
       additionalProperties: false,
-      required: ['from']
+      required: ["from"],
     },
 
-    'AudioSubOptions': {
-      type: 'object',
+    AudioSubOptions: {
+      type: "object",
       properties: {
-        'from': { type: 'string' },
-        'format': { $ref: '#/definitions/AudioFormat' }
+        from: { type: "string" },
+        format: { $ref: "#/definitions/AudioFormat" },
       },
       additionalProperties: false,
-      required: ['from']
+      required: ["from"],
     },
 
-    'VideoSubOptions': {
-      type: 'object',
+    VideoSubOptions: {
+      type: "object",
       properties: {
-        'from': { type: 'string' },
-        'format': { $ref: '#/definitions/VideoFormat' },
-        'parameters': { $ref: '#/definitions/VideoParametersSpecification' },
-        'simulcastRid': { type: 'string' }
+        from: { type: "string" },
+        format: { $ref: "#/definitions/VideoFormat" },
+        parameters: { $ref: "#/definitions/VideoParametersSpecification" },
+        simulcastRid: { type: "string" },
       },
       additionalProperties: false,
-      required: ['from']
+      required: ["from"],
     },
 
-    'AudioFormat': {
-      type: 'object',
+    AudioFormat: {
+      type: "object",
       properties: {
-        'codec': { enum: ['pcmu', 'pcma', 'opus', 'g722', 'iSAC', 'iLBC', 'aac', 'ac3', 'nellymoser'] },
-        'sampleRate': { type: 'number' },
-        'channelNum': { type: 'number' }
+        codec: {
+          enum: [
+            "pcmu",
+            "pcma",
+            "opus",
+            "g722",
+            "iSAC",
+            "iLBC",
+            "aac",
+            "ac3",
+            "nellymoser",
+          ],
+        },
+        sampleRate: { type: "number" },
+        channelNum: { type: "number" },
       },
       additionalProperties: false,
-      required: ['codec']
+      required: ["codec"],
     },
 
-    'VideoFormat': {
-      type: 'object',
+    VideoFormat: {
+      type: "object",
       properties: {
-        'codec': { enum: ['h264', 'h265', 'vp8', 'vp9'] },
-        'profile': { enum: ['CB', 'B', 'M', 'E', 'H'] }
+        codec: { enum: ["h264", "h265", "vp8", "vp9"] },
+        profile: { enum: ["CB", "B", "M", "E", "H"] },
       },
       additionalProperties: false,
-      required: ['codec']
+      required: ["codec"],
     },
 
-    'VideoParametersSpecification': {
-      type: 'object',
+    VideoParametersSpecification: {
+      type: "object",
       properties: {
-        'resolution': { $ref: 'Resolution.json' },
-        'framerate': { type: 'number' },
-        'bitrate': { type: ['string', 'number'] },
-        'keyFrameInterval': { type: 'number' }
+        resolution: { $ref: "Resolution.json" },
+        framerate: { type: "number" },
+        bitrate: { type: ["string", "number"] },
+        keyFrameInterval: { type: "number" },
       },
-      additionalProperties: false
-    }
-  }
+      additionalProperties: false,
+    },
+  },
 };
 
 // SubscriptionControlInfo
 const SubscriptionControlInfo = {
-  type: 'object',
+  type: "object",
   anyOf: [
     {
       properties: {
-        'id': { type: 'string' },
-        'operation': { enum: ['update'] },
-        'data': { $ref: '#/definitions/SubscriptionUpdate' }
+        id: { type: "string" },
+        operation: { enum: ["update"] },
+        data: { $ref: "#/definitions/SubscriptionUpdate" },
       },
-      additionalProperties: false
+      additionalProperties: false,
     },
     {
       properties: {
-        'id': { type: 'string' },
-        'operation': { enum: ['pause', 'play'] },
-        'data': { enum: ['audio', 'video', 'av'] }
-      },
-      additionalProperties: false
-    }
-  ],
-  required: ['id', 'operation', 'data'],
-
-  definitions: {
-    'SubscriptionUpdate': {
-      type: 'object',
-      properties: {
-        'audio': { $ref: '#/definitions/AudioUpdate' },
-        'video': { $ref: '#/definitions/VideoUpdate' }
-      },
-      additionalProperties: false
-    },
-
-    'AudioUpdate': {
-      type: 'object',
-      properties: {
-        'from': { type: 'string' }
+        id: { type: "string" },
+        operation: { enum: ["pause", "play"] },
+        data: { enum: ["audio", "video", "av"] },
       },
       additionalProperties: false,
-      required: ['from']
+    },
+  ],
+  required: ["id", "operation", "data"],
+
+  definitions: {
+    SubscriptionUpdate: {
+      type: "object",
+      properties: {
+        audio: { $ref: "#/definitions/AudioUpdate" },
+        video: { $ref: "#/definitions/VideoUpdate" },
+      },
+      additionalProperties: false,
     },
 
-    'VideoUpdate': {
-      type: 'object',
+    AudioUpdate: {
+      type: "object",
       properties: {
-        'from': { type: 'string' },
-        'parameters': { $ref: '#/definitions/VideoUpdateSpecification' }
+        from: { type: "string" },
       },
-      additionalProperties: false
+      additionalProperties: false,
+      required: ["from"],
     },
 
-    'VideoUpdateSpecification': {
-      type: 'object',
+    VideoUpdate: {
+      type: "object",
       properties: {
-        resolution: { $ref: 'Resolution.json' },
-        framerate: { type: 'number' },
-        bitrate: { type: ['number', 'string'] },
-        keyFrameInterval: { type: 'number' }
+        from: { type: "string" },
+        parameters: { $ref: "#/definitions/VideoUpdateSpecification" },
       },
-      additionalProperties: false
-    }
-  }
+      additionalProperties: false,
+    },
+
+    VideoUpdateSpecification: {
+      type: "object",
+      properties: {
+        resolution: { $ref: "Resolution.json" },
+        framerate: { type: "number" },
+        bitrate: { type: ["number", "string"] },
+        keyFrameInterval: { type: "number" },
+      },
+      additionalProperties: false,
+    },
+  },
 };
 
 var validators = {
-  'publication-request': generateValidator(PublicationRequest),
-  'stream-control-info': generateValidator(StreamControlInfo),
-  'subscription-request': generateValidator(SubscriptionRequest),
-  'subscription-control-info': generateValidator(SubscriptionControlInfo)
+  "publication-request": generateValidator(PublicationRequest),
+  "stream-control-info": generateValidator(StreamControlInfo),
+  "subscription-request": generateValidator(SubscriptionRequest),
+  "subscription-control-info": generateValidator(SubscriptionControlInfo),
 };
 
 // Export JSON validator functions
@@ -356,5 +368,5 @@ module.exports = {
     } else {
       throw new Error(`No such validator: ${spec}`);
     }
-  }
+  },
 };

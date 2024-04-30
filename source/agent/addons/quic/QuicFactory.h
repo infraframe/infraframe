@@ -7,8 +7,8 @@
 #ifndef QUIC_QUICFACTORY_H_
 #define QUIC_QUICFACTORY_H_
 
-#include <memory>
 #include <logger.h>
+#include <memory>
 
 namespace owt {
 namespace quic {

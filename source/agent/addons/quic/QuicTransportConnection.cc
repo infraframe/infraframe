@@ -122,7 +122,8 @@ NAUV_WORK_CB(QuicTransportConnection::onStreamCallback)
     }
 }
 
-NAUV_WORK_CB(QuicTransportConnection::onCloseCallback) {
+NAUV_WORK_CB(QuicTransportConnection::onCloseCallback)
+{
     ELOG_DEBUG("OnConnectionCloseCallback.");
     Nan::HandleScope scope;
     QuicTransportConnection* obj = reinterpret_cast<QuicTransportConnection*>(async->data);

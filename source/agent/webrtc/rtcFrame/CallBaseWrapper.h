@@ -12,18 +12,19 @@
  * Wrapper class of RtcAdapter for call
  */
 class CallBase : public Nan::ObjectWrap {
- public:
-  static NAN_MODULE_INIT(Init);
+public:
+    static NAN_MODULE_INIT(Init);
 
-  std::shared_ptr<rtc_adapter::RtcAdapter> rtcAdapter;
- private:
-  CallBase();
-  ~CallBase();
+    std::shared_ptr<rtc_adapter::RtcAdapter> rtcAdapter;
 
-  static NAN_METHOD(New);
-  static NAN_METHOD(close);
+private:
+    CallBase();
+    ~CallBase();
 
-  static Nan::Persistent<v8::Function> constructor;
+    static NAN_METHOD(New);
+    static NAN_METHOD(close);
+
+    static Nan::Persistent<v8::Function> constructor;
 };
 
 #endif

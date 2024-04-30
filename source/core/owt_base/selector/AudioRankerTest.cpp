@@ -5,7 +5,7 @@
 
 #include "AudioRanker.h"
 
-void boost::throw_exception(std::exception const & e)
+void boost::throw_exception(std::exception const& e)
 {
     printf("exception: %s", e.what());
 }
@@ -32,9 +32,10 @@ public:
         return m_data;
     }
     int count() { return m_count; }
+
 private:
     boost::mutex m_mutex;
-    std::atomic<int> m_count{0};
+    std::atomic<int> m_count { 0 };
     std::vector<std::pair<std::string, std::string>> m_data;
 };
 
@@ -46,9 +47,12 @@ public:
     }
 };
 
-class TestDestination: public owt_base::FrameDestination {
+class TestDestination : public owt_base::FrameDestination {
 public:
-    TestDestination() : m_count(0) {}
+    TestDestination()
+        : m_count(0)
+    {
+    }
 
     void onFrame(const owt_base::Frame&) override
     {
@@ -60,13 +64,13 @@ public:
         boost::mutex::scoped_lock lock(m_mutex);
         return m_count;
     }
+
 private:
     boost::mutex m_mutex;
     int m_count;
 };
 
-struct Recorder
-{
+struct Recorder {
     RankRecorder recorder;
     TestSource src1, src2, src3;
     TestDestination dest1, dest2, dest3;
@@ -145,7 +149,6 @@ BOOST_AUTO_TEST_CASE(OutputAndInputSwitchOne)
     src1.generateFrame(frame);
     boost::this_thread::sleep_for(boost::chrono::milliseconds(50));
     BOOST_CHECK(dest1.count() == 3);
-
 }
 
 BOOST_AUTO_TEST_CASE(TwoOutputs)

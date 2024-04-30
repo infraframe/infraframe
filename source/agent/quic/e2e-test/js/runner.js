@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
+"use strict";
 
 mocha.checkLeaks();
-mocha.globals(['jQuery']);
+mocha.globals(["jQuery"]);
 mocha.run();

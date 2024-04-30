@@ -4,35 +4,50 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // building script
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
 const { chdir, cwd } = process;
-const { execSync } = require('child_process');
-const { OptParser, exec } = require('./util');
-const buildTargets = require('./build.json');
+const { execSync } = require("child_process");
+const { OptParser, exec } = require("./util");
+const buildTargets = require("./build.json");
 
 const optParser = new OptParser();
-optParser.addOption('l', 'list', 'boolean', 'List avaliable build targets');
-optParser.addOption('t', 'target', 'list', 'Specify target to build (Eg. build.js -t video-mixer-sw -t video-transcoder-sw)');
-optParser.addOption('d', 'debug', 'boolean', 'Whether build debug addon (Please add debug-addon option in packing to pack debug addon)');
-optParser.addOption('v', 'verbose', 'boolean', 'Whether use verbose level in building');
-optParser.addOption('r', 'rebuild', 'boolean', 'Whether clean before build');
-optParser.addOption('c', 'check', 'boolean', 'Whether check after build');
-optParser.addOption('j', 'jobs', 'string', 'Number of concurrent build jobs');
-optParser.addOption('ip', 'incpath', 'string', 'Customized include path');
-optParser.addOption('lp', 'libpath', 'string', 'Customized library path');
+optParser.addOption("l", "list", "boolean", "List avaliable build targets");
+optParser.addOption(
+  "t",
+  "target",
+  "list",
+  "Specify target to build (Eg. build.js -t video-mixer-sw -t video-transcoder-sw)"
+);
+optParser.addOption(
+  "d",
+  "debug",
+  "boolean",
+  "Whether build debug addon (Please add debug-addon option in packing to pack debug addon)"
+);
+optParser.addOption(
+  "v",
+  "verbose",
+  "boolean",
+  "Whether use verbose level in building"
+);
+optParser.addOption("r", "rebuild", "boolean", "Whether clean before build");
+optParser.addOption("c", "check", "boolean", "Whether check after build");
+optParser.addOption("j", "jobs", "string", "Number of concurrent build jobs");
+optParser.addOption("ip", "incpath", "string", "Customized include path");
+optParser.addOption("lp", "libpath", "string", "Customized library path");
 
 const options = optParser.parseArgs(process.argv);
 
-const rootDir = path.join(path.dirname(module.filename), '..');
-const depsDir = path.join(rootDir, 'build/libdeps/build');
+const rootDir = path.join(path.dirname(module.filename), "..");
+const depsDir = path.join(rootDir, "build/libdeps/build");
 const originCwd = cwd();
 
 // Detect OS script
-const osScript = path.join(rootDir, 'scripts/detectOS.sh');
+const osScript = path.join(rootDir, "scripts/detectOS.sh");
 const osType = execSync(`. ${osScript}`).toString().toLowerCase();
-const msdkDir = '/opt/intel/mediasdk';
+const msdkDir = "/opt/intel/mediasdk";
 
 function getTargets() {
   var buildSet = new Set();
@@ -54,12 +69,12 @@ function getTargets() {
 }
 
 function listPrint() {
-  console.log('Avaliable builds:');
+  console.log("Avaliable builds:");
   var outputs = [];
   for (const name in buildTargets) {
-    let desc = '';
+    let desc = "";
     if (buildTargets[name].description) {
-      desc = '- ' + buildTargets[name].description;
+      desc = "- " + buildTargets[name].description;
     }
     outputs.push(`  ${name} ${desc}`);
   }
@@ -71,84 +86,92 @@ function listPrint() {
 
 function constructBuildEnv() {
   var env = process.env;
-  env['CFLAGS'] = '-fstack-protector -Wformat -Wformat-security';
-  env['CXXFLAGS'] = env['CFLAGS'];
-  env['LDFLAGS'] = '-z noexecstack -z relro';
-  env['CORE_HOME'] = path.join(rootDir, 'source/core');
-  env['PKG_CONFIG_PATH'] = path.join(depsDir, 'lib/pkgconfig') +
-      ':' + path.join(depsDir, 'lib64/pkgconfig') +
-      ':' + (env['PKG_CONFIG_PATH'] || '');
-  usergcc = path.join(depsDir, 'bin/gcc');
-  usergxx = path.join(depsDir, 'bin/g++');
+  env["CFLAGS"] = "-fstack-protector -Wformat -Wformat-security";
+  env["CXXFLAGS"] = env["CFLAGS"];
+  env["LDFLAGS"] = "-z noexecstack -z relro";
+  env["CORE_HOME"] = path.join(rootDir, "source/core");
+  env["PKG_CONFIG_PATH"] =
+    path.join(depsDir, "lib/pkgconfig") +
+    ":" +
+    path.join(depsDir, "lib64/pkgconfig") +
+    ":" +
+    (env["PKG_CONFIG_PATH"] || "");
+  usergcc = path.join(depsDir, "bin/gcc");
+  usergxx = path.join(depsDir, "bin/g++");
   // Use user compiler if exists
   if (fs.existsSync(usergcc) && fs.existsSync(usergxx)) {
-    env['CC'] = usergcc;
-    env['CXX'] = usergxx;
+    env["CC"] = usergcc;
+    env["CXX"] = usergxx;
   }
 
-  env['DEFAULT_DEPENDENCY_PATH'] = depsDir;
+  env["DEFAULT_DEPENDENCY_PATH"] = depsDir;
   if (options.incpath) {
-    env['CUSTOM_INCLUDE_PATH'] = options.incpath;
+    env["CUSTOM_INCLUDE_PATH"] = options.incpath;
   } else {
-    env['CUSTOM_INCLUDE_PATH'] = './';
+    env["CUSTOM_INCLUDE_PATH"] = "./";
   }
   if (options.libpath) {
-    env['CUSTOM_LIBRARY_PATH'] = options.libpath;
+    env["CUSTOM_LIBRARY_PATH"] = options.libpath;
   } else {
-    env['CUSTOM_LIBRARY_PATH'] = './';
+    env["CUSTOM_LIBRARY_PATH"] = "./";
   }
 
   if (options.debug) {
-    env['OPTIMIZATION_LEVEL'] = '0';
+    env["OPTIMIZATION_LEVEL"] = "0";
   } else {
-    env['OPTIMIZATION_LEVEL'] = '3';
-    env['CFLAGS'] = env['CFLAGS'] + ' -D_FORTIFY_SOURCE=2';
-    env['CXXFLAGS'] = env['CFLAGS'];
+    env["OPTIMIZATION_LEVEL"] = "3";
+    env["CFLAGS"] = env["CFLAGS"] + " -D_FORTIFY_SOURCE=2";
+    env["CXXFLAGS"] = env["CFLAGS"];
   }
 
-  console.log(env['PKG_CONFIG_PATH']);
+  console.log(env["PKG_CONFIG_PATH"]);
 
   return env;
 }
 
 // Common build commands
-var cpuCount = (Number(options.jobs) || os.cpus().length);
-logLevel = options.verbose ? 'verbose' : 'error';
-rebuildArgs = ['node-gyp', 'rebuild', `-j ${cpuCount}`, '--loglevel=' + logLevel];
-configureArgs = ['node-gyp', 'configure', '--loglevel=' + logLevel];
-buildArgs = ['node-gyp', 'build', `-j ${cpuCount}`, '--loglevel=' + logLevel];
+var cpuCount = Number(options.jobs) || os.cpus().length;
+logLevel = options.verbose ? "verbose" : "error";
+rebuildArgs = [
+  "node-gyp",
+  "rebuild",
+  `-j ${cpuCount}`,
+  "--loglevel=" + logLevel,
+];
+configureArgs = ["node-gyp", "configure", "--loglevel=" + logLevel];
+buildArgs = ["node-gyp", "build", `-j ${cpuCount}`, "--loglevel=" + logLevel];
 
 if (options.debug) {
-  rebuildArgs.push('--debug');
-  configureArgs.push('--debug');
-  buildArgs.push('--debug');
+  rebuildArgs.push("--debug");
+  configureArgs.push("--debug");
+  buildArgs.push("--debug");
 }
 
 // Build single target
 function buildTarget(name) {
-  console.log('\x1b[32mBuilding addon\x1b[0m -', name);
+  console.log("\x1b[32mBuilding addon\x1b[0m -", name);
   const target = buildTargets[name];
   if (!target.path) {
-    console.log('\x1b[31mNo binding.gyp:', name, '\x1b[0m');
+    console.log("\x1b[31mNo binding.gyp:", name, "\x1b[0m");
     return;
   }
 
   const buildPath = path.join(rootDir, target.path);
-  var copyGyp = (target.gyp && target.gyp !== 'binding.gyp') ? true : false;
+  var copyGyp = target.gyp && target.gyp !== "binding.gyp" ? true : false;
 
   chdir(buildPath);
   if (copyGyp) execSync(`cp ${target.gyp} binding.gyp`);
 
   var stdio = [null, process.stdout, process.stderr];
   if (options.rebuild) {
-    execSync(rebuildArgs.join(' '), { stdio });
+    execSync(rebuildArgs.join(" "), { stdio });
   } else {
-    execSync(configureArgs.join(' '), { stdio });
-    execSync(buildArgs.join(' '), { stdio });
+    execSync(configureArgs.join(" "), { stdio });
+    execSync(buildArgs.join(" "), { stdio });
   }
 
-  if (copyGyp) execSync(`rm ${path.join(rootDir, target.path, 'binding.gyp')}`);
-  console.log('\x1b[32mFinish addon\x1b[0m -', name);
+  if (copyGyp) execSync(`rm ${path.join(rootDir, target.path, "binding.gyp")}`);
+  console.log("\x1b[32mFinish addon\x1b[0m -", name);
 }
 
 if (options.list) {
@@ -163,25 +186,26 @@ if (!options.target || !options.target.length) {
 
 constructBuildEnv();
 var buildList = getTargets();
-console.log('\x1b[32mFollowing targets will be built:\x1b[0m');
+console.log("\x1b[32mFollowing targets will be built:\x1b[0m");
 for (const name of buildList) {
-  console.log('', name, '');
+  console.log("", name, "");
 }
 var works = buildList.map((name) => {
-  if (name.indexOf('msdk') > 0 && !fs.existsSync(msdkDir)) {
+  if (name.indexOf("msdk") > 0 && !fs.existsSync(msdkDir)) {
     console.log(`\x1b[33mSkip: ${name} - MSDK not installed\x1b[0m`);
     return Promise.resolve();
   }
   return buildTarget(name);
 });
 
-Promise.all(works)
-  .then(() => {
-    if (options.check) {
-      moduleTestScript = path.join(rootDir, 'scripts/module_test.js');
-      runtimeAddonDir = path.join(rootDir, 'source/agent');
-      console.log('* Checking modules...');
-      let checkOutput = execSync(`node ${moduleTestScript} ${runtimeAddonDir}`).toString();
-      console.log(checkOutput);
-    }
-  });
+Promise.all(works).then(() => {
+  if (options.check) {
+    moduleTestScript = path.join(rootDir, "scripts/module_test.js");
+    runtimeAddonDir = path.join(rootDir, "source/agent");
+    console.log("* Checking modules...");
+    let checkOutput = execSync(
+      `node ${moduleTestScript} ${runtimeAddonDir}`
+    ).toString();
+    console.log(checkOutput);
+  }
+});

@@ -5,14 +5,14 @@
 /*
  * Request Type
  */
-'use strict';
+"use strict";
 
 module.exports = {
-  Join: 'join',
-  Pub: 'publish',
-  StreamCtrl: 'stream-control',
-  Sub: 'subscribe',
-  SubscriptionCtrl: 'subscription-control',
-  SOAC: 'soac',
-  Text: 'text',
+  Join: "join",
+  Pub: "publish",
+  StreamCtrl: "stream-control",
+  Sub: "subscribe",
+  SubscriptionCtrl: "subscription-control",
+  SOAC: "soac",
+  Text: "text",
 };

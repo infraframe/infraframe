@@ -11,8 +11,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/shared_mutex.hpp>
 
-#include <webrtc/common_video/include/i420_buffer_pool.h>
 #include <webrtc/api/video/video_frame.h>
+#include <webrtc/common_video/include/i420_buffer_pool.h>
 
 #include "logger.h"
 
@@ -26,6 +26,7 @@ public:
     ~I420BufferManager();
 
     rtc::scoped_refptr<webrtc::I420Buffer> getFreeBuffer(uint32_t width, uint32_t height);
+
 private:
     boost::scoped_ptr<webrtc::I420BufferPool> m_bufferPool;
 };

@@ -13,15 +13,15 @@
 
 #include <logger.h>
 
-#include "MediaFramePipeline.h"
 #include "AudioEncoder.h"
+#include "MediaFramePipeline.h"
 
 namespace mcu {
 using namespace owt_base;
 using namespace webrtc;
 
 class AcmEncoder : public AudioEncoder,
-                       public AudioPacketizationCallback {
+                   public AudioPacketizationCallback {
     DECLARE_LOGGER();
 
 public:
@@ -29,15 +29,15 @@ public:
     ~AcmEncoder();
 
     bool init() override;
-    bool addAudioFrame(const AudioFrame *audioFrame) override;
+    bool addAudioFrame(const AudioFrame* audioFrame) override;
 
     // Implements AudioPacketizationCallback
     int32_t SendData(FrameType frame_type,
-            uint8_t payload_type,
-            uint32_t timestamp,
-            const uint8_t* payload_data,
-            size_t payload_len_bytes,
-            const RTPFragmentationHeader* fragmentation) override;
+        uint8_t payload_type,
+        uint32_t timestamp,
+        const uint8_t* payload_data,
+        size_t payload_len_bytes,
+        const RTPFragmentationHeader* fragmentation) override;
 
 protected:
     void encodeLoop();

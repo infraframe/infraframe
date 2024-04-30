@@ -3,20 +3,21 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "AVStreamOutWrap.h"
-#include <MediaFramePipeline.h>
-#include <MediaFileOut.h>
 #include <LiveStreamOut.h>
+#include <MediaFileOut.h>
+#include <MediaFramePipeline.h>
 
 using namespace v8;
 
-static std::string getString(v8::Local<v8::Value> value) {
-  Nan::Utf8String value_str(Nan::To<v8::String>(value).ToLocalChecked());
-  return std::string(*value_str);
+static std::string getString(v8::Local<v8::Value> value)
+{
+    Nan::Utf8String value_str(Nan::To<v8::String>(value).ToLocalChecked());
+    return std::string(*value_str);
 }
 
 Persistent<Function> AVStreamOutWrap::constructor;
-AVStreamOutWrap::AVStreamOutWrap() {}
-AVStreamOutWrap::~AVStreamOutWrap() {}
+AVStreamOutWrap::AVStreamOutWrap() { }
+AVStreamOutWrap::~AVStreamOutWrap() { }
 
 void AVStreamOutWrap::Init(Local<Object> exports)
 {
@@ -76,19 +77,23 @@ void AVStreamOutWrap::New(const v8::FunctionCallbackInfo<v8::Value>& args)
     // }
     Local<Object> options = Nan::To<v8::Object>(args[0]).ToLocalChecked();
     bool requireAudio = Nan::To<bool>(
-        Nan::Get(options, Nan::New("require_audio").ToLocalChecked()).ToLocalChecked()).FromJust();
+        Nan::Get(options, Nan::New("require_audio").ToLocalChecked()).ToLocalChecked())
+                            .FromJust();
     bool requireVideo = Nan::To<bool>(
-        Nan::Get(options, Nan::New("require_video").ToLocalChecked()).ToLocalChecked()).FromJust();
+        Nan::Get(options, Nan::New("require_video").ToLocalChecked()).ToLocalChecked())
+                            .FromJust();
     AVStreamOutWrap* obj = new AVStreamOutWrap();
     std::string type = getString(
         Nan::Get(options, Nan::New("type").ToLocalChecked()).ToLocalChecked());
     std::string url = getString(
         Nan::Get(options, Nan::New("url").ToLocalChecked()).ToLocalChecked());
     int initializeTimeout = Nan::To<int32_t>(
-        Nan::Get(options, Nan::New("initializeTimeout").ToLocalChecked()).ToLocalChecked()).FromJust();
+        Nan::Get(options, Nan::New("initializeTimeout").ToLocalChecked()).ToLocalChecked())
+                                .FromJust();
     if (type.compare("streaming") == 0) {
         Local<Object> connection = Nan::To<v8::Object>(
-            Nan::Get(options, Nan::New("connection").ToLocalChecked()).ToLocalChecked()).ToLocalChecked();
+            Nan::Get(options, Nan::New("connection").ToLocalChecked()).ToLocalChecked())
+                                       .ToLocalChecked();
         std::string protocol = getString(
             Nan::Get(connection, Nan::New("protocol").ToLocalChecked()).ToLocalChecked());
         std::string url = getString(
@@ -114,30 +119,34 @@ void AVStreamOutWrap::New(const v8::FunctionCallbackInfo<v8::Value>& args)
         if (protocol.compare("hls") == 0) {
             Local<Object> parameters = Nan::To<v8::Object>(
                 Nan::Get(connection, Nan::New("parameters").ToLocalChecked()).ToLocalChecked())
-                .ToLocalChecked();
+                                           .ToLocalChecked();
             opts.hls_time = Nan::To<int32_t>(
-                Nan::Get(parameters, Nan::New("hlsTime").ToLocalChecked()).ToLocalChecked()).FromJust();
+                Nan::Get(parameters, Nan::New("hlsTime").ToLocalChecked()).ToLocalChecked())
+                                .FromJust();
             opts.hls_list_size = Nan::To<int32_t>(
-                Nan::Get(parameters, Nan::New("hlsListSize").ToLocalChecked()).ToLocalChecked()).FromJust();
+                Nan::Get(parameters, Nan::New("hlsListSize").ToLocalChecked()).ToLocalChecked())
+                                     .FromJust();
 
             memset(opts.hls_method, 0, sizeof(opts.hls_method));
             strncat(opts.hls_method,
-                    getString(Nan::Get(parameters, Nan::New("method").ToLocalChecked()).ToLocalChecked()).c_str(),
-                    sizeof(opts.hls_method) - 1);
+                getString(Nan::Get(parameters, Nan::New("method").ToLocalChecked()).ToLocalChecked()).c_str(),
+                sizeof(opts.hls_method) - 1);
 
         } else if (protocol.compare("dash") == 0) {
             Local<Object> parameters = Nan::To<v8::Object>(
                 Nan::Get(connection, Nan::New("parameters").ToLocalChecked()).ToLocalChecked())
-                .ToLocalChecked();
+                                           .ToLocalChecked();
             opts.dash_seg_duration = Nan::To<int32_t>(
-                Nan::Get(parameters, Nan::New("dashSegDuration").ToLocalChecked()).ToLocalChecked()).FromJust();
+                Nan::Get(parameters, Nan::New("dashSegDuration").ToLocalChecked()).ToLocalChecked())
+                                         .FromJust();
             opts.dash_window_size = Nan::To<int32_t>(
-                Nan::Get(parameters, Nan::New("dashWindowSize").ToLocalChecked()).ToLocalChecked()).FromJust();
+                Nan::Get(parameters, Nan::New("dashWindowSize").ToLocalChecked()).ToLocalChecked())
+                                        .FromJust();
 
             memset(opts.dash_method, 0, sizeof(opts.dash_method));
             strncat(opts.dash_method,
-                    getString(Nan::Get(parameters, Nan::New("method").ToLocalChecked()).ToLocalChecked()).c_str(),
-                    sizeof(opts.dash_method) - 1);
+                getString(Nan::Get(parameters, Nan::New("method").ToLocalChecked()).ToLocalChecked()).c_str(),
+                sizeof(opts.dash_method) - 1);
         }
 
         obj->me = new owt_base::LiveStreamOut(url, requireAudio, requireVideo, obj, initializeTimeout, opts);
@@ -151,7 +160,7 @@ void AVStreamOutWrap::New(const v8::FunctionCallbackInfo<v8::Value>& args)
 
     if (args.Length() > 1 && args[1]->IsFunction()) {
         Nan::Set(Local<Object>::New(isolate, obj->m_store),
-                 Nan::New("init").ToLocalChecked(), args[1]);
+            Nan::New("init").ToLocalChecked(), args[1]);
     }
 
     obj->Wrap(args.This());
@@ -182,5 +191,5 @@ void AVStreamOutWrap::addEventListener(const FunctionCallbackInfo<Value>& args)
     if (!obj->me)
         return;
     Nan::Set(Local<Object>::New(isolate, obj->m_store),
-             args[0], args[1]);
+        args[0], args[1]);
 }

@@ -14,9 +14,11 @@ namespace {
 class IOServiceThread {
 public:
     IOServiceThread()
-    : m_service{}
-    , m_work{m_service}
-    , m_thread{new boost::thread(boost::bind(&boost::asio::io_service::run, &m_service))} {}
+        : m_service {}
+        , m_work { m_service }
+        , m_thread { new boost::thread(boost::bind(&boost::asio::io_service::run, &m_service)) }
+    {
+    }
 
     ~IOServiceThread()
     {
@@ -90,10 +92,9 @@ void JobTimer::onTimeout(const boost::system::error_code& ec)
 {
     if (!ec) {
         if (!m_isClosing) {
-            m_timer->expires_at(m_timer->expires_at() +
-                                boost::posix_time::milliseconds(m_interval));
+            m_timer->expires_at(m_timer->expires_at() + boost::posix_time::milliseconds(m_interval));
             m_timer->async_wait(boost::bind(&JobTimer::onTimeout, this,
-                                            boost::asio::placeholders::error));
+                boost::asio::placeholders::error));
             handleJob();
         }
     }

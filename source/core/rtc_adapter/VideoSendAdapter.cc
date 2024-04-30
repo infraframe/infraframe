@@ -7,9 +7,9 @@
 #include "TaskRunnerPool.h"
 
 #include <api/rtc_event_log/rtc_event_log.h>
+#include <api/task_queue/default_task_queue_factory.h>
 #include <api/video/video_codec_type.h>
 #include <api/video_codecs/video_codec.h>
-#include <api/task_queue/default_task_queue_factory.h>
 #include <modules/include/module_common_types.h>
 #include <modules/pacing/packet_router.h>
 #include <modules/rtp_rtcp/source/rtp_video_header.h>
@@ -139,8 +139,10 @@ static void dump(void* index, FrameFormat format, uint8_t* buf, int len)
 class NonPacedSender : public webrtc::RtpPacketSender {
 public:
     NonPacedSender(webrtc::PacketRouter* sender)
-    : m_packetRouter(sender) {}
-    virtual ~NonPacedSender() {}
+        : m_packetRouter(sender)
+    {
+    }
+    virtual ~NonPacedSender() { }
 
     // Implements webrtc::RtpPacketSender
     virtual void EnqueuePackets(
@@ -152,6 +154,7 @@ public:
             EnqueuePackets(m_packetRouter->FetchFec());
         }
     }
+
 private:
     webrtc::PacketRouter* m_packetRouter;
 };
@@ -227,10 +230,8 @@ bool VideoSendAdapterImpl::init()
     if (m_transportControllerSend) {
         RTC_LOG(LS_INFO) << "TransportControllerSend set";
         m_transportControllerSend->OnNetworkAvailability(true);
-        configuration.network_state_estimate_observer =
-          m_transportControllerSend->network_state_estimate_observer();
-        configuration.transport_feedback_callback =
-          m_transportControllerSend->transport_feedback_observer();
+        configuration.network_state_estimate_observer = m_transportControllerSend->network_state_estimate_observer();
+        configuration.transport_feedback_callback = m_transportControllerSend->transport_feedback_observer();
 
         // m_pacedSender = std::make_shared<NonPacedSender>(
         //     m_transportControllerSend->packet_router());
@@ -294,7 +295,7 @@ void VideoSendAdapterImpl::onFrame(const Frame& frame)
         if (!frame.additionalInfo.video.isKeyFrame) {
             RTC_DLOG(LS_INFO) << "Key frame has not arrived, send key-frame-request.";
             if (m_feedbackListener) {
-                FeedbackMsg feedback = {.type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME };
+                FeedbackMsg feedback = { .type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME };
                 m_feedbackListener->onFeedback(feedback);
             }
             return;
@@ -375,9 +376,7 @@ void VideoSendAdapterImpl::onFrame(const Frame& frame)
         int nalu_end_offset = 0;
         int sc_len = 0;
 
-        h.codec = (frame.format == FRAME_FORMAT_H264) ?
-            webrtc::VideoCodecType::kVideoCodecH264 :
-            webrtc::VideoCodecType::kVideoCodecH265;
+        h.codec = (frame.format == FRAME_FORMAT_H264) ? webrtc::VideoCodecType::kVideoCodecH264 : webrtc::VideoCodecType::kVideoCodecH265;
 
         boost::shared_lock<boost::shared_mutex> lock(m_rtpRtcpMutex);
         if (frame.format == FRAME_FORMAT_H264) {
@@ -468,36 +467,36 @@ void VideoSendAdapterImpl::OnReceivedIntraFrameRequest(uint32_t ssrc)
 {
     RTC_DLOG(LS_INFO) << "onReceivedIntraFrameRequest.";
     if (m_feedbackListener) {
-        FeedbackMsg feedback = {.type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME };
+        FeedbackMsg feedback = { .type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME };
         m_feedbackListener->onFeedback(feedback);
     }
 }
 
 void VideoSendAdapterImpl::Notify(uint32_t total_bitrate_bps,
-                                  uint32_t retransmit_bitrate_bps,
-                                  uint32_t ssrc)
+    uint32_t retransmit_bitrate_bps,
+    uint32_t ssrc)
 {
-  if (m_ssrc == ssrc) {
-    RTC_LOG(LS_INFO) << "total_bitrate_bps:" << total_bitrate_bps
-                     << " retransmit_bitrate_bps:" << retransmit_bitrate_bps;
-    double diff = std::abs(double(m_stats.total_bitrate_bps - total_bitrate_bps));
-    if (m_stats.total_bitrate_bps > 0) {
-        diff = diff / m_stats.total_bitrate_bps;
-    }
-    if (diff > kBitrateNotifyDiffer) {
-        m_stats.total_bitrate_bps = total_bitrate_bps;
-        m_stats.retransmit_bitrate_bps = retransmit_bitrate_bps;
-        if (m_bitrateObserver) {
-            bool adjustBitrate = false;
-            if (m_stats.estimated_bandwidth > 0) {
-                // Adjust bitrate when estimation used
-                adjustBitrate = true;
+    if (m_ssrc == ssrc) {
+        RTC_LOG(LS_INFO) << "total_bitrate_bps:" << total_bitrate_bps
+                         << " retransmit_bitrate_bps:" << retransmit_bitrate_bps;
+        double diff = std::abs(double(m_stats.total_bitrate_bps - total_bitrate_bps));
+        if (m_stats.total_bitrate_bps > 0) {
+            diff = diff / m_stats.total_bitrate_bps;
+        }
+        if (diff > kBitrateNotifyDiffer) {
+            m_stats.total_bitrate_bps = total_bitrate_bps;
+            m_stats.retransmit_bitrate_bps = retransmit_bitrate_bps;
+            if (m_bitrateObserver) {
+                bool adjustBitrate = false;
+                if (m_stats.estimated_bandwidth > 0) {
+                    // Adjust bitrate when estimation used
+                    adjustBitrate = true;
+                }
+                m_bitrateObserver->notifyBitrate(
+                    total_bitrate_bps, retransmit_bitrate_bps, adjustBitrate, m_ssrc);
             }
-            m_bitrateObserver->notifyBitrate(
-                total_bitrate_bps, retransmit_bitrate_bps, adjustBitrate, m_ssrc);
         }
     }
-  }
 }
 
 VideoSendAdapter::Stats VideoSendAdapterImpl::getStats()

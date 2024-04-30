@@ -29,15 +29,15 @@
 #ifndef WEBRTCCONNECTIONWRAPPER_H
 #define WEBRTCCONNECTIONWRAPPER_H
 
-#include <nan.h>
-#include <WebRtcConnection.h>
 #include <MediaStream.h>
+#include <WebRtcConnection.h>
+#include <nan.h>
 // #include "MediaDefinitions.h"
 // #include "OneToManyProcessor.h"
 
+#include <future> // NOLINT
 #include <queue>
 #include <string>
-#include <future>  // NOLINT
 
 /*
  * Wrapper class of erizo::WebRtcConnection
@@ -46,7 +46,7 @@
  * it comprises all the necessary ICE and SRTP components.
  */
 class WebRtcConnection : public Nan::ObjectWrap, public erizo::WebRtcConnectionEventListener {
- public:
+public:
     static NAN_MODULE_INIT(Init);
 
     std::shared_ptr<erizo::WebRtcConnection> me;
@@ -56,12 +56,12 @@ class WebRtcConnection : public Nan::ObjectWrap, public erizo::WebRtcConnectionE
 
     boost::mutex mutex;
 
- private:
+private:
     WebRtcConnection();
     ~WebRtcConnection();
 
-    Nan::Callback *eventCallback_;
-    Nan::AsyncResource *asyncResource_;
+    Nan::Callback* eventCallback_;
+    Nan::AsyncResource* asyncResource_;
 
     uv_async_t async_;
     uv_async_t asyncStats_;
@@ -139,8 +139,8 @@ class WebRtcConnection : public Nan::ObjectWrap, public erizo::WebRtcConnectionE
     static NAUV_WORK_CB(eventsCallback);
 
     virtual void notifyEvent(erizo::WebRTCEvent event,
-                             const std::string& message = "",
-                             const std::string& stream_id = "");
+        const std::string& message = "",
+        const std::string& stream_id = "");
 };
 
-#endif  // WEBRTCCONNECTIONWRAPPER_H
+#endif // WEBRTCCONNECTIONWRAPPER_H

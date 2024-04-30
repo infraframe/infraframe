@@ -5,22 +5,23 @@
 #ifndef SctpTransport_h
 #define SctpTransport_h
 
+#include "RawTransport.h"
+#include "usrsctp.h"
 #include <boost/asio.hpp>
+#include <boost/atomic.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
-#include <boost/atomic.hpp>
 #include <logger.h>
 #include <queue>
-#include "RawTransport.h"
-#include "usrsctp.h"
 
 namespace owt_base {
 
 // usrsctp max message size 256*1024
 class SctpTransport {
     DECLARE_LOGGER();
+
 public:
     SctpTransport(RawTransportListener* listener, size_t initialBufferSize = 65536, bool tag = true);
     ~SctpTransport();
@@ -30,22 +31,22 @@ public:
 
     // Sctp connection
     void open();
-    void connect(const std::string &ip, uint32_t udpPort, uint32_t sctpPort);
+    void connect(const std::string& ip, uint32_t udpPort, uint32_t sctpPort);
     void close();
 
     unsigned short getLocalUdpPort() { return m_localUdpPort; }
     unsigned short getLocalSctpPort() { return m_localSctpPort; }
 
-    static int onSctpInboundPacket(struct socket *sock, union sctp_sockstore addr, void *data,
-                                   size_t datalen, struct sctp_rcvinfo rcv, int flags, void *ulp_info);
-    static int onSctpOutboundPacket(void *addr, void *buf, size_t length, uint8_t tos, uint8_t set_df);
+    static int onSctpInboundPacket(struct socket* sock, union sctp_sockstore addr, void* data,
+        size_t datalen, struct sctp_rcvinfo rcv, int flags, void* ulp_info);
+    static int onSctpOutboundPacket(void* addr, void* buf, size_t length, uint8_t tos, uint8_t set_df);
 
 private:
     bool createSctpSocket();
     void destroySctpSocket();
 
-    void handleNotification(union sctp_notification *notif, size_t n);
-    void handleAssociationChangeEvent(struct sctp_assoc_change *sac);
+    void handleNotification(union sctp_notification* notif, size_t n);
+    void handleAssociationChangeEvent(struct sctp_assoc_change* sac);
 
     bool setupSctpPeer();
     void startSctpConnection();

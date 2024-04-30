@@ -5,8 +5,8 @@
 #ifndef MYPIPELINE_H
 #define MYPIPELINE_H
 
-#include <glib-object.h>
 #include "pipeline.h"
+#include <glib-object.h>
 
 // Class definition for the pipeline invoked by the sample service.
 class MyPipeline : public rvaPipeline {
@@ -17,15 +17,17 @@ public:
 
     virtual rvaStatus PipelineClose();
 
-    virtual rvaStatus GetPipelineParams(std::unordered_map<std::string, std::string>& params) {
+    virtual rvaStatus GetPipelineParams(std::unordered_map<std::string, std::string>& params)
+    {
         return RVA_ERR_OK;
     }
 
-    virtual rvaStatus SetPipelineParams(std::unordered_map<std::string, std::string> params) {
+    virtual rvaStatus SetPipelineParams(std::unordered_map<std::string, std::string> params)
+    {
         return RVA_ERR_OK;
     }
 
-    virtual GstElement * InitializePipeline();
+    virtual GstElement* InitializePipeline();
 
     virtual rvaStatus LinkElements();
 
@@ -33,9 +35,9 @@ protected:
     void printFPS();
 
 private:
-    GstElement *pipeline, *source,*fakesink;
+    GstElement *pipeline, *source, *fakesink;
     int inputwidth, inputheight, inputframerate;
     std::string pipelinename;
 };
 
-#endif  //MYPIPELINE_H
+#endif //MYPIPELINE_H

@@ -4,10 +4,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 this=$(dirname "$0")
-this=$(cd "${this}"; pwd)
+this=$(
+  cd "${this}"
+  pwd
+)
 SUDO=""
 if [[ $EUID -ne 0 ]]; then
-   SUDO="sudo -E"
+  SUDO="sudo -E"
 fi
 
 usage() {
@@ -36,17 +39,14 @@ install_deps() {
   local OS=$(${this}/detectOS.sh | awk '{print tolower($0)}')
   echo $OS
 
-  if [[ "$OS" =~ .*centos.* ]]
-  then
+  if [[ "$OS" =~ .*centos.* ]]; then
     echo -e "\x1b[32mInstalling dependent components and libraries via yum...\x1b[0m"
     ${OWT_UPDATE_DONE} || ${SUDO} yum update
     ${SUDO} yum install wget -y
-    if [[ "$OS" =~ .*6.* ]] # CentOS 6.x
-    then
+    if [[ "$OS" =~ .*6.* ]]; then # CentOS 6.x
       wget -c http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
       ${SUDO} rpm -Uvh epel-release-6*.rpm
-    elif [[ "$OS" =~ .*7.* ]] # CentOS 7.x
-    then
+    elif [[ "$OS" =~ .*7.* ]]; then # CentOS 7.x
       wget -c http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
       ${SUDO} rpm -Uvh epel-release-latest-7*.rpm
     fi
@@ -55,8 +55,7 @@ install_deps() {
     ${SUDO} yum install intel-gpu-tools -y
     install_boost
 
-  elif [[ "$OS" =~ .*ubuntu.* ]]
-  then
+  elif [[ "$OS" =~ .*ubuntu.* ]]; then
     echo -e "\x1b[32mInstalling dependent components and libraries via apt-get...\x1b[0m"
     ${OWT_UPDATE_DONE} || ${SUDO} apt-get update -y
     ${SUDO} apt-get install libboost-system-dev libboost-thread-dev liblog4cxx-dev wget bzip2 -y
@@ -71,19 +70,19 @@ HARDWARE_DEPS=false
 shopt -s extglob
 while [[ $# -gt 0 ]]; do
   case $1 in
-    *(-)software )
-      HARDWARE_DEPS=false
-      ;;
-    *(-)hardware )
-      HARDWARE_DEPS=true
-      ;;
-    *(-)help )
-      usage
-      exit 0
-      ;;
-    * )
-      echo -e "\x1b[33mUnknown argument\x1b[0m: $1"
-      ;;
+  *(-)software)
+    HARDWARE_DEPS=false
+    ;;
+  *(-)hardware)
+    HARDWARE_DEPS=true
+    ;;
+  *(-)help)
+    usage
+    exit 0
+    ;;
+  *)
+    echo -e "\x1b[33mUnknown argument\x1b[0m: $1"
+    ;;
   esac
   shift
 done
@@ -91,14 +90,14 @@ done
 install_deps
 ${this}/install_ffmpeg.sh
 
-if ${HARDWARE_DEPS} ; then
+if ${HARDWARE_DEPS}; then
   :
 else
   # Install if no input for 15s
   read -t 15 -p "Installing OpenH264 Video Codec Library provided by Cisco Systems, Inc? [Yes/no]" yn
   case $yn in
-    [Yy]* ) . ${this}/install_openh264.sh;;
-    [Nn]* ) ;;
-    * ) echo && . ${this}/install_openh264.sh;;
+  [Yy]*) . ${this}/install_openh264.sh ;;
+  [Nn]*) ;;
+  *) echo && . ${this}/install_openh264.sh ;;
   esac
 fi

@@ -4,8 +4,8 @@
 
 #include "FrameAnalyzer.h"
 #include <dlfcn.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 #include <unordered_map>
 
 using namespace webrtc;
@@ -31,8 +31,8 @@ FrameAnalyzer::~FrameAnalyzer()
         m_jobTimer->stop();
     }
     if (plugin_ != nullptr && plugin_handle_ != nullptr) {
-         destroy_plugin(plugin_);
-         dlclose(plugin_handle_);
+        destroy_plugin(plugin_);
+        dlclose(plugin_handle_);
     }
 }
 
@@ -52,7 +52,7 @@ bool FrameAnalyzer::init(FrameFormat format, const uint32_t width, const uint32_
     m_outHeight = height;
     m_outFrameRate = frameRate;
 
-//    m_plugin.reset(new rvaPlugin());
+    //    m_plugin.reset(new rvaPlugin());
     plugin_handle_ = dlopen(plugin_name_.c_str(), RTLD_LAZY);
     if (plugin_handle_ == nullptr) {
         ELOG_ERROR_T("Failed to open the plugin.(%s)", plugin_name_.c_str());
@@ -79,7 +79,7 @@ bool FrameAnalyzer::init(FrameFormat format, const uint32_t width, const uint32_
     plugin_->RegisterFrameCallback(this);
 
     std::unordered_map<std::string, std::string> plugin_config_map(
-      {{"AnalyticsVersion", "1"}});
+        { { "AnalyticsVersion", "1" } });
     plugin_->PluginInit(plugin_config_map);
 
     if (m_format == FRAME_FORMAT_I420)
@@ -98,12 +98,8 @@ bool FrameAnalyzer::init(FrameFormat format, const uint32_t width, const uint32_
 bool FrameAnalyzer::filterFrame(const Frame& frame)
 {
     if (m_lastWidth != frame.additionalInfo.video.width
-            || m_lastHeight != frame.additionalInfo.video.height) {
-        ELOG_DEBUG_T("Stream(%s) resolution changed, %dx%d -> %dx%d"
-                , getFormatStr(frame.format)
-                , m_lastWidth, m_lastHeight
-                , frame.additionalInfo.video.width, frame.additionalInfo.video.height
-                );
+        || m_lastHeight != frame.additionalInfo.video.height) {
+        ELOG_DEBUG_T("Stream(%s) resolution changed, %dx%d -> %dx%d", getFormatStr(frame.format), m_lastWidth, m_lastHeight, frame.additionalInfo.video.width, frame.additionalInfo.video.height);
 
         m_lastWidth = frame.additionalInfo.video.width;
         m_lastHeight = frame.additionalInfo.video.height;
@@ -117,17 +113,12 @@ void FrameAnalyzer::onFrame(const Frame& frame)
     if (filterFrame(frame))
         return;
 
-    ELOG_TRACE_T("onFrame, format(%s), resolution(%dx%d), timestamp(%u)"
-            , getFormatStr(frame.format)
-            , frame.additionalInfo.video.width
-            , frame.additionalInfo.video.height
-            , frame.timeStamp / 90
-            );
+    ELOG_TRACE_T("onFrame, format(%s), resolution(%dx%d), timestamp(%u)", getFormatStr(frame.format), frame.additionalInfo.video.width, frame.additionalInfo.video.height, frame.timeStamp / 90);
 
     if (!m_outFrameRate) {
         if (frame.format == m_format
-                && (m_outWidth == frame.additionalInfo.video.width || m_outWidth == 0)
-                && (m_outHeight == frame.additionalInfo.video.height || m_outHeight == 0)) {
+            && (m_outWidth == frame.additionalInfo.video.width || m_outWidth == 0)
+            && (m_outHeight == frame.additionalInfo.video.height || m_outHeight == 0)) {
             deliverFrame(frame);
             return;
         }
@@ -136,10 +127,9 @@ void FrameAnalyzer::onFrame(const Frame& frame)
     uint32_t width = (m_outWidth == 0 ? frame.additionalInfo.video.width : m_outWidth);
     uint32_t height = (m_outHeight == 0 ? frame.additionalInfo.video.height : m_outHeight);
 
-
     if (m_format == FRAME_FORMAT_I420) {
         if (frame.format == FRAME_FORMAT_I420) {
-            VideoFrame *srcFrame = (reinterpret_cast<VideoFrame *>(frame.payload));
+            VideoFrame* srcFrame = (reinterpret_cast<VideoFrame*>(frame.payload));
             std::unique_ptr<owt::analytics::AnalyticsBuffer> newFrame(new owt::analytics::AnalyticsBuffer());
             newFrame->buffer = new uint8_t[width * height * 3 / 2 + 1];
             memset(newFrame->buffer, 0, width * height * 3 / 2 + 1);
@@ -147,7 +137,7 @@ void FrameAnalyzer::onFrame(const Frame& frame)
             newFrame->height = height;
             rtc::scoped_refptr<webrtc::VideoFrameBuffer> i420Buffer = srcFrame->video_frame_buffer();
             memcpy(newFrame->buffer, i420Buffer->DataY(), height * width);
-            memcpy(newFrame->buffer + height * width , i420Buffer->DataU(), height * width / 4);
+            memcpy(newFrame->buffer + height * width, i420Buffer->DataU(), height * width / 4);
             memcpy(newFrame->buffer + height * width * 5 / 4, i420Buffer->DataV(), height * width / 4);
             if (plugin_) {
                 plugin_->ProcessFrameAsync(std::move(newFrame));
@@ -155,19 +145,17 @@ void FrameAnalyzer::onFrame(const Frame& frame)
             }
         }
     } else {
-        ELOG_ERROR_T("Invalid format, input %d(%s), output %d(%s)"
-                , frame.format, getFormatStr(frame.format)
-                , m_format, getFormatStr(m_format)
-                );
+        ELOG_ERROR_T("Invalid format, input %d(%s), output %d(%s)", frame.format, getFormatStr(frame.format), m_format, getFormatStr(m_format));
 
         return;
     }
     return;
 }
 
-void FrameAnalyzer::OnPluginFrame(std::unique_ptr<owt::analytics::AnalyticsBuffer> pluginFrame) {
+void FrameAnalyzer::OnPluginFrame(std::unique_ptr<owt::analytics::AnalyticsBuffer> pluginFrame)
+{
     int width = pluginFrame->width;
-    int height = pluginFrame->height; 
+    int height = pluginFrame->height;
     rtc::scoped_refptr<webrtc::I420Buffer> i420Buffer = m_bufferManager->getFreeBuffer(width, height);
     if (!i420Buffer) {
         ELOG_ERROR_T("No valid i420Buffer");
@@ -177,7 +165,7 @@ void FrameAnalyzer::OnPluginFrame(std::unique_ptr<owt::analytics::AnalyticsBuffe
     memcpy(i420Buffer->MutableDataY(), pluginFrame->buffer, width * height);
     memcpy(i420Buffer->MutableDataU(), pluginFrame->buffer + width * height, width * height / 4);
     memcpy(i420Buffer->MutableDataV(), pluginFrame->buffer + width * height * 5 / 4, width * height / 4);
-    SendFrame(i420Buffer, kMsToRtpTimestamp * m_clock->TimeInMilliseconds()); 
+    SendFrame(i420Buffer, kMsToRtpTimestamp * m_clock->TimeInMilliseconds());
     return;
 }
 
@@ -196,8 +184,8 @@ void FrameAnalyzer::SendFrame(rtc::scoped_refptr<webrtc::I420Buffer> i420Buffer,
     outFrame.timeStamp = timeStamp;
 
     ELOG_TRACE_T("sendI420Frame, %dx%d",
-            outFrame.additionalInfo.video.width,
-            outFrame.additionalInfo.video.height);
+        outFrame.additionalInfo.video.width,
+        outFrame.additionalInfo.video.height);
 
     deliverFrame(outFrame);
 }
@@ -218,4 +206,4 @@ void FrameAnalyzer::onTimeout()
     }
 }
 
-}//namespace owt_base
+} //namespace owt_base

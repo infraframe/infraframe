@@ -163,7 +163,8 @@ void VideoFramePacketizer::onFeedback(const FeedbackMsg& msg)
     deliverFeedbackMsg(msg);
 }
 
-void VideoFramePacketizer::onAdapterStats(const rtc_adapter::AdapterStats& stats) {
+void VideoFramePacketizer::onAdapterStats(const rtc_adapter::AdapterStats& stats)
+{
     // if (stats.estimatedBandwidth) {
     //     ELOG_DEBUG("updated estimatedBandwidth %d", stats.estimatedBandwidth);
     //     m_estimatedBitrateBps = stats.estimatedBandwidth;
@@ -194,7 +195,7 @@ void VideoFramePacketizer::onFrame(const Frame& frame)
                 || (m_sendFrameCount == 60)
                 || (m_sendFrameCount == 150)) {
                 // ELOG_DEBUG("Self generated key-frame-request.");
-                FeedbackMsg feedback = {.type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME };
+                FeedbackMsg feedback = { .type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME };
                 deliverFeedbackMsg(feedback);
             }
             m_sendFrameCount += 1;
@@ -215,7 +216,7 @@ void VideoFramePacketizer::onVideoSourceChanged()
 
 int VideoFramePacketizer::sendFirPacket()
 {
-    FeedbackMsg feedback = {.type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME };
+    FeedbackMsg feedback = { .type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME };
     deliverFeedbackMsg(feedback);
     return 0;
 }

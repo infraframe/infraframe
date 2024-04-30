@@ -1,6 +1,5 @@
-version: '2'
+version: "2"
 services:
-
   owt-server:
     build:
       context: ../
@@ -35,6 +34,6 @@ services:
     ports:
       - "3004:3004"
     command: sh -c "service mongodb start && service rabbitmq-server start \
-                    && cd /owt-server/dist/bin && ./init-all.sh && ./start-all.sh && sleep infinity"
+      && cd /owt-server/dist/bin && ./init-all.sh && ./start-all.sh && sleep infinity"
     depends_on:
-      -  owt-server-conference-install
+      - owt-server-conference-install

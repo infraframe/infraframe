@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
+"use strict";
 
-const unpackOption = require('./grpcTools').unpackOption;
-const packNotification = require('./grpcTools').packNotification;
+const unpackOption = require("./grpcTools").unpackOption;
+const packNotification = require("./grpcTools").packNotification;
 
 // Create GRPC interface for audio agent
 function createGrpcInterface(controller, streamingEmitter) {
@@ -17,14 +17,19 @@ function createGrpcInterface(controller, streamingEmitter) {
       const req = call.request;
       const option = unpackOption(req.type, req.option);
       controller.init(
-          option.service, {}, req.id, option.controller, option.label,
-          (n, code, data) => {
-        if (code === 'error') {
-          callback(new Error(data), null);
-        } else {
-          callback(null, code);
+        option.service,
+        {},
+        req.id,
+        option.controller,
+        option.label,
+        (n, code, data) => {
+          if (code === "error") {
+            callback(new Error(data), null);
+          } else {
+            callback(null, code);
+          }
         }
-      });
+      );
     },
     deinit: function (call, callback) {
       controller.deinit();
@@ -35,10 +40,10 @@ function createGrpcInterface(controller, streamingEmitter) {
       const forWhom = req.id;
       const codec = req.media.audio.format.codec;
       controller.generate(forWhom, codec, (n, code, data) => {
-        if (code === 'error') {
+        if (code === "error") {
           callback(new Error(data), null);
         } else {
-          callback(null, {id: code});
+          callback(null, { id: code });
         }
       });
     },
@@ -49,7 +54,7 @@ function createGrpcInterface(controller, streamingEmitter) {
     setInputActive: function (call, callback) {
       const req = call.request;
       controller.setInputActive(req.id, req.active, (n, code, data) => {
-        if (code === 'error') {
+        if (code === "error") {
           callback(new Error(data), null);
         } else {
           callback(null, {});
@@ -89,10 +94,10 @@ function createGrpcInterface(controller, streamingEmitter) {
       const req = call.request;
       const option = unpackOption(req.type, req.option);
       controller.publish(req.id, req.type, option, (n, code, data) => {
-        if (code === 'error') {
+        if (code === "error") {
           callback(new Error(data), null);
         } else {
-          callback(null, {id: req.id});
+          callback(null, { id: req.id });
         }
       });
     },
@@ -104,10 +109,10 @@ function createGrpcInterface(controller, streamingEmitter) {
       const req = call.request;
       const option = unpackOption(req.type, req.option);
       controller.subscribe(req.id, req.type, option, (n, code, data) => {
-        if (code === 'error') {
+        if (code === "error") {
           callback(new Error(data), null);
         } else {
-          callback(null, {id: req.id});
+          callback(null, { id: req.id });
         }
       });
     },
@@ -117,15 +122,13 @@ function createGrpcInterface(controller, streamingEmitter) {
     },
     linkup: function (call, callback) {
       const req = call.request;
-      controller.linkup(
-        req.id, req.from,
-        (n, code, data) => {
-          if (code === 'error') {
-            callback(new Error(data), null);
-          } else {
-            callback(null, {message: data});
-          }
-        });
+      controller.linkup(req.id, req.from, (n, code, data) => {
+        if (code === "error") {
+          callback(new Error(data), null);
+        } else {
+          callback(null, { message: data });
+        }
+      });
     },
     cutoff: function (call, callback) {
       controller.cutoff(call.request.id);
@@ -134,7 +137,7 @@ function createGrpcInterface(controller, streamingEmitter) {
     listenToNotifications: function (call) {
       const writeNotification = (notification) => {
         const progress = packNotification({
-          type: 'audio',
+          type: "audio",
           name: notification.name,
           data: notification.data,
         });
@@ -143,24 +146,24 @@ function createGrpcInterface(controller, streamingEmitter) {
       const endCall = () => {
         call.end();
       };
-      streamingEmitter.on('notification', writeNotification);
-      streamingEmitter.on('close', endCall);
-      call.on('cancelled', () => {
+      streamingEmitter.on("notification", writeNotification);
+      streamingEmitter.on("close", endCall);
+      call.on("cancelled", () => {
         call.end();
       });
-      call.on('close', () => {
-        streamingEmitter.off('notification', writeNotification);
-        streamingEmitter.off('close', endCall);
+      call.on("close", () => {
+        streamingEmitter.off("notification", writeNotification);
+        streamingEmitter.off("close", endCall);
       });
     },
     getInternalAddress: function (call, callback) {
       controller.getInternalAddress((n, code, data) => {
-          if (code === 'error') {
-            callback(new Error(data), null);
-          } else {
-            callback(null, code);
-          }
-        });
+        if (code === "error") {
+          callback(new Error(data), null);
+        } else {
+          callback(null, code);
+        }
+      });
     },
   };
 

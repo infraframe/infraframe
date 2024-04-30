@@ -5,8 +5,8 @@
 #ifndef AudioEncoder_h
 #define AudioEncoder_h
 
-#include <webrtc/modules/include/module_common_types.h>
 #include "MediaFramePipeline.h"
+#include <webrtc/modules/include/module_common_types.h>
 
 namespace mcu {
 
@@ -15,7 +15,7 @@ public:
     virtual ~AudioEncoder() { }
 
     virtual bool init() = 0;
-    virtual bool addAudioFrame(const webrtc::AudioFrame *audioFrame) = 0;
+    virtual bool addAudioFrame(const webrtc::AudioFrame* audioFrame) = 0;
 };
 
 } /* namespace mcu */

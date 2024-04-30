@@ -10,20 +10,27 @@
 namespace owt {
 namespace analytics {
 
-//compact buffer of I420a, size must be at least width*height*3/2
-struct AnalyticsBuffer {
- uint8_t * buffer;
- int width;
- int height;
+    //compact buffer of I420a, size must be at least width*height*3/2
+    struct AnalyticsBuffer {
+        uint8_t* buffer;
+        int width;
+        int height;
 
- AnalyticsBuffer() : buffer(nullptr), width(0), height(0) {}
+        AnalyticsBuffer()
+            : buffer(nullptr)
+            , width(0)
+            , height(0)
+        {
+        }
 
- ~AnalyticsBuffer() {
-     if (buffer != nullptr) {
-         delete [] buffer;
-         buffer = nullptr; }
-     }
-};
+        ~AnalyticsBuffer()
+        {
+            if (buffer != nullptr) {
+                delete[] buffer;
+                buffer = nullptr;
+            }
+        }
+    };
 
 }
 }

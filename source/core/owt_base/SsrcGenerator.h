@@ -14,22 +14,22 @@
 namespace owt_base {
 
 class SsrcGenerator {
- public:
-  static SsrcGenerator* GetSsrcGenerator();
+public:
+    static SsrcGenerator* GetSsrcGenerator();
 
-  uint32_t CreateSsrc();
-  void RegisterSsrc(uint32_t ssrc);
-  void ReturnSsrc(uint32_t ssrc);
+    uint32_t CreateSsrc();
+    void RegisterSsrc(uint32_t ssrc);
+    void ReturnSsrc(uint32_t ssrc);
 
- protected:
-  SsrcGenerator();
-  ~SsrcGenerator();
+protected:
+    SsrcGenerator();
+    ~SsrcGenerator();
 
- private:
-  mutable webrtc::Mutex mutex_;
-  webrtc::Random random_ RTC_GUARDED_BY(mutex_);
-  std::set<uint32_t> ssrcs_ RTC_GUARDED_BY(mutex_);
+private:
+    mutable webrtc::Mutex mutex_;
+    webrtc::Random random_ RTC_GUARDED_BY(mutex_);
+    std::set<uint32_t> ssrcs_ RTC_GUARDED_BY(mutex_);
 };
-}  // namespace owt_base
+} // namespace owt_base
 
-#endif  // SsrcGenerator_h
+#endif // SsrcGenerator_h

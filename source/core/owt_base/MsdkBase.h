@@ -11,8 +11,8 @@
 #include <logger.h>
 
 #include <mfx/mfxdefs.h>
-#include <mfx/mfxvideo++.h>
 #include <mfx/mfxplugin++.h>
+#include <mfx/mfxvideo++.h>
 #include <mfx/mfxvp8.h>
 
 #ifndef MFX_VERSION
@@ -23,7 +23,9 @@ namespace owt_base {
 
 #define ALIGN16(x) ((((x) + 15) >> 4) << 4)
 
-enum DumpType{ MFX_DEC, MFX_VPP, MFX_ENC };
+enum DumpType { MFX_DEC,
+    MFX_VPP,
+    MFX_ENC };
 
 class MsdkBase {
     DECLARE_LOGGER();
@@ -31,7 +33,7 @@ class MsdkBase {
 public:
     ~MsdkBase();
 
-    static MsdkBase *get(void);
+    static MsdkBase* get(void);
 
     bool isSupportedDecoder(mfxU32 codecId);
     bool isSupportedEncoder(mfxU32 codecId);
@@ -42,38 +44,38 @@ public:
     void setConfigMFETimeout(uint32_t MFETimeout);
     uint32_t getConfigMFETimeout();
 
-    MFXVideoSession *createSession();
-    void destroySession(MFXVideoSession *pSession);
+    MFXVideoSession* createSession();
+    void destroySession(MFXVideoSession* pSession);
 
-    bool loadDecoderPlugin(uint32_t codecId, MFXVideoSession *pSession, mfxPluginUID *pluginID);
-    bool loadEncoderPlugin(uint32_t codecId, MFXVideoSession *pSession, mfxPluginUID *pluginID);
-    void unLoadPlugin(MFXVideoSession *pSession, mfxPluginUID *pluginID);
+    bool loadDecoderPlugin(uint32_t codecId, MFXVideoSession* pSession, mfxPluginUID* pluginID);
+    bool loadEncoderPlugin(uint32_t codecId, MFXVideoSession* pSession, mfxPluginUID* pluginID);
+    void unLoadPlugin(MFXVideoSession* pSession, mfxPluginUID* pluginID);
 
     boost::shared_ptr<mfxFrameAllocator> createFrameAllocator(void);
-    void destroyFrameAllocator(mfxFrameAllocator *pAlloc);
+    void destroyFrameAllocator(mfxFrameAllocator* pAlloc);
 
-    MFXVideoSession *getMainSession() {return m_mainSession;};
+    MFXVideoSession* getMainSession() { return m_mainSession; };
 
-    static void printfFrameInfo(mfxFrameInfo *pFrameInfo);
-    static void printfVideoParam(mfxVideoParam *pVideoParam, DumpType type);
-    static void printfFrameAllocRequest(mfxFrameAllocRequest *pRequest);
+    static void printfFrameInfo(mfxFrameInfo* pFrameInfo);
+    static void printfVideoParam(mfxVideoParam* pVideoParam, DumpType type);
+    static void printfFrameAllocRequest(mfxFrameAllocRequest* pRequest);
 
 protected:
     MsdkBase();
 
     bool init();
-    MFXVideoSession *createSession_internal(void);
+    MFXVideoSession* createSession_internal(void);
 
 private:
-    static MsdkBase *sSingleton;
+    static MsdkBase* sSingleton;
     static boost::shared_mutex sSingletonLock;
     static std::vector<mfxU32> sSupportedDecoders;
     static std::vector<mfxU32> sSupportedEncoders;
 
     int m_fd;
-    void *m_vaDisp;
+    void* m_vaDisp;
 
-    MFXVideoSession *m_mainSession;
+    MFXVideoSession* m_mainSession;
 
     bool m_configHevcEncoderGaccPlugin;
     uint32_t m_configMFETimeout;
@@ -83,4 +85,3 @@ private:
 
 #endif /* ENABLE_MSDK */
 #endif /* MsdkBase_h */
-

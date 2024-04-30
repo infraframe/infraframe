@@ -21,9 +21,8 @@ public:
     MsdkScaler();
     ~MsdkScaler();
 
-    bool convert(MsdkFrame *srcMsdkFrame, MsdkFrame *dstMsdkFrame);
-    bool convert(MsdkFrame *srcMsdkFrame, int srcCropX, int srcCropY, int srcCropW, int srcCropH
-            , MsdkFrame *dstMsdkFrame, int dstCropX, int dstCropY, int dstCropW, int dstCropH);
+    bool convert(MsdkFrame* srcMsdkFrame, MsdkFrame* dstMsdkFrame);
+    bool convert(MsdkFrame* srcMsdkFrame, int srcCropX, int srcCropY, int srcCropW, int srcCropH, MsdkFrame* dstMsdkFrame, int dstCropX, int dstCropY, int dstCropW, int dstCropH);
 
 protected:
     void initVppParam();
@@ -31,15 +30,15 @@ protected:
     void destroyVpp();
 
     void updateVppParam(int inWidth, int inHeight, int inCropX, int inCropY, int inCropW, int inCropH,
-            int outWidth, int outHeight, int outCropX, int outCropY, int outCropW, int outCropH);
+        int outWidth, int outHeight, int outCropX, int outCropY, int outCropW, int outCropH);
 
     bool setupVpp(int inWidth, int inHeight, int inCropX, int inCropY, int inCropW, int inCropH,
-            int outWidth, int outHeight, int outCropX, int outCropY, int outCropW, int outCropH);
-    bool doVppConvert(MsdkFrame *srcMsdkFrame, MsdkFrame *dstMsdkFrame);
+        int outWidth, int outHeight, int outCropX, int outCropY, int outCropW, int outCropH);
+    bool doVppConvert(MsdkFrame* srcMsdkFrame, MsdkFrame* dstMsdkFrame);
 
 private:
-    MFXVideoSession *m_session;
-    MFXVideoVPP *m_vpp;
+    MFXVideoSession* m_session;
+    MFXVideoVPP* m_vpp;
     boost::shared_ptr<mfxFrameAllocator> m_allocator;
     boost::scoped_ptr<mfxVideoParam> m_vppParam;
 };
@@ -47,4 +46,3 @@ private:
 } /* namespace owt_base */
 
 #endif /* MsdkScaler_h */
-

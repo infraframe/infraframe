@@ -5,10 +5,10 @@
 #include "LiveStreamIn.h"
 
 #include <cstdio>
+#include <memory>
 #include <rtputils.h>
 #include <sstream>
 #include <sys/time.h>
-#include <memory>
 
 #include "MediaUtilities.h"
 
@@ -25,7 +25,7 @@ static inline void notifyAsyncEvent(EventRegistry* handle, const std::string& ev
 
 namespace owt_base {
 
-static int filterNALs(uint8_t *data, int size, const std::vector<int> &remove_types, const std::vector<int> &pass_types)
+static int filterNALs(uint8_t* data, int size, const std::vector<int>& remove_types, const std::vector<int>& pass_types)
 {
     int remove_nals_size = 0;
 
@@ -49,7 +49,7 @@ static int filterNALs(uint8_t *data, int size, const std::vector<int> &remove_ty
 
         nalu_type = buffer_start[nalu_start_offset] & 0x1F;
         if ((remove_types.size() > 0 && find(remove_types.begin(), remove_types.end(), nalu_type) != remove_types.end())
-                || (pass_types.size() > 0 && find(pass_types.begin(), pass_types.end(), nalu_type) == pass_types.end())) {
+            || (pass_types.size() > 0 && find(pass_types.begin(), pass_types.end(), nalu_type) == pass_types.end())) {
             std::unique_ptr<uint8_t> buffer_delegate(buffer_start);
             memmove(buffer_delegate.get(), buffer_delegate.get() + nalu_start_offset + nalu_found_length, buffer_length - nalu_start_offset - nalu_found_length);
             buffer_delegate.release();
@@ -65,13 +65,13 @@ static int filterNALs(uint8_t *data, int size, const std::vector<int> &remove_ty
     return size - remove_nals_size;
 }
 
-FramePacket::FramePacket (AVPacket *packet)
+FramePacket::FramePacket(AVPacket* packet)
     : m_packet(NULL)
 {
-    m_packet = (AVPacket *)malloc(sizeof(AVPacket));
+    m_packet = (AVPacket*)malloc(sizeof(AVPacket));
     if (m_packet) {
-      av_init_packet(m_packet);
-      av_packet_ref(m_packet, packet);
+        av_init_packet(m_packet);
+        av_packet_ref(m_packet, packet);
     }
 }
 
@@ -84,7 +84,7 @@ FramePacket::~FramePacket()
     }
 }
 
-void FramePacketBuffer::pushPacket(boost::shared_ptr<FramePacket> &FramePacket)
+void FramePacketBuffer::pushPacket(boost::shared_ptr<FramePacket>& FramePacket)
 {
     boost::mutex::scoped_lock lock(m_queueMutex);
     m_queue.push_back(FramePacket);
@@ -157,7 +157,7 @@ void FramePacketBuffer::clear()
 
 DEFINE_LOGGER(JitterBuffer, "owt.LiveStreamIn.JitterBuffer");
 
-JitterBuffer::JitterBuffer(std::string name, SyncMode syncMode, JitterBufferListener *listener, int64_t maxBufferingMs)
+JitterBuffer::JitterBuffer(std::string name, SyncMode syncMode, JitterBufferListener* listener, int64_t maxBufferingMs)
     : m_name(name)
     , m_syncMode(syncMode)
     , m_isClosing(false)
@@ -215,7 +215,7 @@ void JitterBuffer::drain()
 {
     ELOG_DEBUG_T("(%s)drain jitter buffer size(%d)", m_name.c_str(), m_buffer.size());
 
-    while(m_buffer.size() > 0) {
+    while (m_buffer.size() > 0) {
         ELOG_DEBUG_T("(%s)drain jitter buffer, size(%d) ...", m_name.c_str(), m_buffer.size());
         usleep(10);
     }
@@ -241,13 +241,13 @@ void JitterBuffer::onTimeout(const boost::system::error_code& ec)
     }
 }
 
-void JitterBuffer::insert(AVPacket &pkt)
+void JitterBuffer::insert(AVPacket& pkt)
 {
     boost::shared_ptr<FramePacket> framePacket(new FramePacket(&pkt));
     m_buffer.pushPacket(framePacket);
 }
 
-void JitterBuffer::setSyncTime(int64_t &syncTimestamp, boost::posix_time::ptime &syncLocalTime)
+void JitterBuffer::setSyncTime(int64_t& syncTimestamp, boost::posix_time::ptime& syncLocalTime)
 {
     boost::mutex::scoped_lock lock(m_syncMutex);
 
@@ -257,7 +257,7 @@ void JitterBuffer::setSyncTime(int64_t &syncTimestamp, boost::posix_time::ptime 
     m_syncLocalTime.reset(new boost::posix_time::ptime(syncLocalTime));
 }
 
-int64_t JitterBuffer::getNextTime(AVPacket *pkt)
+int64_t JitterBuffer::getNextTime(AVPacket* pkt)
 {
     int64_t interval = m_lastInterval;
     int64_t diff = 0;
@@ -265,7 +265,7 @@ int64_t JitterBuffer::getNextTime(AVPacket *pkt)
     int64_t nextTimestamp = 0;
 
     boost::shared_ptr<FramePacket> nextFramePacket = m_buffer.frontPacket();
-    AVPacket *nextPkt = nextFramePacket != NULL ? nextFramePacket->getAVPacket() : NULL;
+    AVPacket* nextPkt = nextFramePacket != NULL ? nextFramePacket->getAVPacket() : NULL;
 
     if (!pkt || !nextPkt) {
         interval = 10;
@@ -309,15 +309,12 @@ int64_t JitterBuffer::getNextTime(AVPacket *pkt)
         if (m_syncTimestamp != AV_NOPTS_VALUE) {
             // sync timestamp changed
             if (nextTimestamp < m_syncTimestamp) {
-                ELOG_DEBUG_T("(%s)timestamp(%ld) is behind sync timestamp(%ld), diff %ld!"
-                        , m_name.c_str(), nextTimestamp, m_syncTimestamp, nextTimestamp - m_syncTimestamp);
+                ELOG_DEBUG_T("(%s)timestamp(%ld) is behind sync timestamp(%ld), diff %ld!", m_name.c_str(), nextTimestamp, m_syncTimestamp, nextTimestamp - m_syncTimestamp);
                 interval = diff;
-            }
-            else {
+            } else {
                 interval = (*m_syncLocalTime - mst).total_milliseconds() + (nextTimestamp - m_syncTimestamp);
             }
-        }
-        else {
+        } else {
             interval = (*m_firstLocalTime - mst).total_milliseconds() + (nextTimestamp - m_firstTimestamp);
         }
 
@@ -361,7 +358,7 @@ void JitterBuffer::handleJob()
             ELOG_DEBUG_T("(%s)Do seek, bufferingMs(%ld), maxBufferingMs(%ld), QueueSize(%d)", m_name.c_str(), bufferingMs, m_maxBufferingMs, m_buffer.size());
 
             int64_t seekMs = backPacket->getAVPacket()->dts - m_maxBufferingMs / 2;
-            while(true) {
+            while (true) {
                 framePacket = m_buffer.frontPacket();
                 if (!framePacket || framePacket->getAVPacket()->dts > seekMs)
                     break;
@@ -387,7 +384,7 @@ void JitterBuffer::handleJob()
     uint32_t interval;
 
     framePacket = m_buffer.popPacket();
-    AVPacket *pkt = framePacket != NULL ? framePacket->getAVPacket() : NULL;
+    AVPacket* pkt = framePacket != NULL ? framePacket->getAVPacket() : NULL;
 
     interval = getNextTime(pkt);
     m_timer->expires_from_now(boost::posix_time::milliseconds(interval));
@@ -432,8 +429,7 @@ LiveStreamIn::LiveStreamIn(const Options& options, EventRegistry* handle)
     , m_sps_pps_buffer()
     , m_sps_pps_buffer_length(0)
 {
-    ELOG_INFO_T("url: %s, audio: %s, video: %s, transport: %s, bufferSize: %d"
-            , m_url.c_str(), m_enableAudio.c_str(), m_enableVideo.c_str(), options.transport.c_str(), options.bufferSize);
+    ELOG_INFO_T("url: %s, audio: %s, video: %s, transport: %s, bufferSize: %d", m_url.c_str(), m_enableAudio.c_str(), m_enableVideo.c_str(), options.transport.c_str(), options.bufferSize);
 
     if (!m_enableAudio.compare("no") && !m_enableVideo.compare("no")) {
         ELOG_ERROR_T("Audio/Video not enabled");
@@ -452,7 +448,7 @@ LiveStreamIn::LiveStreamIn(const Options& options, EventRegistry* handle)
     else
         av_log_set_level(AV_LOG_QUIET);
 
-    if(isRtsp()) {
+    if (isRtsp()) {
         if (options.transport.compare("udp") == 0) {
             uint32_t buffer_size = options.bufferSize > 0 ? options.bufferSize : DEFAULT_UDP_BUF_SIZE;
             char buf[256];
@@ -460,7 +456,7 @@ LiveStreamIn::LiveStreamIn(const Options& options, EventRegistry* handle)
             av_dict_set(&m_options, "buffer_size", buf, 0);
 
             av_dict_set(&m_options, "rtsp_transport", "udp", 0);
-            ELOG_INFO_T("rtsp, transport: udp(%u)" , buffer_size);
+            ELOG_INFO_T("rtsp, transport: udp(%u)", buffer_size);
         } else if (options.transport.compare("tcp") == 0) {
             av_dict_set(&m_options, "rtsp_transport", "tcp", 0);
             ELOG_INFO_T("rtsp, transport: tcp");
@@ -480,7 +476,7 @@ LiveStreamIn::LiveStreamIn(const Options& options, EventRegistry* handle)
 
 LiveStreamIn::~LiveStreamIn()
 {
-    ELOG_INFO_T("Closing %s" , m_url.c_str());
+    ELOG_INFO_T("Closing %s", m_url.c_str());
     m_running = false;
     if (m_timeoutHandler) {
         m_timeoutHandler->stop();
@@ -537,7 +533,7 @@ bool LiveStreamIn::connect()
     int res;
 
     m_context = avformat_alloc_context();
-    m_context->interrupt_callback = {&TimeoutHandler::checkInterrupt, m_timeoutHandler};
+    m_context->interrupt_callback = { &TimeoutHandler::checkInterrupt, m_timeoutHandler };
     //m_context->max_analyze_duration = 3 * AV_TIME_BASE;
 
     ELOG_DEBUG_T("Opening input");
@@ -576,67 +572,77 @@ bool LiveStreamIn::connect()
         if (streamNo >= 0) {
             video_st = m_context->streams[streamNo];
             ELOG_INFO_T("Has video, video stream number(%d), codec(%s), %s, %dx%d",
-                    streamNo,
-                    avcodec_get_name(video_st->codecpar->codec_id),
-                    avcodec_profile_name(video_st->codecpar->codec_id, video_st->codecpar->profile),
-                    video_st->codecpar->width,
-                    video_st->codecpar->height
-                    );
+                streamNo,
+                avcodec_get_name(video_st->codecpar->codec_id),
+                avcodec_profile_name(video_st->codecpar->codec_id, video_st->codecpar->profile),
+                video_st->codecpar->width,
+                video_st->codecpar->height);
 
             AVCodecID videoCodecId = video_st->codecpar->codec_id;
             switch (videoCodecId) {
-                case AV_CODEC_ID_VP8:
-                    m_videoFormat = FRAME_FORMAT_VP8;
-                    m_AsyncEvent << ",\"video\":{\"codec\":" << "\"vp8\"";
+            case AV_CODEC_ID_VP8:
+                m_videoFormat = FRAME_FORMAT_VP8;
+                m_AsyncEvent << ",\"video\":{\"codec\":"
+                             << "\"vp8\"";
+                break;
+
+            case AV_CODEC_ID_VP9:
+                m_videoFormat = FRAME_FORMAT_VP9;
+                m_AsyncEvent << ",\"video\":{\"codec\":"
+                             << "\"vp9\"";
+                break;
+
+            case AV_CODEC_ID_H264:
+                m_videoFormat = FRAME_FORMAT_H264;
+                m_AsyncEvent << ",\"video\":{\"codec\":"
+                             << "\"h264\"";
+
+                switch (video_st->codecpar->profile) {
+                case FF_PROFILE_H264_CONSTRAINED_BASELINE:
+                    m_AsyncEvent << ",\"profile\":"
+                                 << "\"CB\"";
                     break;
-
-                case AV_CODEC_ID_VP9:
-                    m_videoFormat = FRAME_FORMAT_VP9;
-                    m_AsyncEvent << ",\"video\":{\"codec\":" << "\"vp9\"";
+                case FF_PROFILE_H264_BASELINE:
+                    m_AsyncEvent << ",\"profile\":"
+                                 << "\"B\"";
                     break;
-
-                case AV_CODEC_ID_H264:
-                    m_videoFormat = FRAME_FORMAT_H264;
-                    m_AsyncEvent << ",\"video\":{\"codec\":" << "\"h264\"";
-
-                    switch (video_st->codecpar->profile) {
-                        case FF_PROFILE_H264_CONSTRAINED_BASELINE:
-                            m_AsyncEvent << ",\"profile\":"  << "\"CB\"";
-                            break;
-                        case FF_PROFILE_H264_BASELINE:
-                            m_AsyncEvent << ",\"profile\":"  << "\"B\"";
-                            break;
-                        case FF_PROFILE_H264_MAIN:
-                            m_AsyncEvent << ",\"profile\":"  << "\"M\"";
-                            break;
-                        case FF_PROFILE_H264_EXTENDED:
-                            m_AsyncEvent << ",\"profile\":"  << "\"E\"";
-                            break;
-                        case FF_PROFILE_H264_HIGH:
-                            m_AsyncEvent << ",\"profile\":"  << "\"H\"";
-                            break;
-                        default:
-                            ELOG_WARN_T("Unsupported H264 profile: %s", avcodec_profile_name(video_st->codecpar->codec_id, video_st->codecpar->profile));
-                            m_AsyncEvent << ",\"profile\":"  << "\"M\"";
-                            break;
-                    }
-
+                case FF_PROFILE_H264_MAIN:
+                    m_AsyncEvent << ",\"profile\":"
+                                 << "\"M\"";
                     break;
-
-                case AV_CODEC_ID_H265:
-                    m_videoFormat = FRAME_FORMAT_H265;
-                    m_AsyncEvent << ",\"video\":{\"codec\":" << "\"h265\"";
+                case FF_PROFILE_H264_EXTENDED:
+                    m_AsyncEvent << ",\"profile\":"
+                                 << "\"E\"";
                     break;
-
+                case FF_PROFILE_H264_HIGH:
+                    m_AsyncEvent << ",\"profile\":"
+                                 << "\"H\"";
+                    break;
                 default:
-                    ELOG_WARN("Video codec %s is not supported", avcodec_get_name(videoCodecId));
+                    ELOG_WARN_T("Unsupported H264 profile: %s", avcodec_profile_name(video_st->codecpar->codec_id, video_st->codecpar->profile));
+                    m_AsyncEvent << ",\"profile\":"
+                                 << "\"M\"";
                     break;
+                }
+
+                break;
+
+            case AV_CODEC_ID_H265:
+                m_videoFormat = FRAME_FORMAT_H265;
+                m_AsyncEvent << ",\"video\":{\"codec\":"
+                             << "\"h265\"";
+                break;
+
+            default:
+                ELOG_WARN("Video codec %s is not supported", avcodec_get_name(videoCodecId));
+                break;
             }
 
             if (m_videoFormat != FRAME_FORMAT_UNKNOWN) {
                 m_videoWidth = video_st->codecpar->width;
                 m_videoHeight = video_st->codecpar->height;
-                m_AsyncEvent << ",\"resolution\":" << "{\"width\":" << video_st->codecpar->width << ", \"height\":" << video_st->codecpar->height << "}}";
+                m_AsyncEvent << ",\"resolution\":"
+                             << "{\"width\":" << video_st->codecpar->width << ", \"height\":" << video_st->codecpar->height << "}}";
 
                 if (!isRtsp())
                     m_videoJitterBuffer.reset(new JitterBuffer("video", JitterBuffer::SYNC_MODE_SLAVE, this));
@@ -666,47 +672,52 @@ bool LiveStreamIn::connect()
         if (streamNo >= 0) {
             audio_st = m_context->streams[streamNo];
             ELOG_INFO_T("Has audio, audio stream number(%d), codec(%s), %d-%d",
-                    streamNo,
-                    avcodec_get_name(audio_st->codecpar->codec_id),
-                    audio_st->codecpar->sample_rate,
-                    audio_st->codecpar->channels
-                    );
+                streamNo,
+                avcodec_get_name(audio_st->codecpar->codec_id),
+                audio_st->codecpar->sample_rate,
+                audio_st->codecpar->channels);
 
             AVCodecID audioCodecId = audio_st->codecpar->codec_id;
-            switch(audioCodecId) {
-                case AV_CODEC_ID_PCM_MULAW:
-                    m_audioFormat = FRAME_FORMAT_PCMU;
-                    m_AsyncEvent << ",\"audio\":{\"codec\":" << "\"pcmu\"}";
-                    break;
+            switch (audioCodecId) {
+            case AV_CODEC_ID_PCM_MULAW:
+                m_audioFormat = FRAME_FORMAT_PCMU;
+                m_AsyncEvent << ",\"audio\":{\"codec\":"
+                             << "\"pcmu\"}";
+                break;
 
-                case AV_CODEC_ID_PCM_ALAW:
-                    m_audioFormat = FRAME_FORMAT_PCMA;
-                    m_AsyncEvent << ",\"audio\":{\"codec\":" << "\"pcma\"}";
-                    break;
+            case AV_CODEC_ID_PCM_ALAW:
+                m_audioFormat = FRAME_FORMAT_PCMA;
+                m_AsyncEvent << ",\"audio\":{\"codec\":"
+                             << "\"pcma\"}";
+                break;
 
-                case AV_CODEC_ID_OPUS:
-                    m_audioFormat = FRAME_FORMAT_OPUS;
-                    m_AsyncEvent << ",\"audio\":{\"codec\":" << "\"opus\",\"sampleRate\":48000, \"channelNum\":2}";
-                    break;
+            case AV_CODEC_ID_OPUS:
+                m_audioFormat = FRAME_FORMAT_OPUS;
+                m_AsyncEvent << ",\"audio\":{\"codec\":"
+                             << "\"opus\",\"sampleRate\":48000, \"channelNum\":2}";
+                break;
 
-                case AV_CODEC_ID_AAC:
-                    m_audioFormat = FRAME_FORMAT_AAC;
-                    m_AsyncEvent << ",\"audio\":{\"codec\":" << "\"aac\"}";
-                    break;
+            case AV_CODEC_ID_AAC:
+                m_audioFormat = FRAME_FORMAT_AAC;
+                m_AsyncEvent << ",\"audio\":{\"codec\":"
+                             << "\"aac\"}";
+                break;
 
-                case AV_CODEC_ID_AC3:
-                    m_audioFormat = FRAME_FORMAT_AC3;
-                    m_AsyncEvent << ",\"audio\":{\"codec\":" << "\"ac3\"}";
-                    break;
+            case AV_CODEC_ID_AC3:
+                m_audioFormat = FRAME_FORMAT_AC3;
+                m_AsyncEvent << ",\"audio\":{\"codec\":"
+                             << "\"ac3\"}";
+                break;
 
-                case AV_CODEC_ID_NELLYMOSER:
-                    m_audioFormat = FRAME_FORMAT_NELLYMOSER;
-                    m_AsyncEvent << ",\"audio\":{\"codec\":" << "\"nellymoser\"}";
-                    break;
+            case AV_CODEC_ID_NELLYMOSER:
+                m_audioFormat = FRAME_FORMAT_NELLYMOSER;
+                m_AsyncEvent << ",\"audio\":{\"codec\":"
+                             << "\"nellymoser\"}";
+                break;
 
-                default:
-                    ELOG_WARN("Audio codec %s is not supported ", avcodec_get_name(audioCodecId));
-                    break;
+            default:
+                ELOG_WARN("Audio codec %s is not supported ", avcodec_get_name(audioCodecId));
+                break;
             }
 
             if (m_audioFormat != FRAME_FORMAT_UNKNOWN) {
@@ -753,8 +764,8 @@ bool LiveStreamIn::connect()
     }
 
     if (!strcmp(m_context->iformat->name, "flv")
-            && m_videoStreamIndex != -1
-            && m_context->streams[m_videoStreamIndex]->codecpar->codec_id == AV_CODEC_ID_H264) {
+        && m_videoStreamIndex != -1
+        && m_context->streams[m_videoStreamIndex]->codecpar->codec_id == AV_CODEC_ID_H264) {
         m_enableVideoExtradata = true;
         ELOG_INFO_T("Enable video extradata");
     }
@@ -800,7 +811,7 @@ bool LiveStreamIn::reconnect()
     m_timeoutHandler->reset(10000);
 
     m_context = avformat_alloc_context();
-    m_context->interrupt_callback = {&TimeoutHandler::checkInterrupt, m_timeoutHandler};
+    m_context->interrupt_callback = { &TimeoutHandler::checkInterrupt, m_timeoutHandler };
     //m_context->max_analyze_duration = 3 * AV_TIME_BASE;
 
     ELOG_DEBUG_T("Opening input");
@@ -863,8 +874,8 @@ bool LiveStreamIn::reconnect()
         m_audioJitterBuffer->start();
 
     if (!strcmp(m_context->iformat->name, "flv")
-            && m_videoStreamIndex != -1
-            && m_context->streams[m_videoStreamIndex]->codecpar->codec_id == AV_CODEC_ID_H264) {
+        && m_videoStreamIndex != -1
+        && m_context->streams[m_videoStreamIndex]->codecpar->codec_id == AV_CODEC_ID_H264) {
         m_enableVideoExtradata = true;
         ELOG_INFO_T("Enable video extradata");
     }
@@ -884,7 +895,7 @@ void LiveStreamIn::receiveLoop()
     ELOG_DEBUG_T("%s", m_AsyncEvent.str().c_str());
     ::notifyAsyncEvent(m_asyncHandle, "status", m_AsyncEvent.str().c_str());
 
-    ELOG_DEBUG_T("Start playing %s", m_url.c_str() );
+    ELOG_DEBUG_T("Start playing %s", m_url.c_str());
 
     if (m_videoStreamIndex != -1) {
         int i = 0;
@@ -929,12 +940,11 @@ void LiveStreamIn::receiveLoop()
         }
 
         if (m_avPacket.stream_index == m_videoStreamIndex) { //packet is video
-            AVStream *video_st = m_context->streams[m_videoStreamIndex];
+            AVStream* video_st = m_context->streams[m_videoStreamIndex];
             m_avPacket.dts = timeRescale(m_avPacket.dts, video_st->time_base, m_msTimeBase) + m_timstampOffset;
             m_avPacket.pts = timeRescale(m_avPacket.pts, video_st->time_base, m_msTimeBase) + m_timstampOffset;
 
-            ELOG_TRACE_T("Receive video frame packet, dts %ld, size %d"
-                    , m_avPacket.dts, m_avPacket.size);
+            ELOG_TRACE_T("Receive video frame packet, dts %ld, size %d", m_avPacket.dts, m_avPacket.size);
 
             if (filterVBS(video_st, &m_avPacket)) {
                 filterPS(video_st, &m_avPacket);
@@ -945,12 +955,11 @@ void LiveStreamIn::receiveLoop()
                     deliverVideoFrame(&m_avPacket);
             }
         } else if (m_avPacket.stream_index == m_audioStreamIndex) { //packet is audio
-            AVStream *audio_st = m_context->streams[m_audioStreamIndex];
+            AVStream* audio_st = m_context->streams[m_audioStreamIndex];
             m_avPacket.dts = timeRescale(m_avPacket.dts, audio_st->time_base, m_msTimeBase) + m_timstampOffset;
             m_avPacket.pts = timeRescale(m_avPacket.pts, audio_st->time_base, m_msTimeBase) + m_timstampOffset;
 
-            ELOG_TRACE_T("Receive audio frame packet, dts %ld, duration %ld, size %d"
-                    , m_avPacket.dts, m_avPacket.duration, m_avPacket.size);
+            ELOG_TRACE_T("Receive audio frame packet, dts %ld, duration %ld, size %d", m_avPacket.dts, m_avPacket.duration, m_avPacket.size);
 
             if (m_audioJitterBuffer)
                 m_audioJitterBuffer->insert(m_avPacket);
@@ -964,34 +973,34 @@ void LiveStreamIn::receiveLoop()
     ELOG_DEBUG_T("Thread exited!");
 }
 
-void LiveStreamIn::checkVideoBitstream(AVStream *st, const AVPacket *pkt)
+void LiveStreamIn::checkVideoBitstream(AVStream* st, const AVPacket* pkt)
 {
     int ret;
-    const char *filter_name = NULL;
-    const AVBitStreamFilter *bsf = NULL;
+    const char* filter_name = NULL;
+    const AVBitStreamFilter* bsf = NULL;
 
     if (!m_needCheckVBS)
         return;
 
     m_needApplyVBSF = false;
-    switch(st->codecpar->codec_id) {
-        case AV_CODEC_ID_H264:
-            if (pkt->size < 5 || AV_RB32(pkt->data) == 0x0000001 || AV_RB24(pkt->data) == 0x000001)
-                break;
-            filter_name = "h264_mp4toannexb";
+    switch (st->codecpar->codec_id) {
+    case AV_CODEC_ID_H264:
+        if (pkt->size < 5 || AV_RB32(pkt->data) == 0x0000001 || AV_RB24(pkt->data) == 0x000001)
             break;
-        case AV_CODEC_ID_HEVC:
-            if (pkt->size < 5 || AV_RB32(pkt->data) == 0x0000001 || AV_RB24(pkt->data) == 0x000001)
-                break;
-            filter_name = "hevc_mp4toannexb";
+        filter_name = "h264_mp4toannexb";
+        break;
+    case AV_CODEC_ID_HEVC:
+        if (pkt->size < 5 || AV_RB32(pkt->data) == 0x0000001 || AV_RB24(pkt->data) == 0x000001)
             break;
-        default:
-            break;
+        filter_name = "hevc_mp4toannexb";
+        break;
+    default:
+        break;
     }
 
     if (filter_name) {
         bsf = av_bsf_get_by_name(filter_name);
-        if(!bsf) {
+        if (!bsf) {
             ELOG_ERROR_T("Fail to get bsf, %s", filter_name);
             goto exit;
         }
@@ -1028,7 +1037,8 @@ exit:
     ELOG_DEBUG_T("%s video bitstream filter", m_needApplyVBSF ? "Apply" : "Not apply");
 }
 
-bool LiveStreamIn::filterVBS(AVStream *st, AVPacket *pkt) {
+bool LiveStreamIn::filterVBS(AVStream* st, AVPacket* pkt)
+{
     int ret;
 
     checkVideoBitstream(st, pkt);
@@ -1070,12 +1080,13 @@ bool LiveStreamIn::filterVBS(AVStream *st, AVPacket *pkt) {
     return true;
 }
 
-bool LiveStreamIn::parse_avcC(AVPacket *pkt) {
-    uint8_t *data;
+bool LiveStreamIn::parse_avcC(AVPacket* pkt)
+{
+    uint8_t* data;
     int size;
 
     data = av_packet_get_side_data(&m_avPacket, AV_PKT_DATA_NEW_EXTRADATA, &size);
-    if(data == NULL)
+    if (data == NULL)
         return true;
 
     if (data[0] == 1) { //AVCDecoderConfigurationRecord
@@ -1087,14 +1098,14 @@ bool LiveStreamIn::parse_avcC(AVPacket *pkt) {
         }
 
         int nals_buf_length = 128;
-        uint8_t *nals_buf = (uint8_t *)malloc(nals_buf_length);
+        uint8_t* nals_buf = (uint8_t*)malloc(nals_buf_length);
         if (nals_buf == nullptr) {
             ELOG_ERROR_T("OOM! Allocate size %d", nals_buf_length);
             return false;
         }
 
         int i, cnt, nalsize;
-        const uint8_t *p = data;
+        const uint8_t* p = data;
 
         if (size < 7) {
             ELOG_ERROR_T("avcC %d too short", size);
@@ -1105,7 +1116,7 @@ bool LiveStreamIn::parse_avcC(AVPacket *pkt) {
 
         // Decode sps from avcC
         cnt = *(p + 5) & 0x1f; // Number of sps
-        p  += 6;
+        p += 6;
         for (i = 0; i < cnt; i++) {
             nalsize = AV_RB16(p) + 2;
             if (nalsize > size - (p - data)) {
@@ -1122,7 +1133,7 @@ bool LiveStreamIn::parse_avcC(AVPacket *pkt) {
                 ELOG_DEBUG_T("enlarge avcC nals buf %d", nalsize + 4);
 
                 nals_buf_length += nalsize + 4;
-                uint8_t * nals_buf_tmp = (uint8_t *)realloc(nals_buf, nals_buf_length);
+                uint8_t* nals_buf_tmp = (uint8_t*)realloc(nals_buf, nals_buf_length);
                 if (nals_buf_tmp == nullptr) {
                     free(nals_buf);
                     ELOG_ERROR_T("OOM! Allocate size %d", nals_buf_length);
@@ -1159,7 +1170,7 @@ bool LiveStreamIn::parse_avcC(AVPacket *pkt) {
                 ELOG_DEBUG_T("enlarge avcC nals buf %d", nalsize + 4);
 
                 nals_buf_length += nalsize + 4;
-                uint8_t * nals_buf_tmp = (uint8_t *)realloc(nals_buf, nals_buf_length);
+                uint8_t* nals_buf_tmp = (uint8_t*)realloc(nals_buf, nals_buf_length);
                 if (nals_buf_tmp == nullptr) {
                     free(nals_buf);
                     ELOG_ERROR_T("OOM! Allocate size %d", nals_buf_length);
@@ -1183,7 +1194,7 @@ bool LiveStreamIn::parse_avcC(AVPacket *pkt) {
 
             m_sps_pps_buffer_length = nals_size;
             m_sps_pps_buffer.reset(new uint8_t[m_sps_pps_buffer_length]);
-            memcpy(m_sps_pps_buffer.get(), nals_buf , m_sps_pps_buffer_length);
+            memcpy(m_sps_pps_buffer.get(), nals_buf, m_sps_pps_buffer_length);
         }
 
         free(nals_buf);
@@ -1194,7 +1205,8 @@ bool LiveStreamIn::parse_avcC(AVPacket *pkt) {
     return true;
 }
 
-bool LiveStreamIn::filterPS(AVStream *st, AVPacket *pkt) {
+bool LiveStreamIn::filterPS(AVStream* st, AVPacket* pkt)
+{
     if (!m_enableVideoExtradata)
         return true;
 
@@ -1221,21 +1233,20 @@ bool LiveStreamIn::filterPS(AVStream *st, AVPacket *pkt) {
     return true;
 }
 
-void LiveStreamIn::onSyncTimeChanged(JitterBuffer *jitterBuffer, int64_t syncTimestamp)
+void LiveStreamIn::onSyncTimeChanged(JitterBuffer* jitterBuffer, int64_t syncTimestamp)
 {
     if (m_audioJitterBuffer.get() == jitterBuffer) {
         ELOG_DEBUG_T("onSyncTimeChanged audio, timestamp %ld ", syncTimestamp);
 
         //rtsp audio/video time base is different, it will lost sync after roll back
-        if(!isRtsp()) {
+        if (!isRtsp()) {
             boost::posix_time::ptime mst = boost::posix_time::microsec_clock::local_time();
 
             m_audioJitterBuffer->setSyncTime(syncTimestamp, mst);
             if (m_videoJitterBuffer)
                 m_videoJitterBuffer->setSyncTime(syncTimestamp, mst);
         }
-    }
-    else if (m_videoJitterBuffer.get() == jitterBuffer) {
+    } else if (m_videoJitterBuffer.get() == jitterBuffer) {
         ELOG_DEBUG_T("onSyncTimeChanged video, timestamp %ld ", syncTimestamp);
     } else {
         ELOG_ERROR_T("Invalid JitterBuffer onSyncTimeChanged event!");
@@ -1254,7 +1265,7 @@ void LiveStreamIn::deliverNullVideoFrame()
     ELOG_DEBUG_T("deliver null video frame");
 }
 
-void LiveStreamIn::deliverVideoFrame(AVPacket *pkt)
+void LiveStreamIn::deliverVideoFrame(AVPacket* pkt)
 {
     Frame frame;
     memset(&frame, 0, sizeof(frame));
@@ -1267,15 +1278,10 @@ void LiveStreamIn::deliverVideoFrame(AVPacket *pkt)
     frame.additionalInfo.video.isKeyFrame = (pkt->flags & AV_PKT_FLAG_KEY);
     deliverFrame(frame);
 
-    ELOG_TRACE_T("deliver video frame, timestamp %ld(%ld), size %4d, %s"
-            , timeRescale(frame.timeStamp, m_videoTimeBase, m_msTimeBase)
-            , pkt->dts
-            , frame.length
-            , (pkt->flags & AV_PKT_FLAG_KEY) ? "key" : "non-key"
-            );
+    ELOG_TRACE_T("deliver video frame, timestamp %ld(%ld), size %4d, %s", timeRescale(frame.timeStamp, m_videoTimeBase, m_msTimeBase), pkt->dts, frame.length, (pkt->flags & AV_PKT_FLAG_KEY) ? "key" : "non-key");
 }
 
-void LiveStreamIn::deliverAudioFrame(AVPacket *pkt)
+void LiveStreamIn::deliverAudioFrame(AVPacket* pkt)
 {
     Frame frame;
     memset(&frame, 0, sizeof(frame));
@@ -1286,16 +1292,13 @@ void LiveStreamIn::deliverAudioFrame(AVPacket *pkt)
     frame.additionalInfo.audio.isRtpPacket = 0;
     frame.additionalInfo.audio.sampleRate = m_audioSampleRate;
     frame.additionalInfo.audio.channels = m_audioChannels;
-    frame.additionalInfo.audio.nbSamples = frame.length / frame.additionalInfo.audio.channels /2;
+    frame.additionalInfo.audio.nbSamples = frame.length / frame.additionalInfo.audio.channels / 2;
     deliverFrame(frame);
 
-    ELOG_TRACE_T("deliver audio frame, timestamp %ld(%ld), size %4d"
-            , timeRescale(frame.timeStamp, m_audioTimeBase, m_msTimeBase)
-            , pkt->dts
-            , frame.length);
+    ELOG_TRACE_T("deliver audio frame, timestamp %ld(%ld), size %4d", timeRescale(frame.timeStamp, m_audioTimeBase, m_msTimeBase), pkt->dts, frame.length);
 }
 
-void LiveStreamIn::onDeliverFrame(JitterBuffer *jitterBuffer, AVPacket *pkt)
+void LiveStreamIn::onDeliverFrame(JitterBuffer* jitterBuffer, AVPacket* pkt)
 {
     if (m_videoJitterBuffer.get() == jitterBuffer) {
         deliverVideoFrame(pkt);
@@ -1306,7 +1309,7 @@ void LiveStreamIn::onDeliverFrame(JitterBuffer *jitterBuffer, AVPacket *pkt)
     }
 }
 
-char *LiveStreamIn::ff_err2str(int errRet)
+char* LiveStreamIn::ff_err2str(int errRet)
 {
     av_strerror(errRet, (char*)(&m_errbuff), 500);
     return m_errbuff;

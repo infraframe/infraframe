@@ -57,7 +57,7 @@ uint32_t TransportMessage::missingBytes() const
 
 uint32_t TransportMessage::fillData(const uint8_t* data, uint32_t length)
 {
-    uint32_t toFill= missingBytes();
+    uint32_t toFill = missingBytes();
     if (toFill == 0) {
         return 0;
     }
@@ -66,8 +66,7 @@ uint32_t TransportMessage::fillData(const uint8_t* data, uint32_t length)
         // Increasing the buffer size: %zu
         boost::shared_array<uint8_t> oldBuffer = m_buffer;
         uint32_t newLength = m_receivedBytes + toFill;
-        m_bufferSize = (newLength * kExpansionMultiplier + kBufferAlignment - 1) /
-            kBufferAlignment * kBufferAlignment;
+        m_bufferSize = (newLength * kExpansionMultiplier + kBufferAlignment - 1) / kBufferAlignment * kBufferAlignment;
         m_bufferSize = std::max(m_bufferSize, m_receivedBytes + toFill);
         m_buffer.reset(new uint8_t[m_bufferSize]);
         memcpy(m_buffer.get(), oldBuffer.get(), m_receivedBytes);
@@ -166,8 +165,8 @@ void TransportSession::prepareSend(TransportData data)
 {
     // Only access m_sendQueue in IO service thread.
     TransportMessage toSend(data.buffer.get(), data.length);
-    TransportData wrappedData{toSend.messageData(),
-                              toSend.messageLength()};
+    TransportData wrappedData { toSend.messageData(),
+        toSend.messageLength() };
     m_sendQueue.push(wrappedData);
     if (m_sendQueue.size() == 1) {
         sendHandler();
@@ -234,8 +233,7 @@ void TransportSession::close()
     if (m_sslSocket) {
         auto sock = m_sslSocket;
         sock->lowest_layer().cancel();
-        sock->async_shutdown([sock](const boost::system::error_code& ec)
-        {
+        sock->async_shutdown([sock](const boost::system::error_code& ec) {
             boost::system::error_code e;
             sock->lowest_layer().shutdown(
                 boost::asio::ip::tcp::socket::shutdown_both, e);
@@ -266,8 +264,8 @@ void TransportSession::receiveData()
     }
 
     if (m_receivedMessage.isComplete()) {
-        TransportData data{m_receivedMessage.payloadData(),
-                           m_receivedMessage.payloadLength()};
+        TransportData data { m_receivedMessage.payloadData(),
+            m_receivedMessage.payloadLength() };
         m_listener->onData(m_id, data);
         m_receivedMessage.clear();
     }
@@ -313,8 +311,7 @@ void TransportSession::readHandler(
         }
         receiveData();
     } else {
-        if (ec.value() != boost::system::errc::operation_canceled &&
-            ec != boost::asio::error::eof) {
+        if (ec.value() != boost::system::errc::operation_canceled && ec != boost::asio::error::eof) {
             ELOG_WARN("Error receiving data: %s", ec.message().c_str());
         } else {
             ELOG_DEBUG("Error receiving data: %s", ec.message().c_str());

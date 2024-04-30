@@ -14,12 +14,11 @@ class InternalOut : public FrameDestination, public RawTransportListener {
 public:
     InternalOut(const std::string& protocol, const std::string& dest_ip, unsigned int dest_port);
     InternalOut(const std::string& protocol, const std::string& ticket,
-                const std::string& dest_ip, unsigned int dest_port);
+        const std::string& dest_ip, unsigned int dest_port);
     virtual ~InternalOut();
 
     void onFrame(const Frame&);
     void onMetaData(const MetaData&);
-
 
     void onTransportData(char*, int len);
     void onTransportError() { }

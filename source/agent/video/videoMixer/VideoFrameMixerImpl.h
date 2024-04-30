@@ -5,12 +5,12 @@
 #ifndef VideoFrameMixerImpl_h
 #define VideoFrameMixerImpl_h
 
+#include <MediaFramePipeline.h>
+#include <MediaUtilities.h>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <map>
-#include <MediaUtilities.h>
-#include <MediaFramePipeline.h>
 
 #include "SoftVideoCompositor.h"
 
@@ -31,20 +31,24 @@
 
 namespace mcu {
 
-class CompositeIn : public owt_base::FrameDestination
-{
+class CompositeIn : public owt_base::FrameDestination {
 public:
-    CompositeIn(int index, const std::string& avatar, boost::shared_ptr<VideoFrameCompositor> compositor) : m_index(index), m_compositor(compositor) {
+    CompositeIn(int index, const std::string& avatar, boost::shared_ptr<VideoFrameCompositor> compositor)
+        : m_index(index)
+        , m_compositor(compositor)
+    {
         m_compositor->activateInput(m_index);
         m_compositor->setAvatar(m_index, avatar);
     }
 
-    virtual ~CompositeIn() {
+    virtual ~CompositeIn()
+    {
         m_compositor->unsetAvatar(m_index);
         m_compositor->deActivateInput(m_index);
     }
 
-    void onFrame(const owt_base::Frame& frame) {
+    void onFrame(const owt_base::Frame& frame)
+    {
         m_compositor->pushInput(m_index, frame);
     }
 
@@ -63,13 +67,13 @@ public:
     void setInputActive(int input, bool active);
 
     bool addOutput(int output,
-            owt_base::FrameFormat,
-            const owt_base::VideoCodecProfile profile,
-            const owt_base::VideoSize&,
-            const unsigned int framerateFPS,
-            const unsigned int bitrateKbps,
-            const unsigned int keyFrameIntervalSeconds,
-            owt_base::FrameDestination*);
+        owt_base::FrameFormat,
+        const owt_base::VideoCodecProfile profile,
+        const owt_base::VideoSize&,
+        const unsigned int framerateFPS,
+        const unsigned int bitrateKbps,
+        const unsigned int keyFrameIntervalSeconds,
+        owt_base::FrameDestination*);
     void removeOutput(int output);
     void setBitrate(unsigned short kbps, int output);
     void requestKeyFrame(int output);
@@ -170,7 +174,7 @@ inline bool VideoFrameMixerImpl::addInput(int input, owt_base::FrameFormat forma
         decoder->addVideoDestination(compositorIn.get());
 
         boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
-        Input in{.source = source, .decoder = decoder, .compositorIn = compositorIn};
+        Input in { .source = source, .decoder = decoder, .compositorIn = compositorIn };
         m_inputs[input] = in;
         return true;
     }
@@ -226,13 +230,13 @@ inline void VideoFrameMixerImpl::requestKeyFrame(int output)
 }
 
 inline bool VideoFrameMixerImpl::addOutput(int output,
-                                           owt_base::FrameFormat format,
-                                           const owt_base::VideoCodecProfile profile,
-                                           const owt_base::VideoSize& outputSize,
-                                           const unsigned int framerateFPS,
-                                           const unsigned int bitrateKbps,
-                                           const unsigned int keyFrameIntervalSeconds,
-                                           owt_base::FrameDestination* dest)
+    owt_base::FrameFormat format,
+    const owt_base::VideoCodecProfile profile,
+    const owt_base::VideoSize& outputSize,
+    const unsigned int framerateFPS,
+    const unsigned int bitrateKbps,
+    const unsigned int keyFrameIntervalSeconds,
+    owt_base::FrameDestination* dest)
 {
     boost::shared_ptr<owt_base::VideoFrameEncoder> encoder;
     boost::upgrade_lock<boost::shared_mutex> lock(m_outputMutex);
@@ -276,7 +280,7 @@ inline bool VideoFrameMixerImpl::addOutput(int output,
     }
 
     boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
-    Output out{.encoder = encoder, .streamId = streamId};
+    Output out { .encoder = encoder, .streamId = streamId };
     m_outputs[output] = out;
     return true;
 }

@@ -19,7 +19,8 @@ TransportClient::TransportClient(Listener* listener)
     , m_socket(m_service->service())
     , m_isSecure(false)
     , m_listener(listener)
-{}
+{
+}
 
 TransportClient::~TransportClient()
 {
@@ -35,8 +36,7 @@ bool TransportClient::enableSecure()
         ELOG_WARN("Failed to enable secure, client already start");
         return false;
     }
-    if (!std::fstream{kServerCrt} ||
-        !std::fstream{kServerKey}) {
+    if (!std::fstream { kServerCrt } || !std::fstream { kServerKey }) {
         ELOG_WARN("Failed to enable secure, missing cert files");
         return false;
     }
@@ -134,12 +134,12 @@ void TransportClient::handshakeHandler(const boost::system::error_code& ec)
 
 void TransportClient::sendData(const uint8_t* data, uint32_t len)
 {
-    TransportData tData{data, (uint32_t)len};
+    TransportData tData { data, (uint32_t)len };
     m_session->sendData(tData);
 }
 
 void TransportClient::sendData(const uint8_t* header, uint32_t headerLength,
-                               const uint8_t* payload, uint32_t payloadLength)
+    const uint8_t* payload, uint32_t payloadLength)
 {
     TransportData data;
     data.buffer.reset(new uint8_t[headerLength + payloadLength]);

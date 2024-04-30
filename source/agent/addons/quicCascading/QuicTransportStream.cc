@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+#include "QuicTransportStream.h"
 #include "Utils.h"
-#include <thread>
 #include <chrono>
 #include <iostream>
-#include "QuicTransportStream.h"
+#include <thread>
 
 //using namespace net;
 using namespace owt_base;
@@ -45,15 +45,17 @@ QuicTransportStream::QuicTransportStream()
 }
 
 QuicTransportStream::QuicTransportStream(owt::quic::QuicTransportStreamInterface* stream)
-        : m_stream(stream)
-        , m_bufferSize(INIT_BUFF_SIZE)
-        , m_receivedBytes(0)
-        , m_needKeyFrame(true)
-        , m_trackKind("unknown") {
+    : m_stream(stream)
+    , m_bufferSize(INIT_BUFF_SIZE)
+    , m_receivedBytes(0)
+    , m_needKeyFrame(true)
+    , m_trackKind("unknown")
+{
     m_receiveData.buffer.reset(new char[m_bufferSize]);
 }
 
-QuicTransportStream::~QuicTransportStream() {
+QuicTransportStream::~QuicTransportStream()
+{
     ELOG_DEBUG("QuicTransportStream::~QuicTransportStream");
     if (!uv_is_closing(reinterpret_cast<uv_handle_t*>(&m_asyncOnData))) {
         uv_close(reinterpret_cast<uv_handle_t*>(&m_asyncOnData), NULL);
@@ -108,14 +110,15 @@ v8::Local<v8::Object> QuicTransportStream::newInstance(owt::quic::QuicTransportS
     return streamObject;
 }
 
-NAN_METHOD(QuicTransportStream::send) {
-  ELOG_DEBUG("QuicTransportStream::send");
-  QuicTransportStream* obj = Nan::ObjectWrap::Unwrap<QuicTransportStream>(info.Holder());
-  
-  Nan::Utf8String param1(Nan::To<v8::String>(info[0]).ToLocalChecked());
-  std::string data = std::string(*param1);
-  
-  obj->sendData(data);
+NAN_METHOD(QuicTransportStream::send)
+{
+    ELOG_DEBUG("QuicTransportStream::send");
+    QuicTransportStream* obj = Nan::ObjectWrap::Unwrap<QuicTransportStream>(info.Holder());
+
+    Nan::Utf8String param1(Nan::To<v8::String>(info[0]).ToLocalChecked());
+    std::string data = std::string(*param1);
+
+    obj->sendData(data);
 }
 
 NAN_METHOD(QuicTransportStream::addDestination)
@@ -161,30 +164,34 @@ NAN_METHOD(QuicTransportStream::removeDestination)
     //QuicTransportStream* obj = Nan::ObjectWrap::Unwrap<QuicTransportStream>(info.Holder());
 }
 
-NAN_METHOD(QuicTransportStream::onStreamData) {
-  ELOG_DEBUG("QuicTransportStream::onStreamData");
-  QuicTransportStream* obj = Nan::ObjectWrap::Unwrap<QuicTransportStream>(info.Holder());
+NAN_METHOD(QuicTransportStream::onStreamData)
+{
+    ELOG_DEBUG("QuicTransportStream::onStreamData");
+    QuicTransportStream* obj = Nan::ObjectWrap::Unwrap<QuicTransportStream>(info.Holder());
 
-  obj->has_data_callback_ = true;
-  obj->data_callback_ = new Nan::Callback(info[0].As<Function>());
+    obj->has_data_callback_ = true;
+    obj->data_callback_ = new Nan::Callback(info[0].As<Function>());
 }
 
-NAN_METHOD(QuicTransportStream::getId) {
-  QuicTransportStream* obj = Nan::ObjectWrap::Unwrap<QuicTransportStream>(info.Holder());
-  ELOG_DEBUG("**********QuicTransportStream::getId:%d\n", obj->id);
-  info.GetReturnValue().Set(Nan::New(obj->id));
+NAN_METHOD(QuicTransportStream::getId)
+{
+    QuicTransportStream* obj = Nan::ObjectWrap::Unwrap<QuicTransportStream>(info.Holder());
+    ELOG_DEBUG("**********QuicTransportStream::getId:%d\n", obj->id);
+    info.GetReturnValue().Set(Nan::New(obj->id));
 }
 
-NAN_GETTER(QuicTransportStream::trackKindGetter){
+NAN_GETTER(QuicTransportStream::trackKindGetter)
+{
     QuicTransportStream* obj = Nan::ObjectWrap::Unwrap<QuicTransportStream>(info.Holder());
     info.GetReturnValue().Set(Nan::New(obj->m_trackKind).ToLocalChecked());
 }
 
-NAN_SETTER(QuicTransportStream::trackKindSetter) {
-  QuicTransportStream* obj = Nan::ObjectWrap::Unwrap<QuicTransportStream>(info.Holder());
-  Nan::Utf8String trackKind(Nan::To<v8::String>(value).ToLocalChecked());
-  obj->m_trackKind = std::string(*trackKind);
-  ELOG_DEBUG("************QuicTransportStream::setTrackKind with value:%s", obj->m_trackKind.c_str());
+NAN_SETTER(QuicTransportStream::trackKindSetter)
+{
+    QuicTransportStream* obj = Nan::ObjectWrap::Unwrap<QuicTransportStream>(info.Holder());
+    Nan::Utf8String trackKind(Nan::To<v8::String>(value).ToLocalChecked());
+    obj->m_trackKind = std::string(*trackKind);
+    ELOG_DEBUG("************QuicTransportStream::setTrackKind with value:%s", obj->m_trackKind.c_str());
 }
 
 NAN_METHOD(QuicTransportStream::close)
@@ -194,7 +201,8 @@ NAN_METHOD(QuicTransportStream::close)
     obj->m_stream->SetVisitor(nullptr);
 }
 
-NAUV_WORK_CB(QuicTransportStream::onStreamDataCallback){
+NAUV_WORK_CB(QuicTransportStream::onStreamDataCallback)
+{
     ELOG_DEBUG("********QuicTransportStream::onStreamDataCallback");
     Nan::HandleScope scope;
     QuicTransportStream* obj = reinterpret_cast<QuicTransportStream*>(async->data);
@@ -205,20 +213,21 @@ NAUV_WORK_CB(QuicTransportStream::onStreamDataCallback){
     //boost::mutex::scoped_lock lock(obj->mutex);
 
     if (obj->has_data_callback_) {
-      boost::mutex::scoped_lock lock(obj->mutex);
-      ELOG_DEBUG("**********QuicTransportStream::onStreamDataCallback data_messages size:%d in stream:%d", obj->data_messages.size(), obj->id);
-      while (!obj->data_messages.empty()) {
-          ELOG_DEBUG("**********data_messages is not empty");
-          Local<Value> args[] = { Nan::New(obj->data_messages.front().c_str()).ToLocalChecked() };
+        boost::mutex::scoped_lock lock(obj->mutex);
+        ELOG_DEBUG("**********QuicTransportStream::onStreamDataCallback data_messages size:%d in stream:%d", obj->data_messages.size(), obj->id);
+        while (!obj->data_messages.empty()) {
+            ELOG_DEBUG("**********data_messages is not empty");
+            Local<Value> args[] = { Nan::New(obj->data_messages.front().c_str()).ToLocalChecked() };
 
-          obj->asyncResource_->runInAsyncScope(Nan::GetCurrentContext()->Global(), obj->data_callback_->GetFunction(), 1, args);
-          obj->data_messages.pop();
-      }
+            obj->asyncResource_->runInAsyncScope(Nan::GetCurrentContext()->Global(), obj->data_callback_->GetFunction(), 1, args);
+            obj->data_messages.pop();
+        }
     }
     ELOG_DEBUG("**************QuicTransportStream::onStreamDataCallback ends in stream:%d", obj->id);
 }
 
-void QuicTransportStream::onFeedback(const FeedbackMsg& msg) {
+void QuicTransportStream::onFeedback(const FeedbackMsg& msg)
+{
     ELOG_DEBUG("QuicTransportStream::onFeedback in stream:%d", id);
     TransportData sendData;
     uint32_t payloadLength = sizeof(FeedbackMsg);
@@ -246,15 +255,15 @@ void QuicTransportStream::onFrame(const owt_base::Frame& frame)
     *(reinterpret_cast<uint32_t*>(sendData.buffer.get())) = htonl(sizeof(Frame) + frame.length + 1);
     sendData.buffer[4] = TDT_MEDIA_FRAME;
     memcpy(sendData.buffer.get() + 5, reinterpret_cast<uint8_t*>(const_cast<Frame*>(&frame)),
-           sizeof(Frame));
+        sizeof(Frame));
     memcpy(sendData.buffer.get() + 5 + sizeof(Frame), frame.payload, frame.length);
     sendData.length = sizeof(Frame) + frame.length + 5;
 
     m_stream->SendData(sendData.buffer.get(), sendData.length);
 }
 
-
-void QuicTransportStream::sendData(const std::string& data) {
+void QuicTransportStream::sendData(const std::string& data)
+{
     ELOG_DEBUG("QuicTransportStream::sendData:%s in stream:%d\n", data.c_str(), id);
     TransportData sendData;
     uint32_t payloadLength = data.length();
@@ -267,21 +276,23 @@ void QuicTransportStream::sendData(const std::string& data) {
     m_stream->SendData(sendData.buffer.get(), sendData.length);
 }
 
-void QuicTransportStream::sendFeedback(const FeedbackMsg& msg) {
+void QuicTransportStream::sendFeedback(const FeedbackMsg& msg)
+{
     TransportData sendData;
     uint32_t payloadLength = sizeof(FeedbackMsg);
     sendData.buffer.reset(new char[payloadLength + 5]);
     *(reinterpret_cast<uint32_t*>(sendData.buffer.get())) = htonl(payloadLength + 1);
     sendData.buffer[4] = TDT_FEEDBACK_MSG;
     memcpy(sendData.buffer.get() + 5, reinterpret_cast<uint8_t*>(const_cast<FeedbackMsg*>(&msg)),
-           sizeof(FeedbackMsg));
+        sizeof(FeedbackMsg));
     sendData.length = payloadLength + 5;
     ELOG_DEBUG("QuicTransportStream::sendFeedback:%s\n", sendData.buffer.get());
 
     m_stream->SendData(sendData.buffer.get(), sendData.length);
 }
 
-void QuicTransportStream::OnData(owt::quic::QuicTransportStreamInterface* stream, char* buf, size_t len) {
+void QuicTransportStream::OnData(owt::quic::QuicTransportStreamInterface* stream, char* buf, size_t len)
+{
     if (m_receivedBytes + len >= m_bufferSize) {
         m_bufferSize += (m_receivedBytes + len);
         std::cout << "new_bufferSize: " << m_bufferSize << " for stream id:" << id << std::endl;
@@ -310,15 +321,15 @@ void QuicTransportStream::OnData(owt::quic::QuicTransportStreamInterface* stream
             char* dpos = m_receiveData.buffer.get() + 4;
             Frame* frame = nullptr;
             std::string s_data(dpos + 1, payloadlen - 1);
-            owt_base::FeedbackMsg msg {.type = owt_base::VIDEO_FEEDBACK, .cmd = owt_base::REQUEST_KEY_FRAME};
+            owt_base::FeedbackMsg msg { .type = owt_base::VIDEO_FEEDBACK, .cmd = owt_base::REQUEST_KEY_FRAME };
 
             switch (dpos[0]) {
-                case TDT_MEDIA_FRAME:
-                    //ELOG_DEBUG("QuicTransportStream deliver frame with trackKind: %s", m_trackKind.c_str());
-                    frame = reinterpret_cast<Frame*>(dpos + 1);
-                    frame->payload = reinterpret_cast<uint8_t*>(dpos + 1 + sizeof(Frame));
-                    if (m_trackKind == "video") {
-                      if (m_needKeyFrame) {
+            case TDT_MEDIA_FRAME:
+                //ELOG_DEBUG("QuicTransportStream deliver frame with trackKind: %s", m_trackKind.c_str());
+                frame = reinterpret_cast<Frame*>(dpos + 1);
+                frame->payload = reinterpret_cast<uint8_t*>(dpos + 1 + sizeof(Frame));
+                if (m_trackKind == "video") {
+                    if (m_needKeyFrame) {
                         if (frame->additionalInfo.video.isKeyFrame) {
                             m_needKeyFrame = false;
                         } else {
@@ -326,32 +337,32 @@ void QuicTransportStream::OnData(owt::quic::QuicTransportStreamInterface* stream
                             sendFeedback(msg);
                             return;
                         }
-                      }
                     }
-                    //dump(this, frame->payload, frame->length);
-                    deliverFrame(*frame);
-                    break;
-                case TDT_MEDIA_METADATA: {
-                    ELOG_DEBUG("QuicTransportStream::onData with type TDT_MEDIA_METADATA%s", s_data.c_str(), " in stream:%d", id);
-                    //boost::mutex::scoped_lock lock(mutex);
-                    this->data_messages.push(s_data);
-                    m_asyncOnData.data = this;
-                    //uv_async_send(&m_asyncOnData);
-                    if (uv_async_send(&m_asyncOnData) == 0) {
-                        ELOG_INFO("OnData uv_async_send succeed and handle pending is:%d", m_asyncOnData.pending); 
-                    } else {
-                        ELOG_INFO("OnData uv_async_send failed");
-                    };
-                    //lock.unlock();
-                    ELOG_DEBUG("QuicTransportStream::onData with type TDT_MEDIA_METADATA end in stream:%d in thread:%d", id, std::this_thread::get_id());
-                    break;
                 }
-                case TDT_FEEDBACK_MSG:
-                    ELOG_DEBUG("QuicTransportStream deliver feedback msg");
-                    deliverFeedbackMsg(msg);
-                    break;
-                default:
-                    break;
+                //dump(this, frame->payload, frame->length);
+                deliverFrame(*frame);
+                break;
+            case TDT_MEDIA_METADATA: {
+                ELOG_DEBUG("QuicTransportStream::onData with type TDT_MEDIA_METADATA%s", s_data.c_str(), " in stream:%d", id);
+                //boost::mutex::scoped_lock lock(mutex);
+                this->data_messages.push(s_data);
+                m_asyncOnData.data = this;
+                //uv_async_send(&m_asyncOnData);
+                if (uv_async_send(&m_asyncOnData) == 0) {
+                    ELOG_INFO("OnData uv_async_send succeed and handle pending is:%d", m_asyncOnData.pending);
+                } else {
+                    ELOG_INFO("OnData uv_async_send failed");
+                };
+                //lock.unlock();
+                ELOG_DEBUG("QuicTransportStream::onData with type TDT_MEDIA_METADATA end in stream:%d in thread:%d", id, std::this_thread::get_id());
+                break;
+            }
+            case TDT_FEEDBACK_MSG:
+                ELOG_DEBUG("QuicTransportStream deliver feedback msg");
+                deliverFeedbackMsg(msg);
+                break;
+            default:
+                break;
             }
 
             if (m_receivedBytes > 0) {

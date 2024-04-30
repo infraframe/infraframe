@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "WebRtcConnection.h"
-#include "ThreadPool.h"
 #include "IOThreadPool.h"
 #include "MediaStream.h"
+#include "ThreadPool.h"
+#include "WebRtcConnection.h"
 
 #include <dtls/DtlsSocket.h>
 
@@ -13,12 +13,13 @@
 
 using namespace v8;
 
-void InitAll(Local<Object> exports) {
-  dtls::DtlsSocketContext::Init();
-  WebRtcConnection::Init(exports);
-  MediaStream::Init(exports);
-  ThreadPool::Init(exports);
-  IOThreadPool::Init(exports);
+void InitAll(Local<Object> exports)
+{
+    dtls::DtlsSocketContext::Init();
+    WebRtcConnection::Init(exports);
+    MediaStream::Init(exports);
+    ThreadPool::Init(exports);
+    IOThreadPool::Init(exports);
 }
 
 NODE_MODULE(addon, InitAll)

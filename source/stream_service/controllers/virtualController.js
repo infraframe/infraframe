@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
+"use strict";
 
-const log = require('../logger').logger.getLogger('VirtualController');
-const {TypeController} = require('./typeController');
-const {Publication, Subscription} = require('../stateTypes')
+const log = require("../logger").logger.getLogger("VirtualController");
+const { TypeController } = require("./typeController");
+const { Publication, Subscription } = require("../stateTypes");
 
 /* Events
  * 'session-established': (id, Publication|Subscription)
@@ -23,32 +23,32 @@ class VirtualController extends TypeController {
 
   // config = {id, data}
   async createSession(direction, config) {
-    if (direction === 'in') {
+    if (direction === "in") {
       if (this.pubs.has(config.id)) {
         throw new Error(`Session-in ${config.id} already exists`);
       }
       const pub = Publication.from(config.data);
       this.pubs.set(config.id, pub);
-      this.emit('session-established', config.id, pub);
-    } else if (direction === 'out') {
+      this.emit("session-established", config.id, pub);
+    } else if (direction === "out") {
       if (this.subs.has(config.id)) {
         throw new Error(`Session-out ${config.id} already exists`);
       }
       const sub = Subscription.from(config.data);
       this.subs.set(config.id, sub);
-      this.emit('session-established', config.id, sub);
+      this.emit("session-established", config.id, sub);
     } else {
       throw new Error(`Invalid session direction ${direction}`);
     }
   }
 
   async removeSession(sessionId, direction, reason) {
-    if (direction === 'in') {
+    if (direction === "in") {
       if (!this.pubs.has(sessionId)) {
         throw new Error(`Session-in ${sessionId} not found`);
       }
       this.pubs.delete(sessionId);
-    } else if (direction === 'out') {
+    } else if (direction === "out") {
       if (this.subs.has(sessionId)) {
         throw new Error(`Session-out ${sessionId} not found`);
       }
@@ -56,23 +56,23 @@ class VirtualController extends TypeController {
     } else {
       throw new Error(`Invalid session direction ${direction}`);
     }
-    this.emit('session-aborted', sessionId, reason);
+    this.emit("session-aborted", sessionId, reason);
   }
 
   async controlSession(direction, config) {
-    if (direction === 'in') {
+    if (direction === "in") {
       if (this.pubs.has(config.id)) {
         const pub = Publication.from(config.data);
         this.pubs.set(config.id, pub);
-        this.emit('session-updated', config.id, pub);
+        this.emit("session-updated", config.id, pub);
       } else {
         throw new Error(`Session-in ${config.id} does not exist`);
       }
-    } else if (direction === 'out') {
+    } else if (direction === "out") {
       if (this.subs.has(config.id)) {
         const sub = Subscription.from(config.data);
         this.subs.set(config.id, pub);
-        this.emit('session-updated', config.id, sub);
+        this.emit("session-updated", config.id, sub);
       } else {
         throw new Error(`Session-out ${config.id} does not exist`);
       }
@@ -81,8 +81,7 @@ class VirtualController extends TypeController {
     }
   }
 
-  destroy() {
-  }
+  destroy() {}
 }
 
 exports.VirtualController = VirtualController;

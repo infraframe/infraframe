@@ -26,96 +26,110 @@
 
 // This file is borrowed from lynckia/licode with some modifications.
 
-'use strict';
+"use strict";
 
-function ManagementApi (spec) {
-    this.url = spec.url || '/';
-    this.send = function (method, body, url, callback) { // callback (err, resp)
-        url = this.url + url;
-        var header = 'MAuth realm=http://marte3.dit.upm.es,mauth_signature_method=HMAC_SHA256';
+function ManagementApi(spec) {
+  this.url = spec.url || "/";
+  this.send = function (method, body, url, callback) {
+    // callback (err, resp)
+    url = this.url + url;
+    var header =
+      "MAuth realm=http://marte3.dit.upm.es,mauth_signature_method=HMAC_SHA256";
 
-        var req = new XMLHttpRequest();
-        req.onreadystatechange = function () {
-            if (req.readyState == '4') {
-                switch (req.status) {
-                case 100:
-                case 200:
-                case 201:
-                case 202:
-                case 203:
-                case 204:
-                case 205:
-                    if (typeof callback === 'function') callback(null, req.responseText);
-                    break;
-                default:
-                    if (typeof callback === 'function') callback(req.status, req.responseText);
-                }
-            }
-        };
-        req.open(method, url, true);
-        req.setRequestHeader('Authorization', header);
-        if (body) {
-            req.setRequestHeader('Content-Type', 'application/json');
-            req.send(JSON.stringify(body));
-        } else {
-            req.send();
+    var req = new XMLHttpRequest();
+    req.onreadystatechange = function () {
+      if (req.readyState == "4") {
+        switch (req.status) {
+          case 100:
+          case 200:
+          case 201:
+          case 202:
+          case 203:
+          case 204:
+          case 205:
+            if (typeof callback === "function")
+              callback(null, req.responseText);
+            break;
+          default:
+            if (typeof callback === "function")
+              callback(req.status, req.responseText);
         }
+      }
     };
+    req.open(method, url, true);
+    req.setRequestHeader("Authorization", header);
+    if (body) {
+      req.setRequestHeader("Content-Type", "application/json");
+      req.send(JSON.stringify(body));
+    } else {
+      req.send();
+    }
+  };
 }
 
 ManagementApi.init = function () {
-    return new ManagementApi({});
+  return new ManagementApi({});
 };
 
 ManagementApi.prototype.createRoom = function (room, callback) {
-    this.send('POST', {name: room.name, options: room.options}, 'v1/rooms', callback);
+  this.send(
+    "POST",
+    { name: room.name, options: room.options },
+    "v1/rooms",
+    callback
+  );
 };
 
 ManagementApi.prototype.getRooms = function (page, per_page, callback) {
-    this.send('GET', undefined, 'v1/rooms?page=' + page + '&per_page=' + per_page, callback);
+  this.send(
+    "GET",
+    undefined,
+    "v1/rooms?page=" + page + "&per_page=" + per_page,
+    callback
+  );
 };
 
 ManagementApi.prototype.getRoom = function (roomId, callback) {
-    roomId = roomId || null;
-    this.send('GET', undefined, 'v1/rooms/' + roomId, callback);
+  roomId = roomId || null;
+  this.send("GET", undefined, "v1/rooms/" + roomId, callback);
 };
 
 ManagementApi.prototype.deleteRoom = function (roomId, callback) {
-    roomId = roomId || null;
-    this.send('DELETE', undefined, 'v1/rooms/' + roomId, callback);
+  roomId = roomId || null;
+  this.send("DELETE", undefined, "v1/rooms/" + roomId, callback);
 };
 
 ManagementApi.prototype.updateRoom = function (roomId, updates, callback) {
-    roomId = roomId || null;
-    this.send('PUT', (updates || {}), 'v1/rooms/' + roomId, callback);
+  roomId = roomId || null;
+  this.send("PUT", updates || {}, "v1/rooms/" + roomId, callback);
 };
 
 ManagementApi.prototype.createService = function (name, key, callback) {
-    this.send('POST', {name: name, key: key}, 'services', callback);
+  this.send("POST", { name: name, key: key }, "services", callback);
 };
 
 ManagementApi.prototype.getServices = function (callback) {
-    this.send('GET', undefined, 'services', callback);
+  this.send("GET", undefined, "services", callback);
 };
 
 ManagementApi.prototype.getService = function (serviceId, callback) {
-    serviceId = serviceId || null;
-    this.send('GET', undefined, 'services/' + serviceId, callback);
+  serviceId = serviceId || null;
+  this.send("GET", undefined, "services/" + serviceId, callback);
 };
 
 ManagementApi.prototype.deleteService = function (serviceId, callback) {
-    serviceId = serviceId || null;
-    this.send('DELETE', undefined, 'services/' + serviceId, callback);
+  serviceId = serviceId || null;
+  this.send("DELETE", undefined, "services/" + serviceId, callback);
 };
 
-ManagementApi.prototype.login = function(id, key, callback) {
-    this.send('POST', {id: id, key: key}, 'login', callback);
+ManagementApi.prototype.login = function (id, key, callback) {
+  this.send("POST", { id: id, key: key }, "login", callback);
 };
 
-ManagementApi.prototype.loginCheck = function(callback) {
-    this.send('GET', undefined, 'login', callback);
+ManagementApi.prototype.loginCheck = function (callback) {
+  this.send("GET", undefined, "login", callback);
 };
 
-ManagementApi.prototype.logout = function(callback) {
-    this.send('GET', undefined, 'logout', callback);
+ManagementApi.prototype.logout = function (callback) {
+  this.send("GET", undefined, "logout", callback);
 };

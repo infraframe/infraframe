@@ -13,7 +13,7 @@ namespace mcu {
 
 class AudioFrameMixer {
 public:
-    virtual ~AudioFrameMixer() {}
+    virtual ~AudioFrameMixer() { }
 
     virtual void enableVAD(uint32_t period) = 0;
     virtual void disableVAD() = 0;

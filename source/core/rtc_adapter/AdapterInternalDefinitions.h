@@ -21,7 +21,7 @@ public:
     virtual std::shared_ptr<webrtc::RtcEventLog> eventLog() = 0;
     virtual webrtc::WebRtcKeyValueConfig* trial() = 0;
     virtual std::shared_ptr<webrtc::RtpTransportControllerSendInterface>
-        rtpTransportController() = 0;
+    rtpTransportController() = 0;
     virtual uint32_t estimatedBandwidth(uint32_t ssrc) = 0;
     virtual void registerVideoSender(uint32_t ssrc) = 0;
     virtual void deregisterVideoSender(uint32_t ssrc) = 0;

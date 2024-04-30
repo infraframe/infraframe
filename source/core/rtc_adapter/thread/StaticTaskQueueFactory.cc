@@ -3,26 +3,26 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "StaticTaskQueueFactory.h"
-#include <rtc_base/logging.h>
+#include <api/task_queue/default_task_queue_factory.h>
+#include <api/task_queue/task_queue_base.h>
 #include <rtc_base/checks.h>
 #include <rtc_base/event.h>
+#include <rtc_base/logging.h>
 #include <rtc_base/task_utils/to_queued_task.h>
-#include <api/task_queue/task_queue_base.h>
-#include <api/task_queue/default_task_queue_factory.h>
 
 namespace rtc_adapter {
 
 // TaskQueueDummy never execute tasks
 class TaskQueueDummy final : public webrtc::TaskQueueBase {
 public:
-    TaskQueueDummy() {}
+    TaskQueueDummy() { }
     ~TaskQueueDummy() override = default;
 
     // Implements webrtc::TaskQueueBase
-    void Delete() override {}
-    void PostTask(std::unique_ptr<webrtc::QueuedTask> task) override {}
+    void Delete() override { }
+    void PostTask(std::unique_ptr<webrtc::QueuedTask> task) override { }
     void PostDelayedTask(std::unique_ptr<webrtc::QueuedTask> task,
-                         uint32_t milliseconds) override {}
+        uint32_t milliseconds) override { }
 };
 
 // TaskQueueProxy holds a TaskQueueBase* and proxy its method without Delete
@@ -37,7 +37,9 @@ public:
             TaskQueueProxy* parent)
             : m_task(std::move(task))
             , m_owner(owner)
-            , m_parent(parent) {}
+            , m_parent(parent)
+        {
+        }
 
         // Implements webrtc::QueuedTask
         bool Run() override
@@ -53,6 +55,7 @@ public:
             }
             return true;
         }
+
     private:
         std::unique_ptr<webrtc::QueuedTask> m_task;
         std::weak_ptr<int> m_owner;
@@ -60,7 +63,8 @@ public:
     };
 
     TaskQueueProxy(webrtc::TaskQueueBase* taskQueue)
-        : m_taskQueue(taskQueue), m_sp(std::make_shared<int>(1))
+        : m_taskQueue(taskQueue)
+        , m_sp(std::make_shared<int>(1))
     {
         RTC_CHECK(m_taskQueue);
     }
@@ -85,11 +89,12 @@ public:
     }
     // Implements webrtc::TaskQueueBase
     void PostDelayedTask(std::unique_ptr<webrtc::QueuedTask> task,
-                         uint32_t milliseconds) override
+        uint32_t milliseconds) override
     {
         m_taskQueue->PostDelayedTask(
             std::make_unique<QueuedTaskProxy>(std::move(task), m_sp, this), milliseconds);
     }
+
 private:
     webrtc::TaskQueueBase* m_taskQueue;
     // Use shared_ptr to track its tasks
@@ -98,27 +103,22 @@ private:
 
 // Provide static TaskQueues
 class StaticTaskQueueFactory final : public webrtc::TaskQueueFactory {
- public:
+public:
     // Implements webrtc::TaskQueueFactory
     std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter> CreateTaskQueue(
         absl::string_view name,
         webrtc::TaskQueueFactory::Priority priority) const override
     {
         // Use a pool if following threads take too heavy load
-        static std::unique_ptr<webrtc::TaskQueueFactory> defaultTaskQueueFactory =
-            webrtc::CreateDefaultTaskQueueFactory();
-        static std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter> callTaskQueue =
-            defaultTaskQueueFactory->CreateTaskQueue(
-                "CallTaskQueue", webrtc::TaskQueueFactory::Priority::NORMAL);
-        static std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter> decodingQueue =
-            defaultTaskQueueFactory->CreateTaskQueue(
-                "DecodingQueue", webrtc::TaskQueueFactory::Priority::HIGH);
-        static std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter> rtpSendCtrlQueue =
-            defaultTaskQueueFactory->CreateTaskQueue(
-                "rtp_send_controller", webrtc::TaskQueueFactory::Priority::NORMAL);
-        static std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter> tempQueue =
-            defaultTaskQueueFactory->CreateTaskQueue(
-                "TaskQueuePacedSender", webrtc::TaskQueueFactory::Priority::NORMAL);
+        static std::unique_ptr<webrtc::TaskQueueFactory> defaultTaskQueueFactory = webrtc::CreateDefaultTaskQueueFactory();
+        static std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter> callTaskQueue = defaultTaskQueueFactory->CreateTaskQueue(
+            "CallTaskQueue", webrtc::TaskQueueFactory::Priority::NORMAL);
+        static std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter> decodingQueue = defaultTaskQueueFactory->CreateTaskQueue(
+            "DecodingQueue", webrtc::TaskQueueFactory::Priority::HIGH);
+        static std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter> rtpSendCtrlQueue = defaultTaskQueueFactory->CreateTaskQueue(
+            "rtp_send_controller", webrtc::TaskQueueFactory::Priority::NORMAL);
+        static std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter> tempQueue = defaultTaskQueueFactory->CreateTaskQueue(
+            "TaskQueuePacedSender", webrtc::TaskQueueFactory::Priority::NORMAL);
         if (name == absl::string_view("CallTaskQueue")) {
             return std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>(
                 new TaskQueueProxy(callTaskQueue.get()));

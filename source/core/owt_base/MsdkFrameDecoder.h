@@ -14,8 +14,8 @@
 
 #include "MediaFramePipeline.h"
 
-#include "MsdkFrame.h"
 #include "MsdkBase.h"
+#include "MsdkFrame.h"
 
 namespace owt_base {
 
@@ -38,17 +38,17 @@ protected:
 
     void updateBitstream(const Frame& frame);
 
-    bool decHeader(mfxBitstream *pBitstream);
-    void decFrame(mfxBitstream *pBitstream);
+    bool decHeader(mfxBitstream* pBitstream);
+    void decFrame(mfxBitstream* pBitstream);
 
     void flushOutput(void);
     bool resetDecoder(void);
 
-    void dump(uint8_t *buf, int len);
+    void dump(uint8_t* buf, int len);
 
 private:
-    MFXVideoSession *m_session;
-    MFXVideoDECODE *m_dec;
+    MFXVideoSession* m_session;
+    MFXVideoDECODE* m_dec;
 
     std::deque<uint32_t> m_timeStamps;
 
@@ -68,11 +68,10 @@ private:
     mfxPluginUID m_pluginID;
 
     bool m_enableBsDump;
-    FILE *m_bsDumpfp;
+    FILE* m_bsDumpfp;
 };
 
 } /* namespace owt_base */
 
 #endif /* ENABLE_MSDK */
 #endif /* MsdkFrameDecoder_h */
-

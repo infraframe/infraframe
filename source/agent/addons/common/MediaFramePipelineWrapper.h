@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-
 #ifndef MEDIAFRAMEPIPELINEWRAPPER_H
 #define MEDIAFRAMEPIPELINEWRAPPER_H
 
@@ -14,20 +13,17 @@
 /*
  * Wrapper class of owt_base::FrameDestination
  */
-class FrameDestination : public node::ObjectWrap{
+class FrameDestination : public node::ObjectWrap {
 public:
-
-  owt_base::FrameDestination* dest;
+    owt_base::FrameDestination* dest;
 };
-
 
 /*
  * Wrapper class of owt_base::FrameSource
  */
-class FrameSource : public node::ObjectWrap{
+class FrameSource : public node::ObjectWrap {
 public:
-
-  owt_base::FrameSource* src;
+    owt_base::FrameSource* src;
 };
 
 /*

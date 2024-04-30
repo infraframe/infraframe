@@ -5,14 +5,14 @@
 #ifndef QUIC_TRANSPORT_CLIENT_H_
 #define QUIC_TRANSPORT_CLIENT_H_
 
-#include <string>
-#include <nan.h>
-#include <unordered_map>
-#include <queue>
-#include <logger.h>
 #include <boost/asio.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/thread/mutex.hpp>
+#include <logger.h>
+#include <nan.h>
+#include <queue>
+#include <string>
+#include <unordered_map>
 
 #include "QuicTransportStream.h"
 #include "owt/quic/quic_transport_client_interface.h"
@@ -24,8 +24,8 @@
  */
 class QuicTransportClient : public owt::quic::QuicTransportClientInterface::Visitor, public Nan::ObjectWrap {
     DECLARE_LOGGER();
-public:
 
+public:
     static NAN_MODULE_INIT(init);
 
     // new QuicTransportFrameSource(contentSessionId, options)
@@ -59,7 +59,6 @@ protected:
     void OnStreamClosed(uint32_t id) override;
 
 private:
-
     std::shared_ptr<owt::quic::QuicTransportClientInterface> m_quicClient;
     //std::unordered_map<uint32_t, v8::Local<v8::Object>> streams_;
 
@@ -75,24 +74,24 @@ private:
     bool has_stream_callback_;
     bool has_streamClosed_callback_;
 
-    Nan::AsyncResource *asyncResourceConnection_;
-    Nan::AsyncResource *asyncResourceFailedConnection_;
-    Nan::AsyncResource *asyncResourceClosedConnection_;
-    Nan::AsyncResource *asyncResourceStream_;
-    Nan::AsyncResource *asyncResourceStreamClosed_;
+    Nan::AsyncResource* asyncResourceConnection_;
+    Nan::AsyncResource* asyncResourceFailedConnection_;
+    Nan::AsyncResource* asyncResourceClosedConnection_;
+    Nan::AsyncResource* asyncResourceStream_;
+    Nan::AsyncResource* asyncResourceStreamClosed_;
 
     std::queue<owt::quic::QuicTransportStreamInterface*> stream_messages;
     std::queue<uint32_t> streamclosed_messages;
     std::queue<std::string> sessionId_messages;
 
-    Nan::Callback *connected_callback_;
-    Nan::Callback *connectionfailed_callback_;
-    Nan::Callback *connectionClosed_callback_;
-    Nan::Callback *stream_callback_;
-    Nan::Callback *streamClosed_callback_;
+    Nan::Callback* connected_callback_;
+    Nan::Callback* connectionfailed_callback_;
+    Nan::Callback* connectionClosed_callback_;
+    Nan::Callback* stream_callback_;
+    Nan::Callback* streamClosed_callback_;
 
     boost::mutex mutex;
     static Nan::Persistent<v8::Function> s_constructor;
 };
 
-#endif  // QUIC_TRANSPORT_CLIENT_H_
+#endif // QUIC_TRANSPORT_CLIENT_H_

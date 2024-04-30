@@ -7,8 +7,8 @@
 #include "AcmmOutput.h"
 
 #include "AcmEncoder.h"
-#include "PcmEncoder.h"
 #include "FfEncoder.h"
+#include "PcmEncoder.h"
 
 namespace mcu {
 
@@ -40,38 +40,38 @@ bool AcmmOutput::addDest(FrameFormat format, FrameDestination* destination)
     ELOG_DEBUG_T("addDest, format(%s), dest(%p)", getFormatStr(format), destination);
 
     if (m_dstFormat != FRAME_FORMAT_UNKNOWN
-            && m_dstFormat != format) {
+        && m_dstFormat != format) {
 
         ELOG_ERROR_T("Don't support to update format(%s -> %s)", getFormatStr(m_dstFormat), getFormatStr(format));
         return false;
     }
 
     if (m_dstFormat == FRAME_FORMAT_UNKNOWN) {
-        switch(format) {
-            case FRAME_FORMAT_PCM_48000_2:
-                m_encoder.reset(new PcmEncoder(format));
-                break;
-            case FRAME_FORMAT_AAC:
-                ELOG_WARN_T("FRAME_FORMAT_AAC is deprecated for audio output, using FRAME_FORMAT_AAC_48000_2!");
-                format = FRAME_FORMAT_AAC_48000_2;
-                m_encoder.reset(new FfEncoder(FRAME_FORMAT_AAC_48000_2));
-                break;
-            case FRAME_FORMAT_AAC_48000_2:
-                m_encoder.reset(new FfEncoder(FRAME_FORMAT_AAC_48000_2));
-                break;
-            case FRAME_FORMAT_PCMU:
-            case FRAME_FORMAT_PCMA:
-            case FRAME_FORMAT_OPUS:
-            case FRAME_FORMAT_ISAC16:
-            case FRAME_FORMAT_ISAC32:
-            case FRAME_FORMAT_ILBC:
-            case FRAME_FORMAT_G722_16000_1:
-            case FRAME_FORMAT_G722_16000_2:
-                m_encoder.reset(new AcmEncoder(format));
-                break;
-            default:
-                ELOG_ERROR_T("Unsupported format(%s), %d", getFormatStr(format), format);
-                return false;
+        switch (format) {
+        case FRAME_FORMAT_PCM_48000_2:
+            m_encoder.reset(new PcmEncoder(format));
+            break;
+        case FRAME_FORMAT_AAC:
+            ELOG_WARN_T("FRAME_FORMAT_AAC is deprecated for audio output, using FRAME_FORMAT_AAC_48000_2!");
+            format = FRAME_FORMAT_AAC_48000_2;
+            m_encoder.reset(new FfEncoder(FRAME_FORMAT_AAC_48000_2));
+            break;
+        case FRAME_FORMAT_AAC_48000_2:
+            m_encoder.reset(new FfEncoder(FRAME_FORMAT_AAC_48000_2));
+            break;
+        case FRAME_FORMAT_PCMU:
+        case FRAME_FORMAT_PCMA:
+        case FRAME_FORMAT_OPUS:
+        case FRAME_FORMAT_ISAC16:
+        case FRAME_FORMAT_ISAC32:
+        case FRAME_FORMAT_ILBC:
+        case FRAME_FORMAT_G722_16000_1:
+        case FRAME_FORMAT_G722_16000_2:
+            m_encoder.reset(new AcmEncoder(format));
+            break;
+        default:
+            ELOG_ERROR_T("Unsupported format(%s), %d", getFormatStr(format), format);
+            return false;
         }
 
         if (!m_encoder->init()) {
@@ -103,18 +103,17 @@ int32_t AcmmOutput::NeededFrequency()
     return getAudioSampleRate(m_dstFormat);
 }
 
-bool AcmmOutput::newAudioFrame(const webrtc::AudioFrame *audioFrame)
+bool AcmmOutput::newAudioFrame(const webrtc::AudioFrame* audioFrame)
 {
     if (!m_destinations.size())
         return true;
 
     ELOG_TRACE_T("newAudioFrame, frame id(0x%x), groupId(%u), streamId(%u), sample_rate(%d), channels(%ld), samples_per_channel(%ld), timestamp(%d)",
-            audioFrame->id_, (m_id >> 16) & 0xffff, m_id & 0xffff,
-            audioFrame->sample_rate_hz_,
-            audioFrame->num_channels_,
-            audioFrame->samples_per_channel_,
-            audioFrame->timestamp_
-            );
+        audioFrame->id_, (m_id >> 16) & 0xffff, m_id & 0xffff,
+        audioFrame->sample_rate_hz_,
+        audioFrame->num_channels_,
+        audioFrame->samples_per_channel_,
+        audioFrame->timestamp_);
 
     if (m_encoder) {
         m_encoder->addAudioFrame(audioFrame);

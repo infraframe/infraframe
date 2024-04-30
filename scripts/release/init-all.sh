@@ -3,32 +3,35 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-bin=`dirname "$0"`
-bin=`cd "$bin"; pwd`
-ROOT=`cd "${bin}/.."; pwd`
+bin=$(dirname "$0")
+bin=$(
+  cd "$bin"
+  pwd
+)
+ROOT=$(
+  cd "${bin}/.."
+  pwd
+)
 
 SUDO=""
 if [[ $EUID -ne 0 ]]; then
-   SUDO="sudo -E"
+  SUDO="sudo -E"
 fi
 
 OWT_UPDATE_DONE=false
 HAVE_AUTH_UPDATE=false
 
-usage()
-{
+usage() {
   echo "Usage: [--deps] [--hardware] (Default: without deps and hardware)"
 }
 
-copy_video_libs()
-{
+copy_video_libs() {
   cp ${ROOT}/video_agent/lib/* ${ROOT}/audio_agent/lib/
   cp ${ROOT}/video_agent/lib/* ${ROOT}/recording_agent/lib/
   cp ${ROOT}/video_agent/lib/* ${ROOT}/streaming_agent/lib/
 }
 
-init_software()
-{
+init_software() {
   if ${INSTALL_DEPS}; then
     echo "Installing dependency..."
     ${ROOT}/bin/install_node.sh
@@ -50,8 +53,7 @@ init_software()
   fi
 }
 
-init_hardware()
-{
+init_hardware() {
   if ${INSTALL_DEPS}; then
     echo "Installing dependency..."
     ${ROOT}/bin/install_node.sh
@@ -74,14 +76,13 @@ init_hardware()
   ${SUDO} sh -c "echo 0 >> /proc/sys/kernel/perf_event_paranoid"
 }
 
-init_auth()
-{
+init_auth() {
   read -t 10 -p "Update RabbitMQ/MongoDB Account? [No/yes]" yn
   if [[ $? -eq 0 ]]; then
     case $yn in
-      [Nn]* ) ;;
-      [Yy]* ) HAVE_AUTH_UPDATE=true;;
-      * ) ;;
+    [Nn]*) ;;
+    [Yy]*) HAVE_AUTH_UPDATE=true ;;
+    *) ;;
     esac
   fi
 
@@ -90,7 +91,7 @@ init_auth()
   local AUTH_STORE=""
   if [[ "${HAVE_AUTH_UPDATE}" == "true" ]]; then
     ${AUTH_SCRIPT}
-    AUTH_STORE=`node -e "console.log(require('${CIPHER_JS}').astore)"`
+    AUTH_STORE=$(node -e "console.log(require('${CIPHER_JS}').astore)")
     cp ${ROOT}/cluster_manager/${AUTH_STORE} ${ROOT}/portal/
     cp ${ROOT}/cluster_manager/${AUTH_STORE} ${ROOT}/conference_agent/
     cp ${ROOT}/cluster_manager/${AUTH_STORE} ${ROOT}/webrtc_agent/
@@ -111,16 +112,16 @@ HARDWARE=false
 shopt -s extglob
 while [[ $# -gt 0 ]]; do
   case $1 in
-    *(-)hardware )
-      HARDWARE=true
-      ;;
-    *(-)deps )
-      INSTALL_DEPS=true
-      ;;
-    *(-)help )
-      usage
-      exit 0
-      ;;
+  *(-)hardware)
+    HARDWARE=true
+    ;;
+  *(-)deps)
+    INSTALL_DEPS=true
+    ;;
+  *(-)help)
+    usage
+    exit 0
+    ;;
   esac
   shift
 done

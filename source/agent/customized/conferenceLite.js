@@ -2,19 +2,19 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
+"use strict";
 
-const {randomUUID} = require('crypto');
-const _ = require('lodash');
-const log = require('./logger').logger.getLogger('ConferenceLite');
-const {Publication, Subscription} = require('./stateTypes');
-const dataAccess = require('./data_access');
-const RpcChannel = require('./rpcChannel');
-const STREAM_ENGINE = 'stream-service';
+const { randomUUID } = require("crypto");
+const _ = require("lodash");
+const log = require("./logger").logger.getLogger("ConferenceLite");
+const { Publication, Subscription } = require("./stateTypes");
+const dataAccess = require("./data_access");
+const RpcChannel = require("./rpcChannel");
+const STREAM_ENGINE = "stream-service";
 
 const FORMAT_PREFERENCE = {
-  audio: {optional: [{codec: 'opus'}]},
-  video: {optional: [{codec: 'vp8'}, {codec: 'h264'}]},
+  audio: { optional: [{ codec: "opus" }] },
+  video: { optional: [{ codec: "vp8" }, { codec: "h264" }] },
 };
 
 function hasMatchedProp(o1, o2, path) {
@@ -27,22 +27,26 @@ function hasMatchedProp(o1, o2, path) {
 }
 
 function isAudioSettingMatch(as1, as2) {
-  if (hasMatchedProp(as1, as2, 'format.codec') &&
-      hasMatchedProp(as1, as2, 'format.sampleRate') &&
-      hasMatchedProp(as1, as2, 'format.channelNum')) {
+  if (
+    hasMatchedProp(as1, as2, "format.codec") &&
+    hasMatchedProp(as1, as2, "format.sampleRate") &&
+    hasMatchedProp(as1, as2, "format.channelNum")
+  ) {
     return true;
   }
   return false;
 }
 
 function isVideoSettingMatch(vs1, vs2) {
-  if (hasMatchedProp(vs1, vs2, 'format.codec') &&
-      hasMatchedProp(vs1, vs2, 'format.profile') &&
-      hasMatchedProp(vs1, vs2, 'parameters.resolution.width') &&
-      hasMatchedProp(vs1, vs2, 'parameters.resolution.height') &&
-      hasMatchedProp(vs1, vs2, 'parameters.framerate') &&
-      hasMatchedProp(vs1, vs2, 'parameters.bitrate') &&
-      hasMatchedProp(vs1, vs2, 'parameters.keyFrameInterval')) {
+  if (
+    hasMatchedProp(vs1, vs2, "format.codec") &&
+    hasMatchedProp(vs1, vs2, "format.profile") &&
+    hasMatchedProp(vs1, vs2, "parameters.resolution.width") &&
+    hasMatchedProp(vs1, vs2, "parameters.resolution.height") &&
+    hasMatchedProp(vs1, vs2, "parameters.framerate") &&
+    hasMatchedProp(vs1, vs2, "parameters.bitrate") &&
+    hasMatchedProp(vs1, vs2, "parameters.keyFrameInterval")
+  ) {
     return true;
   }
   return false;
@@ -57,14 +61,14 @@ class AggregatedStream {
   }
   addSetting(id, setting, data) {
     const stream = this.streams.find((stream) => {
-      if (this.type === 'audio') {
+      if (this.type === "audio") {
         return isAudioSettingMatch(stream.setting, setting);
       } else {
         return isVideoSettingMatch(stream.setting, setting);
       }
     });
     if (!stream) {
-      this.streams.push({id, setting, data});
+      this.streams.push({ id, setting, data });
       return true;
     } else {
       stream.id = id;
@@ -73,7 +77,7 @@ class AggregatedStream {
   }
   getSetting(setting) {
     const stream = this.streams.find((stream) => {
-      if (this.type === 'audio') {
+      if (this.type === "audio") {
         return isAudioSettingMatch(stream.setting, setting);
       } else {
         return isVideoSettingMatch(stream.setting, setting);
@@ -91,15 +95,15 @@ class AggregatedStream {
 // Up level controller for certain domain streams
 class Conference {
   static supportedMethods = [
-    'join',
-    'leave',
-    'publish',
-    'subscribe',
-    'streamControl',
-    'subscriptionControl',
-    'onStatus',
-    'addProcessor',
-    'controlStream'
+    "join",
+    "leave",
+    "publish",
+    "subscribe",
+    "streamControl",
+    "subscriptionControl",
+    "onStatus",
+    "addProcessor",
+    "controlStream",
   ];
 
   constructor(rpcClient, rpcId) {
@@ -122,7 +126,7 @@ class Conference {
   // Join from portal
   // req = {id, domain}
   async join(req) {
-    log.debug('join:', req);
+    log.debug("join:", req);
     if (!this.roomId) {
       // Init
       this.roomId = req.domain;
@@ -130,30 +134,35 @@ class Conference {
     }
     await this.initing;
     if (req.domain !== this.roomId) {
-      throw new Error('Invalid room');
+      throw new Error("Invalid room");
     }
     if (this.participants.has(req.id)) {
-      throw new Error('Duplicate participant join');
+      throw new Error("Duplicate participant join");
     }
     this.participants.set(req.id, req);
     const addedStreams = [];
-    for (const [,stream] of this.mixedStreams) {
+    for (const [, stream] of this.mixedStreams) {
       addedStreams.push(stream.toSignalingFormat());
     }
     return {
       participant: req,
-      streams: addedStreams
+      streams: addedStreams,
     };
   }
 
   async _init(roomId) {
-    log.debug('Init conference:', roomId);
+    log.debug("Init conference:", roomId);
     // Read room config
     const config = await dataAccess.room.config(roomId);
     this.config = config;
-    log.debug('initializing room:', roomId, 'got config:', JSON.stringify(config));
+    log.debug(
+      "initializing room:",
+      roomId,
+      "got config:",
+      JSON.stringify(config)
+    );
     // Init media optional
-    this.audioOptional = {format: config.mediaOut.audio};
+    this.audioOptional = { format: config.mediaOut.audio };
     const videoOut = config.mediaOut.video;
     this.videoOptional = {
       format: videoOut.format,
@@ -162,23 +171,23 @@ class Conference {
         framerate: videoOut.parameters.framerate,
         bitrate: videoOut.parameters.bitrate,
         keyFrameInterval: videoOut.parameters.keyFrameInterval,
-      }
+      },
     };
     // Init views
     const initProms = [];
     for (const view of config.views) {
       const label = view.label;
       // Mix stream ID is room ID followed by view label
-      const mixedId = roomId + '-' + label;
+      const mixedId = roomId + "-" + label;
       // Create a virtual stream as mixed
       const info = {
-        streamType: 'mixed',
+        streamType: "mixed",
         optional: {
           audio: this.audioOptional,
-          video: this.videoOptional
-        }
+          video: this.videoOptional,
+        },
       };
-      const mixedPub = new Publication(mixedId, 'virtual', info);
+      const mixedPub = new Publication(mixedId, "virtual", info);
       mixedPub.domain = roomId;
       mixedPub.participant = roomId;
       const rpcChannel = this.rpcChannel;
@@ -190,42 +199,40 @@ class Conference {
         mixedPub.source.audio.push(audioTrack);
         // Init audio mixer
         const procReq = {
-          type: 'audio',
-          mixing: Object.assign(
-            {id: 'audio-' + mixedId}, view.audio),
+          type: "audio",
+          mixing: Object.assign({ id: "audio-" + mixedId }, view.audio),
           domain: roomId,
-          participant: roomId
+          participant: roomId,
         };
-        const p = rpcChannel.makeRPC(
-            STREAM_ENGINE, 'addProcessor', [procReq])
+        const p = rpcChannel
+          .makeRPC(STREAM_ENGINE, "addProcessor", [procReq])
           .then((proc) => {
             this.audios.get(mixedId).processor = proc;
           });
         initProms.push(p);
-        this.audios.set(mixedId, new AggregatedStream(mixedId, 'audio'));
+        this.audios.set(mixedId, new AggregatedStream(mixedId, "audio"));
       }
       if (view.video) {
         const videoTrack = {
           id: mixedId,
           format: view.video.format,
-          parameters: view.video.parameters
+          parameters: view.video.parameters,
         };
         mixedPub.source.video.push(videoTrack);
         // Init video mixer
         const procReq = {
-          type: 'video',
-          mixing: Object.assign(
-            {id: 'video-' + mixedId}, view.video),
+          type: "video",
+          mixing: Object.assign({ id: "video-" + mixedId }, view.video),
           domain: roomId,
-          participant: roomId
+          participant: roomId,
         };
-        const p = rpcChannel.makeRPC(
-            STREAM_ENGINE, 'addProcessor', [procReq])
+        const p = rpcChannel
+          .makeRPC(STREAM_ENGINE, "addProcessor", [procReq])
           .then((proc) => {
             this.videos.get(mixedId).processor = proc;
           });
         initProms.push(p);
-        this.videos.set(mixedId, new AggregatedStream(mixedId, 'video'));
+        this.videos.set(mixedId, new AggregatedStream(mixedId, "video"));
       }
       this.mixedStreams.set(mixedId, mixedPub);
     }
@@ -234,9 +241,9 @@ class Conference {
 
   // Leave from portal
   async leave(req) {
-    log.debug('leave:', req);
+    log.debug("leave:", req);
     if (!this.participants.has(req.id)) {
-      throw new Error('Invalid leave ID');
+      throw new Error("Invalid leave ID");
     }
     // Clean up streams & subscriptions
     this.participants.delete(req.id);
@@ -244,80 +251,82 @@ class Conference {
 
   // Publish from portal
   async publish(req) {
-    log.debug('publish:', req);
+    log.debug("publish:", req);
     // Validate request
-    req.id = req.id || randomUUID().replace(/-/g, '');
-    if (req.type !== 'video' && req.type !== 'audio') {
+    req.id = req.id || randomUUID().replace(/-/g, "");
+    if (req.type !== "video" && req.type !== "audio") {
       req.info = Object.assign(req.info || {}, {
         owner: this.participant,
         type: req.type,
         attributes: req.attributes,
         formatPreference: {
-          audio: {optional: this.config.mediaIn.audio},
-          video: {optional: this.config.mediaIn.video},
+          audio: { optional: this.config.mediaIn.audio },
+          video: { optional: this.config.mediaIn.video },
         },
-        origin: {domain: this.domain},
+        origin: { domain: this.domain },
         optional: {
           audio: this.audioOptional,
-          video: this.videoOptional
-        }
+          video: this.videoOptional,
+        },
       });
     }
     return req;
   }
   // Subscribe from portal
   async subscribe(req) {
-    log.debug('subscribe:', req);
+    log.debug("subscribe:", req);
     // Validate request
-    if (!this.participants.has(req.participant) &&
-        req.participant !== this.roomId) {
-      throw new Error('Invalid pariticpant ID');
+    if (
+      !this.participants.has(req.participant) &&
+      req.participant !== this.roomId
+    ) {
+      throw new Error("Invalid pariticpant ID");
     }
-    req.id = req.id || randomUUID().replace(/-/g, '');
+    req.id = req.id || randomUUID().replace(/-/g, "");
     const formatPreference = {};
     req.info = {
       owner: this.participant,
       type: req.type,
-      origin: {domain: this.domain},
-      formatPreference
+      origin: { domain: this.domain },
+      formatPreference,
     };
     // Check subscribe source
-    if (req.type !== 'audio' && req.type !== 'video') {
-      if (req.type !== 'webrtc') {
+    if (req.type !== "audio" && req.type !== "video") {
+      if (req.type !== "webrtc") {
         req.media.tracks = [];
         if (req.media.audio) {
-          req.media.audio.type = 'audio';
+          req.media.audio.type = "audio";
           req.media.tracks.push(req.media.audio);
         }
         if (req.media.video) {
-          req.media.video.type = 'video';
+          req.media.video.type = "video";
           req.media.tracks.push(req.media.video);
         }
       }
       // Save track from for later linkup
       for (const track of req.media.tracks) {
         const tmpTrackId = track.id ?? req.id;
-        if (track.type === 'audio') {
-          log.debug('Pending audio add:', tmpTrackId, track.from);
+        if (track.type === "audio") {
+          log.debug("Pending audio add:", tmpTrackId, track.from);
           this.pendingAudioTracks.set(tmpTrackId, track.from);
           if (!formatPreference.audio) {
             const stream = this.audios.get(track.from);
             const sourceSetting = stream?.getSettings?.()?.[0];
             formatPreference.audio = {
               preferred: sourceSetting?.format,
-              optional: sourceSetting?.optional || this.audioOptional.format
-            }
+              optional: sourceSetting?.optional || this.audioOptional.format,
+            };
           }
-        } else if (track.type === 'video') {
-          log.debug('Pending video add:', tmpTrackId, track.from);
+        } else if (track.type === "video") {
+          log.debug("Pending video add:", tmpTrackId, track.from);
           this.pendingVideoTracks.set(tmpTrackId, track.from);
           if (!formatPreference.video) {
             const stream = this.videos.get(track.from);
             const sourceSetting = stream?.getSettings?.()?.[0];
             formatPreference.video = {
               preferred: sourceSetting?.format,
-              optional: sourceSetting?.optional || this.videoOptional.format
-            }
+              optional: sourceSetting?.optional || this.videoOptional.format,
+            };
           }
         }
         delete track.from;
@@ -327,21 +336,25 @@ class Conference {
   }
   // StreamControl from portal
   async streamControl(req) {
-    log.debug('streamControl:', req);
+    log.debug("streamControl:", req);
     // Validate request
-    if (!this.participants.has(req.participant) &&
-        req.participant !== this.roomId) {
-      throw new Error('Invalid pariticpant ID');
+    if (
+      !this.participants.has(req.participant) &&
+      req.participant !== this.roomId
+    ) {
+      throw new Error("Invalid pariticpant ID");
     }
     return req;
   }
   // SubscriptionControl from portal
   async subscriptionControl(req) {
-    log.debug('subscriptionControl:', req);
+    log.debug("subscriptionControl:", req);
     // Validate request
-    if (!this.participants.has(req.participant) &&
-        req.participant !== this.roomId) {
-      throw new Error('Invalid pariticpant ID');
+    if (
+      !this.participants.has(req.participant) &&
+      req.participant !== this.roomId
+    ) {
+      throw new Error("Invalid pariticpant ID");
     }
     return req;
   }
@@ -355,127 +368,135 @@ class Conference {
   }
   */
   async onStatus(req) {
-    log.debug('onStatus:', req);
+    log.debug("onStatus:", req);
     try {
-    if (req.type === 'publication') {
-      if (req.status === 'add') {
-        const pub = Publication.from(req.data)
-        for (const track of pub.source.audio) {
-          const audioStream = new AggregatedStream(track.id, pub.type);
-          audioStream.addSetting(track.id, track);
-          if (this.audios.has(audioStream.id)) {
-            log.warn('Audio ID already exists:', audioStream.id);
-            continue;
-          }
-          this.audios.set(audioStream.id, audioStream);
-          if (!this.audios.has(pub.id)) {
-            // Default track for publication ID
-            this.audios.set(pub.id, audioStream);
-          }
-        }
-        for (const track of pub.source.video) {
-          const videoStream = new AggregatedStream(track.id, pub.type);
-          videoStream.addSetting(track.id, track);
-          if (this.videos.has(videoStream.id)) {
-            log.warn('Video ID already exists:', videoStream.id);
-            continue;
-          }
-          this.videos.set(videoStream.id, videoStream);
-          if (!this.videos.has(pub.id)) {
-            // Default track for publication ID
-            this.videos.set(pub.id, videoStream);
-          }
-        }
-      } else if (req.status === 'remove') {
-        const pubId = req.data.id;
-      }
-    } else if (req.type === 'subscription') {
-      if (req.status === 'add') {
-        const sub = Subscription.from(req.data);
-        let hasUpdate = false;
-        // Update audio from
-        for (const track of sub.sink.audio) {
-          let from = null;
-          if (this.pendingAudioTracks.has(track.id)) {
-            from = this.pendingAudioTracks.get(track.id);
-            this.pendingAudioTracks.delete(track.id);
-          } else if (this.pendingAudioTracks.has(sub.id)) {
-            from = this.pendingAudioTracks.get(sub.id);
-            this.pendingAudioTracks.delete(sub.id);
-          }
-          if (from && this.audios.has(from)) {
-            log.debug('Pending link from:', track.id, from);
-            const stream = this.audios.get(from);
-            const audioSetting = {format: track.format};
-            const mapped = stream.getSetting(audioSetting);
-            if (mapped) {
-              track.from = await mapped.data;
-              log.debug('Update track audio from:', track.id, track.from);
-            } else {
-              const transcode = this._transcodeAudio(
-                stream, from, audioSetting);
-              stream.addSetting(null, audioSetting, transcode);
-              track.from = await transcode;
-              log.debug('Update track audio from:', track.id, track.from);
+      if (req.type === "publication") {
+        if (req.status === "add") {
+          const pub = Publication.from(req.data);
+          for (const track of pub.source.audio) {
+            const audioStream = new AggregatedStream(track.id, pub.type);
+            audioStream.addSetting(track.id, track);
+            if (this.audios.has(audioStream.id)) {
+              log.warn("Audio ID already exists:", audioStream.id);
+              continue;
             }
-            hasUpdate = true;
+            this.audios.set(audioStream.id, audioStream);
+            if (!this.audios.has(pub.id)) {
+              // Default track for publication ID
+              this.audios.set(pub.id, audioStream);
+            }
           }
+          for (const track of pub.source.video) {
+            const videoStream = new AggregatedStream(track.id, pub.type);
+            videoStream.addSetting(track.id, track);
+            if (this.videos.has(videoStream.id)) {
+              log.warn("Video ID already exists:", videoStream.id);
+              continue;
+            }
+            this.videos.set(videoStream.id, videoStream);
+            if (!this.videos.has(pub.id)) {
+              // Default track for publication ID
+              this.videos.set(pub.id, videoStream);
+            }
+          }
+        } else if (req.status === "remove") {
+          const pubId = req.data.id;
         }
-        // Update video from
-        for (const track of sub.sink.video) {
-          let from = null;
-          if (this.pendingVideoTracks.has(track.id)) {
-            from = this.pendingVideoTracks.get(track.id);
-            this.pendingVideoTracks.delete(track.id);
-          } else if (this.pendingVideoTracks.has(sub.id)) {
-            from = this.pendingVideoTracks.get(sub.id);
-            this.pendingVideoTracks.delete(sub.id);
+      } else if (req.type === "subscription") {
+        if (req.status === "add") {
+          const sub = Subscription.from(req.data);
+          let hasUpdate = false;
+          // Update audio from
+          for (const track of sub.sink.audio) {
+            let from = null;
+            if (this.pendingAudioTracks.has(track.id)) {
+              from = this.pendingAudioTracks.get(track.id);
+              this.pendingAudioTracks.delete(track.id);
+            } else if (this.pendingAudioTracks.has(sub.id)) {
+              from = this.pendingAudioTracks.get(sub.id);
+              this.pendingAudioTracks.delete(sub.id);
+            }
+            if (from && this.audios.has(from)) {
+              log.debug("Pending link from:", track.id, from);
+              const stream = this.audios.get(from);
+              const audioSetting = { format: track.format };
+              const mapped = stream.getSetting(audioSetting);
+              if (mapped) {
+                track.from = await mapped.data;
+                log.debug("Update track audio from:", track.id, track.from);
+              } else {
+                const transcode = this._transcodeAudio(
+                  stream,
+                  from,
+                  audioSetting
+                );
+                stream.addSetting(null, audioSetting, transcode);
+                track.from = await transcode;
+                log.debug("Update track audio from:", track.id, track.from);
+              }
+              hasUpdate = true;
+            }
           }
-          if (from && this.videos.has(from)) {
-            const stream = this.videos.get(from);
-            const videoSetting = {
-              format: track.format,
-              parameters: track.parameters,
+          // Update video from
+          for (const track of sub.sink.video) {
+            let from = null;
+            if (this.pendingVideoTracks.has(track.id)) {
+              from = this.pendingVideoTracks.get(track.id);
+              this.pendingVideoTracks.delete(track.id);
+            } else if (this.pendingVideoTracks.has(sub.id)) {
+              from = this.pendingVideoTracks.get(sub.id);
+              this.pendingVideoTracks.delete(sub.id);
+            }
+            if (from && this.videos.has(from)) {
+              const stream = this.videos.get(from);
+              const videoSetting = {
+                format: track.format,
+                parameters: track.parameters,
+              };
+              const mapped = stream.getSetting(videoSetting);
+              if (mapped) {
+                track.from = await mapped.data;
+                log.debug("Update track video from:", track.id, track.from);
+              } else {
+                const transcode = this._transcodeVideo(
+                  stream,
+                  from,
+                  videoSetting
+                );
+                stream.addSetting(null, videoSetting, transcode);
+                track.from = await transcode;
+                log.debug("Update track video from:", track.id, track.from);
+              }
+              hasUpdate = true;
+            }
+          }
+          // Update subscription from
+          if (hasUpdate) {
+            const ctrlReq = {
+              type: sub.type,
+              id: sub.id,
+              operation: "update",
+              data: sub,
+              participant: this.roomId,
             };
-            const mapped = stream.getSetting(videoSetting);
-            if (mapped) {
-              track.from = await mapped.data;
-              log.debug('Update track video from:', track.id, track.from);
-            } else {
-              const transcode = this._transcodeVideo(
-                stream, from, videoSetting);
-              stream.addSetting(null, videoSetting, transcode);
-              track.from = await transcode;
-              log.debug('Update track video from:', track.id, track.from);
-            }
-            hasUpdate = true;
+            // Control subscription
+            await this.rpcChannel.makeRPC(
+              STREAM_ENGINE,
+              "subscriptionControl",
+              [ctrlReq]
+            );
           }
         }
-        // Update subscription from
-        if (hasUpdate) {
-          const ctrlReq = {
-            type: sub.type,
-            id: sub.id,
-            operation: 'update',
-            data: sub,
-            participant: this.roomId,
-          };
-          // Control subscription
-          await this.rpcChannel.makeRPC(
-            STREAM_ENGINE, 'subscriptionControl', [ctrlReq]);
-        }
+      } else if (req.type === "processor") {
+        //
       }
-    } else if (req.type === 'processor') {
-      //
+    } catch (e) {
+      log.debug("Catched:", e, e.stack);
     }
-
-  } catch (e) {
-    log.debug('Catched:', e, e.stack);
-  }
   }
   // Add processor request
   async addProcessor(req) {
-    req.id = req.id || randomUUID().replace(/-/g, '');
+    req.id = req.id || randomUUID().replace(/-/g, "");
     return req;
   }
 
@@ -483,95 +504,111 @@ class Conference {
     // Generate audio
     if (!stream.processor) {
       if (this.mixedStreams.has(from)) {
-        log.error('Audio mixer is not ready');
-        throw new Error('Audio mixer is not ready');
+        log.error("Audio mixer is not ready");
+        throw new Error("Audio mixer is not ready");
       }
       const txReq = {
-        type: 'audio',
-        id: this.roomId + '-' + from,
-        transcoding: {id: from},
+        type: "audio",
+        id: this.roomId + "-" + from,
+        transcoding: { id: from },
         domain: this.roomId,
-        participant: this.roomId
+        participant: this.roomId,
       };
-      stream.processor = {id: txReq.id};
+      stream.processor = { id: txReq.id };
       stream.processor = await this.rpcChannel.makeRPC(
-        STREAM_ENGINE, 'addProcessor', [txReq]);
+        STREAM_ENGINE,
+        "addProcessor",
+        [txReq]
+      );
       // Add input
       const audioOption = {
         from,
         format: stream.getSettings()[0].format,
-      }
+      };
       const inputReq = {
-        type: 'audio',
-        id: randomUUID().replace(/-/g, ''),
-        media: {audio: audioOption},
+        type: "audio",
+        id: randomUUID().replace(/-/g, ""),
+        media: { audio: audioOption },
         processor: stream.processor.id,
         participant: this.roomId,
-        info: {owner: ''}
+        info: { owner: "" },
       };
-      await this.rpcChannel.makeRPC(
-        STREAM_ENGINE, 'subscribe', [inputReq]);
+      await this.rpcChannel.makeRPC(STREAM_ENGINE, "subscribe", [inputReq]);
     }
     const genReq = {
-      type: 'audio',
-      id: randomUUID().replace(/-/g, ''),
-      media: {audio: {format: audioSetting.format}},
+      type: "audio",
+      id: randomUUID().replace(/-/g, ""),
+      media: { audio: { format: audioSetting.format } },
       processor: stream.processor.id,
       participant: this.roomId,
-      info: {owner: '', hidden: true}
+      info: { owner: "", hidden: true },
     };
-    const outputId = await this.rpcChannel.makeRPC(
-      STREAM_ENGINE, 'publish', [genReq]);
+    const outputId = await this.rpcChannel.makeRPC(STREAM_ENGINE, "publish", [
+      genReq,
+    ]);
     stream.addSetting(outputId.id, audioSetting);
-    log.debug('Transcode audio completed:', stream.id, outputId.id, audioSetting);
+    log.debug(
+      "Transcode audio completed:",
+      stream.id,
+      outputId.id,
+      audioSetting
+    );
   }
 
   async _transcodeVideo(stream, from, videoSetting) {
     // Generate video
     if (!stream.processor) {
       if (this.mixedStreams.has(from)) {
-        log.error('Video mixer is not ready');
-        throw new Error('Video mixer is not ready');
+        log.error("Video mixer is not ready");
+        throw new Error("Video mixer is not ready");
       }
       const txReq = {
-        type: 'video',
-        id: this.roomId + '-' + from,
-        transcoding: {id: from},
+        type: "video",
+        id: this.roomId + "-" + from,
+        transcoding: { id: from },
         domain: this.roomId,
         participant: this.roomId,
       };
-      stream.processor = {id: txReq.id};
+      stream.processor = { id: txReq.id };
       stream.processor = await this.rpcChannel.makeRPC(
-        STREAM_ENGINE, 'addProcessor', [txReq]);
+        STREAM_ENGINE,
+        "addProcessor",
+        [txReq]
+      );
       // Add input
       const videoOption = {
         from,
         format: stream.getSettings()[0].format,
         parameters: stream.getSettings()[0].parameters,
-      }
+      };
       const inputReq = {
-        type: 'video',
-        id: randomUUID().replace(/-/g, ''),
-        media: {video: videoOption},
+        type: "video",
+        id: randomUUID().replace(/-/g, ""),
+        media: { video: videoOption },
         processor: stream.processor.id,
         participant: this.roomId,
-        info: {owner: ''}
+        info: { owner: "" },
       };
-      await this.rpcChannel.makeRPC(
-        STREAM_ENGINE, 'subscribe', [inputReq]);
+      await this.rpcChannel.makeRPC(STREAM_ENGINE, "subscribe", [inputReq]);
     }
     const genReq = {
-      type: 'video',
-      id: randomUUID().replace(/-/g, ''),
-      media: {video: videoSetting},
+      type: "video",
+      id: randomUUID().replace(/-/g, ""),
+      media: { video: videoSetting },
       processor: stream.processor.id,
       participant: this.roomId,
-      info: {owner: '', hidden: true}
+      info: { owner: "", hidden: true },
     };
-    const outputId = await this.rpcChannel.makeRPC(
-      STREAM_ENGINE, 'publish', [genReq]);
+    const outputId = await this.rpcChannel.makeRPC(STREAM_ENGINE, "publish", [
+      genReq,
+    ]);
     stream.addSetting(outputId.id, videoSetting);
-    log.debug('Transcode video completed:', stream.id, outputId.id, videoSetting);
+    log.debug(
+      "Transcode video completed:",
+      stream.id,
+      outputId.id,
+      videoSetting
+    );
     return outputId.id;
   }
 }

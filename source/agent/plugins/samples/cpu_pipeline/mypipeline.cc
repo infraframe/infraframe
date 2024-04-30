@@ -2,48 +2,50 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+#include "mypipeline.h"
+#include "toml.hpp"
 #include <iostream>
 #include <string.h>
-#include "toml.hpp"
-#include "mypipeline.h"
 
-MyPipeline::MyPipeline() {
+MyPipeline::MyPipeline()
+{
     inputwidth = 640;
     inputheight = 480;
     inputframerate = 24;
-    pipeline = NULL; 
+    pipeline = NULL;
     source = NULL;
     std::cout << "MyPipeline constructor" << std::endl;
 }
 
-rvaStatus MyPipeline::PipelineConfig(std::unordered_map<std::string, std::string> params) {
+rvaStatus MyPipeline::PipelineConfig(std::unordered_map<std::string, std::string> params)
+{
 
-    std::unordered_map<std::string,std::string>::const_iterator width = params.find ("inputwidth");
-    if ( width == params.end() )
-        std::cout << "inputwidth is not found"  << std::endl;
+    std::unordered_map<std::string, std::string>::const_iterator width = params.find("inputwidth");
+    if (width == params.end())
+        std::cout << "inputwidth is not found" << std::endl;
     else
         inputwidth = std::atoi(width->second.c_str());
 
-    std::unordered_map<std::string,std::string>::const_iterator height = params.find ("inputheight");
-    if ( height == params.end() )
+    std::unordered_map<std::string, std::string>::const_iterator height = params.find("inputheight");
+    if (height == params.end())
         std::cout << "inputheight is not found" << std::endl;
     else
         inputheight = std::atoi(height->second.c_str());
 
-    std::unordered_map<std::string,std::string>::const_iterator framerate = params.find ("inputframerate");
-    if ( framerate == params.end() )
+    std::unordered_map<std::string, std::string>::const_iterator framerate = params.find("inputframerate");
+    if (framerate == params.end())
         std::cout << "inputframerate is not found" << std::endl;
     else
         inputframerate = std::atoi(framerate->second.c_str());
 
-    std::unordered_map<std::string,std::string>::const_iterator codec = params.find ("inputcodec");
-    if ( codec == params.end() )
+    std::unordered_map<std::string, std::string>::const_iterator codec = params.find("inputcodec");
+    if (codec == params.end())
         std::cout << "inputcodec is not found" << std::endl;
     else
         inputcodec = codec->second;
 
-    std::unordered_map<std::string,std::string>::const_iterator name = params.find ("pipelinename");
-    if ( name == params.end() )
+    std::unordered_map<std::string, std::string>::const_iterator name = params.find("pipelinename");
+    if (name == params.end())
         std::cout << "pipeline name is not found" << std::endl;
     else
         pipelinename = name->second;
@@ -51,38 +53,39 @@ rvaStatus MyPipeline::PipelineConfig(std::unordered_map<std::string, std::string
     return RVA_ERR_OK;
 }
 
-rvaStatus MyPipeline::PipelineClose() {
+rvaStatus MyPipeline::PipelineClose()
+{
     return RVA_ERR_OK;
 }
 
-GstElement * MyPipeline::InitializePipeline() {
-     /* Initialize GStreamer */
+GstElement* MyPipeline::InitializePipeline()
+{
+    /* Initialize GStreamer */
     gst_init(NULL, NULL);
 
     std::cout << "Start intialize elements" << std::endl;
     /* Create the elements */
     source = gst_element_factory_make("appsrc", "appsource");
     if (inputcodec.compare("vp8") == 0) {
-        parse = gst_element_factory_make("ivfparse","parse");
-        decodebin = gst_element_factory_make("vp8dec","decode");
-        encoder = gst_element_factory_make("vp8enc","encoder");
+        parse = gst_element_factory_make("ivfparse", "parse");
+        decodebin = gst_element_factory_make("vp8dec", "decode");
+        encoder = gst_element_factory_make("vp8enc", "encoder");
     } else {
-        parse = gst_element_factory_make("h264parse","parse");
-        decodebin = gst_element_factory_make("avdec_h264","decode");
-        encoder = gst_element_factory_make("x264enc","encoder");
+        parse = gst_element_factory_make("h264parse", "parse");
+        decodebin = gst_element_factory_make("avdec_h264", "decode");
+        encoder = gst_element_factory_make("x264enc", "encoder");
     }
 
-    postproc = gst_element_factory_make("videoconvert","postproc");
-    detect = gst_element_factory_make("gvadetect","detect"); 
-    watermark = gst_element_factory_make("gvawatermark","rate");
-    converter = gst_element_factory_make("videoconvert","convert");
+    postproc = gst_element_factory_make("videoconvert", "postproc");
+    detect = gst_element_factory_make("gvadetect", "detect");
+    watermark = gst_element_factory_make("gvawatermark", "rate");
+    converter = gst_element_factory_make("videoconvert", "convert");
 
-    outsink = gst_element_factory_make("appsink","appsink");
+    outsink = gst_element_factory_make("appsink", "appsink");
 
     pipeline = gst_pipeline_new("cpu-pipeline");
 
-
-    if (!detect){
+    if (!detect) {
         std::cout << "detect element coule not be created" << std::endl;
         return NULL;
     }
@@ -95,7 +98,8 @@ GstElement * MyPipeline::InitializePipeline() {
     return pipeline;
 }
 
-rvaStatus MyPipeline::LinkElements() {
+rvaStatus MyPipeline::LinkElements()
+{
     gboolean link_ok;
     GstCaps *postprocsrccaps, *postprocsinkcaps;
     const char* path = std::getenv("CONFIGFILE_PATH");
@@ -130,7 +134,7 @@ rvaStatus MyPipeline::LinkElements() {
             "height", G_TYPE_INT, inputheight,
             "framerate", GST_TYPE_FRACTION, inputframerate, 1, NULL);
         g_object_set(source, "caps", inputcaps, NULL);
-        gst_caps_unref (inputcaps);
+        gst_caps_unref(inputcaps);
 
         encodecaps = gst_caps_new_simple("video/x-h264",
             "stream-format", G_TYPE_STRING, "byte-stream",
@@ -143,19 +147,19 @@ rvaStatus MyPipeline::LinkElements() {
             "tune", 0x00000004,
             "key-int-max", 100, NULL);
     }
-    
-    g_object_set(G_OBJECT(source),"is-live", true, NULL);
-    
-    g_object_set(G_OBJECT(outsink), "max-buffers", 1,
-            "sync", false,
-            "drop", true, NULL);
 
-    g_object_set(G_OBJECT(detect),"device", device.c_str(),
-            "model",model.c_str(),
-            "nireq", 24, NULL);
+    g_object_set(G_OBJECT(source), "is-live", true, NULL);
+
+    g_object_set(G_OBJECT(outsink), "max-buffers", 1,
+        "sync", false,
+        "drop", true, NULL);
+
+    g_object_set(G_OBJECT(detect), "device", device.c_str(),
+        "model", model.c_str(),
+        "nireq", 24, NULL);
 
     if (inputcodec.compare("vp8") == 0) {
-        gst_bin_add_many(GST_BIN (pipeline), source, parse, decodebin, watermark, postproc, detect, converter, encoder, outsink,  NULL);
+        gst_bin_add_many(GST_BIN(pipeline), source, parse, decodebin, watermark, postproc, detect, converter, encoder, outsink, NULL);
 
         if (gst_element_link_many(source, parse, decodebin, postproc, detect, watermark, converter, encoder, outsink, NULL) != TRUE) {
             std::cout << "Elements link failed." << std::endl;
@@ -164,7 +168,7 @@ rvaStatus MyPipeline::LinkElements() {
         }
 
     } else {
-        gst_bin_add_many(GST_BIN (pipeline), source, decodebin, watermark, postproc, parse, detect, converter, encoder, outsink, NULL);
+        gst_bin_add_many(GST_BIN(pipeline), source, decodebin, watermark, postproc, parse, detect, converter, encoder, outsink, NULL);
 
         if (gst_element_link_many(source, parse, decodebin, postproc, detect, watermark, converter, encoder, NULL) != TRUE) {
             std::cout << "Elements link failed." << std::endl;
@@ -172,8 +176,8 @@ rvaStatus MyPipeline::LinkElements() {
             return RVA_ERR_LINK;
         }
 
-        link_ok = gst_element_link_filtered (encoder, outsink, encodecaps);
-        gst_caps_unref (encodecaps);
+        link_ok = gst_element_link_filtered(encoder, outsink, encodecaps);
+        gst_caps_unref(encodecaps);
 
         if (!link_ok) {
             std::cout << "Failed to link encoder and outsink!" << std::endl;
@@ -183,8 +187,7 @@ rvaStatus MyPipeline::LinkElements() {
     }
 
     return RVA_ERR_OK;
-} 
+}
 
-// Declare the pipeline 
+// Declare the pipeline
 DECLARE_PIPELINE(MyPipeline)
-

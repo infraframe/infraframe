@@ -5,6 +5,7 @@
 #ifndef RawTransport_h
 #define RawTransport_h
 
+#include "IOService.h"
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -13,7 +14,6 @@
 #include <boost/thread/mutex.hpp>
 #include <logger.h>
 #include <queue>
-#include "IOService.h"
 
 namespace owt_base {
 
@@ -48,9 +48,10 @@ public:
     virtual unsigned short getListeningPort() = 0;
 };
 
-template<Protocol prot>
+template <Protocol prot>
 class RawTransport : public RawTransportInterface {
     DECLARE_LOGGER();
+
 public:
     RawTransport(RawTransportListener* listener, size_t initialBufferSize = 1600, bool tag = true);
     ~RawTransport();
@@ -62,7 +63,6 @@ public:
     void sendData(const char* header, int headerLength, const char* payload, int payloadLength);
     void close();
     bool initTicket(const std::string& ticket);
-
 
     unsigned short getListeningPort();
 
@@ -112,7 +112,10 @@ private:
         ~Socket() { }
 
         struct UDPSocket {
-            UDPSocket() : connected(false) { }
+            UDPSocket()
+                : connected(false)
+            {
+            }
             ~UDPSocket() { }
 
             boost::scoped_ptr<boost::asio::ip::udp::socket> socket;

@@ -29,15 +29,15 @@ public:
 
         union {
             struct {
-                uint32_t    hls_time;
-                uint32_t    hls_list_size;
-                char        hls_method[16];
+                uint32_t hls_time;
+                uint32_t hls_list_size;
+                char hls_method[16];
             };
 
             struct {
-                uint32_t    dash_seg_duration;
-                uint32_t    dash_window_size;
-                char        dash_method[16];
+                uint32_t dash_seg_duration;
+                uint32_t dash_window_size;
+                char dash_method[16];
             };
         };
     };
@@ -49,11 +49,11 @@ public:
 protected:
     bool isAudioFormatSupported(FrameFormat format) override;
     bool isVideoFormatSupported(FrameFormat format) override;
-    const char *getFormatName(std::string& url) override;
-    bool getHeaderOpt(std::string& url, AVDictionary **options) override;
+    const char* getFormatName(std::string& url) override;
+    bool getHeaderOpt(std::string& url, AVDictionary** options) override;
 
-    uint32_t getKeyFrameInterval(void) override {return 2000;}
-    uint32_t getReconnectCount(void) override {return 1;}
+    uint32_t getKeyFrameInterval(void) override { return 2000; }
+    uint32_t getReconnectCount(void) override { return 1; }
 
 private:
     StreamingOptions m_options;

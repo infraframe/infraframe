@@ -10,12 +10,12 @@
     }
   },
   "categories": {
-    "default": { "appenders": [ "out" ], "level": "info" },
-    "AmqpClient": { "appenders": [ "out" ], "level": "info" },
-    "Main": { "appenders": [ "out" ], "level": "info" },
-    "ClusterManager": { "appenders": [ "out" ], "level": "info" },
-    "Scheduler": { "appenders": [ "out" ], "level": "info" },
-    "Matcher": { "appenders": [ "out" ], "level": "info" },
-    "Strategy": { "appenders": [ "out" ], "level": "info" }
+    "default": { "appenders": ["out"], "level": "info" },
+    "AmqpClient": { "appenders": ["out"], "level": "info" },
+    "Main": { "appenders": ["out"], "level": "info" },
+    "ClusterManager": { "appenders": ["out"], "level": "info" },
+    "Scheduler": { "appenders": ["out"], "level": "info" },
+    "Matcher": { "appenders": ["out"], "level": "info" },
+    "Strategy": { "appenders": ["out"], "level": "info" }
   }
 }

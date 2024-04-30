@@ -5,11 +5,11 @@
 #include <webrtc/base/logging.h>
 #include <webrtc/system_wrappers/include/trace.h>
 
-#include "AudioMixer.h"
 #include "AcmmFrameMixer.h"
+#include "AudioMixer.h"
 
-#include "AudioUtilities.h"
 #include "AudioTime.h"
+#include "AudioUtilities.h"
 
 using namespace webrtc;
 
@@ -30,10 +30,7 @@ AudioMixer::AudioMixer(const std::string& configStr)
         rtc::LogMessage::LogToDebug(rtc::LS_INFO);
         rtc::LogMessage::LogTimestamps(true);
 
-        const int kTraceFilter = webrtc::kTraceNone | webrtc::kTraceTerseInfo |
-            webrtc::kTraceWarning | webrtc::kTraceError |
-            webrtc::kTraceCritical | webrtc::kTraceDebug |
-            webrtc::kTraceInfo;
+        const int kTraceFilter = webrtc::kTraceNone | webrtc::kTraceTerseInfo | webrtc::kTraceWarning | webrtc::kTraceError | webrtc::kTraceCritical | webrtc::kTraceDebug | webrtc::kTraceInfo;
 
         webrtc::Trace::CreateTrace();
         webrtc::Trace::SetTraceFile(NULL, false);
@@ -49,7 +46,7 @@ AudioMixer::~AudioMixer()
 {
 }
 
-void AudioMixer::setEventRegistry(EventRegistry *handle)
+void AudioMixer::setEventRegistry(EventRegistry* handle)
 {
     m_mixer->setEventRegistry(handle);
 }

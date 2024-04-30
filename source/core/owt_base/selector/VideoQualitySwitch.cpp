@@ -77,7 +77,8 @@ void VideoQualitySwitch::setTargetBitrate(uint32_t targetBps)
 {
     ELOG_DEBUG("setTargetBitrate %u %p", targetBps, this);
     uint64_t tsNow = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::steady_clock::now().time_since_epoch()).count();
+        std::chrono::steady_clock::now().time_since_epoch())
+                         .count();
     if (tsNow - m_lastUpdateTime < kMinimalUpdatePeriod) {
         return;
     }
@@ -92,8 +93,7 @@ void VideoQualitySwitch::setTargetBitrate(uint32_t targetBps)
             current = i;
             currentBitrate = bitrate;
         } else {
-            if (std::abs(bitrate - (int) targetBps) <
-                std::abs(currentBitrate - (int) targetBps)) {
+            if (std::abs(bitrate - (int)targetBps) < std::abs(currentBitrate - (int)targetBps)) {
                 current = i;
                 currentBitrate = bitrate;
             }
@@ -121,7 +121,7 @@ void VideoQualitySwitch::setTargetBitrate(uint32_t targetBps)
             m_sources[m_current]->addVideoDestination(this);
             ELOG_DEBUG("Request key frame ");
             // Request key frame
-            FeedbackMsg feedback = {.type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME };
+            FeedbackMsg feedback = { .type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME };
             deliverFeedbackMsg(feedback);
         }
     }
@@ -131,10 +131,10 @@ void VideoQualitySwitch::BitrateCounter::onFrame(const Frame& frame)
 {
     ELOG_TRACE("BitrateCounter onFrame %u %p", frame.length, this);
     uint64_t tsNow = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::steady_clock::now().time_since_epoch()).count();
+        std::chrono::steady_clock::now().time_since_epoch())
+                         .count();
     const uint32_t bucketInterval = kBitrateCountPeriod / kBucketNum;
-    if (m_timeFrames.empty() ||
-        (tsNow - m_timeFrames.back().timeStamp) >= bucketInterval) {
+    if (m_timeFrames.empty() || (tsNow - m_timeFrames.back().timeStamp) >= bucketInterval) {
         Bucket bucket(tsNow);
         m_timeFrames.push_back(bucket);
     }
@@ -153,7 +153,8 @@ uint32_t VideoQualitySwitch::BitrateCounter::bitrate()
         return 0;
     }
     uint64_t tsNow = std::chrono::duration_cast<std::chrono::milliseconds>(
-       std::chrono::steady_clock::now().time_since_epoch()).count();
+        std::chrono::steady_clock::now().time_since_epoch())
+                         .count();
     uint64_t tsLast = m_timeFrames.back().timeStamp;
     if ((tsNow - tsLast) > kActiveTimeout) {
         ELOG_DEBUG("Not active %p", this);

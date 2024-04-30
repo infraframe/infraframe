@@ -23,11 +23,11 @@ public:
 protected:
     bool isAudioFormatSupported(FrameFormat format) override;
     bool isVideoFormatSupported(FrameFormat format) override;
-    const char *getFormatName(std::string& url) override;
-    bool getHeaderOpt(std::string& url, AVDictionary **options) override;
+    const char* getFormatName(std::string& url) override;
+    bool getHeaderOpt(std::string& url, AVDictionary** options) override;
 
-    uint32_t getKeyFrameInterval(void) override {return 120000;} //120s
-    uint32_t getReconnectCount(void) override {return 0;}
+    uint32_t getKeyFrameInterval(void) override { return 120000; } //120s
+    uint32_t getReconnectCount(void) override { return 0; }
 };
 
 } /* namespace owt_base */

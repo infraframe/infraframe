@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
+"use strict";
 
-const unpackOption = require('./grpcTools').unpackOption;
-const packNotification = require('./grpcTools').packNotification;
+const unpackOption = require("./grpcTools").unpackOption;
+const packNotification = require("./grpcTools").packNotification;
 
 // Create GRPC interface for webrtc agent
 function createGrpcInterface(controller, streamingEmitter) {
@@ -17,16 +17,16 @@ function createGrpcInterface(controller, streamingEmitter) {
       const req = call.request;
       const option = unpackOption(req.type, req.option);
       controller.publish(req.id, req.type, option, (n, code, data) => {
-        if (code === 'error') {
+        if (code === "error") {
           callback(new Error(data), null);
         } else {
-          callback(null, {id: req.id});
+          callback(null, { id: req.id });
         }
       });
     },
     unpublish: function (call, callback) {
       controller.unpublish(call.request.id, (n, code, data) => {
-        if (code === 'error') {
+        if (code === "error") {
           callback(new Error(data), null);
         } else {
           callback(null, {});
@@ -37,16 +37,16 @@ function createGrpcInterface(controller, streamingEmitter) {
       const req = call.request;
       const option = unpackOption(req.type, req.option);
       controller.subscribe(req.id, req.type, option, (n, code, data) => {
-        if (code === 'error') {
+        if (code === "error") {
           callback(new Error(data), null);
         } else {
-          callback(null, {id: req.id});
+          callback(null, { id: req.id });
         }
       });
     },
     unsubscribe: function (call, callback) {
       controller.unsubscribe(call.request.id, (n, code, data) => {
-        if (code === 'error') {
+        if (code === "error") {
           callback(new Error(data), null);
         } else {
           callback(null, {});
@@ -55,19 +55,17 @@ function createGrpcInterface(controller, streamingEmitter) {
     },
     linkup: function (call, callback) {
       const req = call.request;
-      controller.linkup(
-        req.id, req.from,
-        (n, code, data) => {
-          if (code === 'error') {
-            callback(new Error(data), null);
-          } else {
-            callback(null, {message: data});
-          }
-        });
+      controller.linkup(req.id, req.from, (n, code, data) => {
+        if (code === "error") {
+          callback(new Error(data), null);
+        } else {
+          callback(null, { message: data });
+        }
+      });
     },
     cutoff: function (call, callback) {
       controller.cutoff(call.request.id, (n, code, data) => {
-        if (code === 'error') {
+        if (code === "error") {
           callback(new Error(data), null);
         } else {
           callback(null, {});
@@ -77,7 +75,7 @@ function createGrpcInterface(controller, streamingEmitter) {
     listenToNotifications: function (call, callback) {
       const writeNotification = (notification) => {
         const progress = packNotification({
-          type: 'webrtc',
+          type: "webrtc",
           name: notification.name,
           data: notification.data,
         });
@@ -86,24 +84,24 @@ function createGrpcInterface(controller, streamingEmitter) {
       const endCall = () => {
         call.end();
       };
-      streamingEmitter.on('notification', writeNotification);
-      streamingEmitter.on('close', endCall);
-      call.on('cancelled', () => {
+      streamingEmitter.on("notification", writeNotification);
+      streamingEmitter.on("close", endCall);
+      call.on("cancelled", () => {
         call.end();
       });
-      call.on('close', () => {
-        streamingEmitter.off('notification', writeNotification);
-        streamingEmitter.off('close', endCall);
+      call.on("close", () => {
+        streamingEmitter.off("notification", writeNotification);
+        streamingEmitter.off("close", endCall);
       });
     },
     getInternalAddress: function (call, callback) {
       controller.getInternalAddress((n, code, data) => {
-          if (code === 'error') {
-            callback(new Error(data), null);
-          } else {
-            callback(null, code);
-          }
-        });
+        if (code === "error") {
+          callback(new Error(data), null);
+        } else {
+          callback(null, code);
+        }
+      });
     },
     processSignaling: function (call, callback) {
       const req = call.request;
@@ -111,32 +109,33 @@ function createGrpcInterface(controller, streamingEmitter) {
         req.id,
         req.signaling,
         (n, code, data) => {
-          if (code === 'error') {
+          if (code === "error") {
             callback(new Error(data), null);
           } else {
-            callback(null, {message: data});
+            callback(null, { message: data });
           }
-        });
+        }
+      );
     },
     createTransport: function (call, callback) {
       const req = call.request;
       controller.createTransport(req.id, req.controller, (n, code, data) => {
-          if (code === 'error') {
-            callback(new Error(data), null);
-          } else {
-            callback(null, {message: data});
-          }
-        });
+        if (code === "error") {
+          callback(new Error(data), null);
+        } else {
+          callback(null, { message: data });
+        }
+      });
     },
     destroyTransport: function (call, callback) {
       const req = call.request;
       controller.destroyTransport(req.id, (n, code, data) => {
-          if (code === 'error') {
-            callback(new Error(data), null);
-          } else {
-            callback(null, {message: data});
-          }
-        });
+        if (code === "error") {
+          callback(new Error(data), null);
+        } else {
+          callback(null, { message: data });
+        }
+      });
     },
     sessionControl: function (call, callback) {
       const req = call.request;
@@ -146,12 +145,13 @@ function createGrpcInterface(controller, streamingEmitter) {
         req.direction,
         req.action,
         (n, code, data) => {
-          if (code === 'error') {
+          if (code === "error") {
             callback(new Error(data), null);
           } else {
-            callback(null, {message: data});
+            callback(null, { message: data });
           }
-        });
+        }
+      );
     },
   };
 

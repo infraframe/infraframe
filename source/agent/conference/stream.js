@@ -7,7 +7,7 @@
  *   type: 'forward' | 'mixed',
  *   media: {
  *     tracks: {
-*       type: 'audio' | 'video',
+ *       type: 'audio' | 'video',
  *       status: 'active' | 'inactive' | undefined,
  *       source: 'mic' | 'camera' | screen-cast' | 'raw-file' | 'encoded-file' | 'streaming',
  *       format: object(VideoFormat) | object(AudioFormat),
@@ -49,7 +49,7 @@
  * }
  */
 
-'use strict';
+"use strict";
 
 const {
   isAudioFmtEqual,
@@ -57,7 +57,7 @@ const {
   isAudioFmtAcceptable,
   isVideoFmtAcceptable,
   calcResolution,
-} = require('./formatUtil');
+} = require("./formatUtil");
 
 const isResolutionEqual = (res1, res2) => {
   if (res1 && res2) {
@@ -66,13 +66,13 @@ const isResolutionEqual = (res1, res2) => {
   return false;
 };
 
-const log = require('./logger').logger.getLogger('Stream');
+const log = require("./logger").logger.getLogger("Stream");
 
 const DEFAULT_VIDEO_PARAS = {
   resolution: { width: 640, height: 480 },
   bitrate: 500,
   framerate: 30,
-  keyFrameInterval: 100
+  keyFrameInterval: 100,
 };
 
 /* Room configuration Object */
@@ -80,7 +80,6 @@ var config = {};
 
 /* Stream object in conference */
 class Stream {
-
   constructor(id, type, media, data, info) {
     this.id = id;
     this.type = type;
@@ -100,47 +99,43 @@ class Stream {
        *   }
        * }
        */
-      log.debug('Upgrade stream media:', JSON.stringify(media));
+      log.debug("Upgrade stream media:", JSON.stringify(media));
       const m = { tracks: [] };
       if (media.audio) {
-        const {codec, sampleRate, channelNum} = media.audio;
+        const { codec, sampleRate, channelNum } = media.audio;
         m.tracks.push({
-          type: 'audio',
-          format: {codec, sampleRate, channelNum},
-          status: (media.audio.status || 'active'),
-          source: media.audio.source
+          type: "audio",
+          format: { codec, sampleRate, channelNum },
+          status: media.audio.status || "active",
+          source: media.audio.source,
         });
       }
       if (media.video) {
-        const {codec, profile} = media.video;
-        const {
-          resolution,
-          framerate,
-          bitrate,
-          keyFrameInterval
-        } = media.video;
+        const { codec, profile } = media.video;
+        const { resolution, framerate, bitrate, keyFrameInterval } =
+          media.video;
         m.tracks.push({
-          type: 'video',
-          format: {codec, profile},
+          type: "video",
+          format: { codec, profile },
           parameters: {
             resolution,
             framerate,
             bitrate,
-            keyFrameInterval
+            keyFrameInterval,
           },
-          status: (media.video.status || 'active'),
-          source: media.video.source
+          status: media.video.status || "active",
+          source: media.video.source,
         });
       }
       return m;
     } else {
       // Filter valid tracks
-      media.tracks = media.tracks.filter(track => {
-        return (track.type && track.format);
+      media.tracks = media.tracks.filter((track) => {
+        return track.type && track.format;
       });
       // Set default status
-      media.tracks.forEach(track => {
-        track.status = 'active';
+      media.tracks.forEach((track) => {
+        track.status = "active";
       });
     }
     return media;
@@ -148,33 +143,42 @@ class Stream {
 
   _addTrackOptional(track) {
     // Add optional
-    log.debug('_addTrackOptional:', JSON.stringify(track));
+    log.debug("_addTrackOptional:", JSON.stringify(track));
     const mediaOut = config.mediaOut;
     track.optional = {};
-    if (track.type === 'audio') {
+    if (track.type === "audio") {
       if (config.transcoding.audio) {
-        track.optional.format = mediaOut.audio.filter(fmt =>
-          !isAudioFmtEqual(fmt, track.format));
+        track.optional.format = mediaOut.audio.filter(
+          (fmt) => !isAudioFmtEqual(fmt, track.format)
+        );
       }
-    } else if (track.type === 'video') {
+    } else if (track.type === "video") {
       if (config.transcoding.video.format) {
-        track.optional.format = mediaOut.video.format.filter(fmt =>
-          !isVideoFmtEqual(fmt, track.format));
+        track.optional.format = mediaOut.video.format.filter(
+          (fmt) => !isVideoFmtEqual(fmt, track.format)
+        );
       }
       const trackParameters = track.parameters || {};
-      const baseParameters = Object.assign({}, DEFAULT_VIDEO_PARAS, trackParameters);
-      log.debug('baseParameters:', JSON.stringify(baseParameters));
+      const baseParameters = Object.assign(
+        {},
+        DEFAULT_VIDEO_PARAS,
+        trackParameters
+      );
+      log.debug("baseParameters:", JSON.stringify(baseParameters));
 
       if (config.transcoding.video.parameters.resolution) {
         track.optional.parameters = track.optional.parameters || {};
         track.optional.parameters.resolution =
           mediaOut.video.parameters.resolution
-          .map(x => calcResolution(x, baseParameters.resolution))
-          .filter((reso, pos, self) => (
-            reso.width < baseParameters.resolution.width
-            && reso.height < baseParameters.resolution.height)
-            && (self.findIndex(r =>
-              r.width === reso.width && r.height === reso.height) === pos))
+            .map((x) => calcResolution(x, baseParameters.resolution))
+            .filter(
+              (reso, pos, self) =>
+                reso.width < baseParameters.resolution.width &&
+                reso.height < baseParameters.resolution.height &&
+                self.findIndex(
+                  (r) => r.width === reso.width && r.height === reso.height
+                ) === pos
+            );
       }
       if (config.transcoding.video.parameters.bitrate) {
         track.optional.parameters = track.optional.parameters || {};
@@ -183,13 +187,14 @@ class Stream {
       if (config.transcoding.video.parameters.framerate) {
         track.optional.parameters = track.optional.parameters || {};
         track.optional.parameters.framerate =
-          mediaOut.video.parameters.framerate
-          .filter(x => (x < baseParameters.framerate));
+          mediaOut.video.parameters.framerate.filter(
+            (x) => x < baseParameters.framerate
+          );
       }
       if (config.transcoding.video.parameters.keyFrameInterval) {
         track.optional.parameters = track.optional.parameters || {};
         track.optional.parameters.keyFrameInterval =
-          mediaOut.video.parameters.keyFrameInterval
+          mediaOut.video.parameters.keyFrameInterval;
       }
     }
     return track;
@@ -197,7 +202,7 @@ class Stream {
 
   _constructMedia(media) {
     media = this._upgradeMediaIfNeeded(media);
-    media.tracks = media.tracks.map(t => {
+    media.tracks = media.tracks.map((t) => {
       const track = this._addTrackOptional(t);
       return track;
     });
@@ -217,7 +222,7 @@ class Stream {
       type: this.type,
       media: {
         // Pick track properties
-        tracks: this.media.tracks.map(track => ({
+        tracks: this.media.tracks.map((track) => ({
           id: track.id,
           type: track.type,
           source: track.source,
@@ -227,35 +232,34 @@ class Stream {
           status: track.status,
           mid: track.mid,
           rid: track.rid,
-        }))
+        })),
       },
       data: this.data,
-      info: (this.type === 'mixed') ? this.info : forwardInfo,
+      info: this.type === "mixed" ? this.info : forwardInfo,
     };
     return portalFormat;
   }
 }
 
 class ForwardStream extends Stream {
-
   constructor(id, media, data, info, locality) {
     info.inViews = [];
-    super(id, 'forward', media, data, info);
+    super(id, "forward", media, data, info);
     this.locality = locality;
   }
 
   checkMediaError() {
     const mediaIn = config.mediaIn;
-    let err = '';
+    let err = "";
     for (let track of this.media.tracks) {
-      if (track.type === 'audio') {
+      if (track.type === "audio") {
         if (!isAudioFmtAcceptable(track.format, mediaIn.audio)) {
-          err = 'Audio format unacceptable';
+          err = "Audio format unacceptable";
           break;
         }
-      } else if (track.type === 'video') {
+      } else if (track.type === "video") {
         if (!isVideoFmtAcceptable(track.format, mediaIn.video)) {
-          err = 'Video format unacceptable';
+          err = "Video format unacceptable";
           break;
         }
       } else {
@@ -263,15 +267,15 @@ class ForwardStream extends Stream {
       }
     }
     if (!this.data && this.media.tracks.length === 0) {
-      err = 'No valid tracks in stream';
+      err = "No valid tracks in stream";
     }
     return err;
   }
 
   // To arguments for RoomController.publish [{owner, id, locality, media, type}]
   toRoomCtrlPubArgs() {
-    if (this.info.type === 'webrtc') {
-      return this.media.tracks.map(track => {
+    if (this.info.type === "webrtc") {
+      return this.media.tracks.map((track) => {
         const media = { origin: this.info.origin };
         media[track.type] = Object.assign({}, track.format, track.parameters);
         return {
@@ -279,24 +283,26 @@ class ForwardStream extends Stream {
           id: track.id, // Use track ID for webrtc publication
           locality: this.locality,
           type: this.info.type,
-          media
+          media,
         };
       });
     } else {
       const media = { origin: this.info.origin };
-      this.media.tracks.forEach(track => {
+      this.media.tracks.forEach((track) => {
         if (!media[track.type]) {
           media[track.type] = Object.assign({}, track.format, track.parameters);
         }
       });
-      return [{
-        owner: this.info.owner,
-        id: this.id,
-        locality: this.locality,
-        type: this.info.type,
-        media,
-        data: this.data
-      }];
+      return [
+        {
+          owner: this.info.owner,
+          id: this.id,
+          locality: this.locality,
+          type: this.info.type,
+          media,
+          data: this.data,
+        },
+      ];
     }
   }
 
@@ -304,18 +310,22 @@ class ForwardStream extends Stream {
     let updateTrack;
     let updateParameters;
     if (info.id) {
-      updateTrack = this.media.tracks.find(t => t.id === info.id);
+      updateTrack = this.media.tracks.find((t) => t.id === info.id);
       updateParameters = info.video ? info.video.parameters : null;
     } else {
       // Legacy update
-      updateTrack = this.media.tracks.find(t => t.type === 'video');
+      updateTrack = this.media.tracks.find((t) => t.type === "video");
       updateParameters = info.video ? info.video.parameters : null;
     }
 
     if (updateParameters && updateParameters.resolution) {
-      if (!updateTrack.parameters ||
-          !isResolutionEqual(updateTrack.parameters.resolution,
-            updateParameters.resolution)) {
+      if (
+        !updateTrack.parameters ||
+        !isResolutionEqual(
+          updateTrack.parameters.resolution,
+          updateParameters.resolution
+        )
+      ) {
         updateTrack.parameters = updateTrack.parameters || {};
         updateTrack.parameters.resolution = updateParameters.resolution;
         // Update optional
@@ -328,10 +338,9 @@ class ForwardStream extends Stream {
 }
 
 class MixedStream extends Stream {
-
   constructor(id, viewLabel) {
-    const view = config.views.find(v => v.label === viewLabel);
-    const info = {label: viewLabel, activeInput: 'unknown', layout: []};
+    const view = config.views.find((v) => v.label === viewLabel);
+    const info = { label: viewLabel, activeInput: "unknown", layout: [] };
     const media = {};
     if (view.audio) {
       media.audio = Object.assign({}, view.audio.format);
@@ -339,31 +348,29 @@ class MixedStream extends Stream {
     if (view.video) {
       media.video = Object.assign({}, view.video.format, view.video.parameters);
     }
-    super(id, 'mixed', media, null, info);
+    super(id, "mixed", media, null, info);
   }
 }
 
 class SelectedStream extends ForwardStream {
-
   constructor(id) {
     const media = {
-      tracks: [{type:'audio', format: {codec: 'unknown'}}],
+      tracks: [{ type: "audio", format: { codec: "unknown" } }],
     };
     const info = {
-      owner: 'unknown',
-      activeInput: 'unknown',
-      type: 'selecting',
+      owner: "unknown",
+      activeInput: "unknown",
+      type: "selecting",
     };
     super(id, media, null, info, null);
   }
 }
 
 class CascadedStream extends ForwardStream {
-
   constructor(id, media, data, info, locality, cluster, cascading, bridge) {
     super(id, media, data, info, locality);
     this.cascading = cascading;
-    this.cluster =  cluster;
+    this.cluster = cluster;
     this.bridge = bridge;
   }
 }

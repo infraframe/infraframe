@@ -16,37 +16,37 @@
  * Wrapper class of owt_base::MediaFrameMulticaster
  */
 class MediaFrameMulticaster : public FrameDestination {
- public:
-  static void Init(v8::Local<v8::Object>, v8::Local<v8::Object>);
-  owt_base::MediaFrameMulticaster* me;
+public:
+    static void Init(v8::Local<v8::Object>, v8::Local<v8::Object>);
+    owt_base::MediaFrameMulticaster* me;
 
- private:
-  MediaFrameMulticaster();
-  ~MediaFrameMulticaster();
-  static v8::Persistent<v8::Function> constructor;
+private:
+    MediaFrameMulticaster();
+    ~MediaFrameMulticaster();
+    static v8::Persistent<v8::Function> constructor;
 
-  static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void close(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void close(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  static void addDestination(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void removeDestination(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void addDestination(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void removeDestination(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  static void source(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void source(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
 class MulticasterSource : public FrameSource {
- public:
-  static void Init(v8::Local<v8::Object>, v8::Local<v8::Object>);
-  owt_base::MediaFrameMulticaster* me;
+public:
+    static void Init(v8::Local<v8::Object>, v8::Local<v8::Object>);
+    owt_base::MediaFrameMulticaster* me;
 
- private:
-  MulticasterSource();
-  ~MulticasterSource();
-  static v8::Persistent<v8::Function> constructor;
+private:
+    MulticasterSource();
+    ~MulticasterSource();
+    static v8::Persistent<v8::Function> constructor;
 
-  static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  friend class MediaFrameMulticaster;
+    friend class MediaFrameMulticaster;
 };
 
 #endif

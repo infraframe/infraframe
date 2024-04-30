@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+#include "RawTransport.h"
 #include <fstream>
 #include <netinet/in.h>
-#include "RawTransport.h"
 
 namespace owt_base {
 
-using boost::asio::ip::udp;
 using boost::asio::ip::tcp;
+using boost::asio::ip::udp;
 
-DEFINE_TEMPLATE_LOGGER(template<Protocol prot>, RawTransport<prot>, "owt.RawTransport");
+DEFINE_TEMPLATE_LOGGER(template <Protocol prot>, RawTransport<prot>, "owt.RawTransport");
 
 static constexpr const uint32_t kMaxTicketLen = 64;
 static constexpr const char kServerCrt[] = "cert/server.crt";
@@ -20,14 +20,14 @@ static constexpr const char kDHParams[] = "cert/dh2048.pem";
 
 static std::string gServerPass = "";
 
-template<Protocol prot>
+template <Protocol prot>
 void RawTransport<prot>::setPassphrase(std::string p)
 {
     std::fill(gServerPass.begin(), gServerPass.end(), 0);
     gServerPass = p;
 }
 
-template<Protocol prot>
+template <Protocol prot>
 RawTransport<prot>::RawTransport(RawTransportListener* listener, size_t initialBufferSize, bool tag)
     : m_isClosing(false)
     , m_tag(tag)
@@ -41,13 +41,13 @@ RawTransport<prot>::RawTransport(RawTransportListener* listener, size_t initialB
 {
 }
 
-template<Protocol prot>
+template <Protocol prot>
 RawTransport<prot>::~RawTransport()
 {
     close();
 }
 
-template<Protocol prot>
+template <Protocol prot>
 void RawTransport<prot>::close()
 {
     ELOG_DEBUG("Closing...");
@@ -84,7 +84,7 @@ void RawTransport<prot>::close()
     ELOG_DEBUG("Closed");
 }
 
-template<Protocol prot>
+template <Protocol prot>
 bool RawTransport<prot>::initTicket(const std::string& ticket)
 {
     ELOG_DEBUG("initTicket");
@@ -96,7 +96,7 @@ bool RawTransport<prot>::initTicket(const std::string& ticket)
     return true;
 }
 
-template<Protocol prot>
+template <Protocol prot>
 void RawTransport<prot>::sendTicket()
 {
     if (!m_verified) {
@@ -121,7 +121,7 @@ void RawTransport<prot>::sendTicket()
     }
 }
 
-template<Protocol prot>
+template <Protocol prot>
 void RawTransport<prot>::receiveTicket(char* data, int len)
 {
     ELOG_DEBUG("Receive ticket");
@@ -149,10 +149,10 @@ void RawTransport<prot>::receiveTicket(char* data, int len)
     }
 }
 
-template<Protocol prot>
+template <Protocol prot>
 void RawTransport<prot>::createConnection(const std::string& ip, uint32_t port)
 {
-    if (std::fstream{kServerCrt}) {
+    if (std::fstream { kServerCrt }) {
         m_ssl = true;
     }
     if (m_connectTicket.empty()) {
@@ -218,7 +218,7 @@ void RawTransport<prot>::createConnection(const std::string& ip, uint32_t port)
     }
 }
 
-template<Protocol prot>
+template <Protocol prot>
 void RawTransport<prot>::connectHandler(const boost::system::error_code& ec)
 {
     if (m_isClosing)
@@ -260,7 +260,7 @@ void RawTransport<prot>::connectHandler(const boost::system::error_code& ec)
     }
 }
 
-template<Protocol prot>
+template <Protocol prot>
 void RawTransport<prot>::acceptHandler(const boost::system::error_code& ec)
 {
     if (m_isClosing)
@@ -300,7 +300,7 @@ void RawTransport<prot>::acceptHandler(const boost::system::error_code& ec)
     }
 }
 
-template<Protocol prot>
+template <Protocol prot>
 void RawTransport<prot>::handshakeHandler(const boost::system::error_code& ec)
 {
     if (!ec) {
@@ -317,13 +317,11 @@ void RawTransport<prot>::handshakeHandler(const boost::system::error_code& ec)
     }
 }
 
-template<Protocol prot>
+template <Protocol prot>
 void RawTransport<prot>::listenTo(uint32_t port)
 {
     m_isListener = true;
-    if (std::fstream{kServerCrt} &&
-        std::fstream{kServerKey} &&
-        std::fstream{kDHParams}) {
+    if (std::fstream { kServerCrt } && std::fstream { kServerKey } && std::fstream { kDHParams }) {
         m_ssl = true;
     }
     if (m_connectTicket.empty()) {
@@ -382,13 +380,11 @@ void RawTransport<prot>::listenTo(uint32_t port)
     }
 }
 
-template<Protocol prot>
+template <Protocol prot>
 void RawTransport<prot>::listenTo(uint32_t minPort, uint32_t maxPort)
 {
     m_isListener = true;
-    if (std::fstream{kServerCrt} &&
-        std::fstream{kServerKey} &&
-        std::fstream{kDHParams}) {
+    if (std::fstream { kServerCrt } && std::fstream { kServerKey } && std::fstream { kDHParams }) {
         m_ssl = true;
     }
     if (m_connectTicket.empty()) {
@@ -433,8 +429,8 @@ void RawTransport<prot>::listenTo(uint32_t minPort, uint32_t maxPort)
             if (!ec) {
                 ELOG_DEBUG("TCP transport listening on %s:%d(range:%d ~ %d)", m_socket.tcp.acceptor->local_endpoint().address().to_string().c_str(), m_socket.tcp.acceptor->local_endpoint().port(), minPort, maxPort);
                 m_socket.tcp.acceptor->async_accept(*(m_socket.tcp.socket.get()),
-                boost::bind(&RawTransport::acceptHandler, this,
-                    boost::asio::placeholders::error));
+                    boost::bind(&RawTransport::acceptHandler, this,
+                        boost::asio::placeholders::error));
             } else {
                 ELOG_ERROR("Error(%s) in listening on port range %d ~ %d, last try on %d", ec.message().c_str(), minPort, maxPort, m_socket.tcp.acceptor->local_endpoint().port());
             }
@@ -456,7 +452,7 @@ void RawTransport<prot>::listenTo(uint32_t minPort, uint32_t maxPort)
     }
 }
 
-template<Protocol prot>
+template <Protocol prot>
 unsigned short RawTransport<prot>::getListeningPort()
 {
     unsigned short port = 0;
@@ -482,7 +478,7 @@ unsigned short RawTransport<prot>::getListeningPort()
 static const int BUFFER_ALIGNMENT = 16;
 static const double BUFFER_EXPANSION_MULTIPLIER = 1.3;
 
-template<Protocol prot>
+template <Protocol prot>
 void RawTransport<prot>::readHandler(const boost::system::error_code& ec, std::size_t bytes)
 {
     if (m_isClosing)
@@ -554,8 +550,8 @@ void RawTransport<prot>::readHandler(const boost::system::error_code& ec, std::s
                 // FIXME: Make UDP work with large packets.
                 ELOG_WARN("Packet incomplete. with payloadlen:%u, bytes:%zu", payloadlen, bytes);
             } else {
-                unsigned char *p = reinterpret_cast<unsigned char*>(&(m_receiveData.buffer.get())[4]);
-                ELOG_DEBUG("readHandler(%zu): [%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x...%x,%x,%x,%x]", bytes, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[payloadlen-4], p[payloadlen-3], p[payloadlen-2], p[payloadlen-1]);
+                unsigned char* p = reinterpret_cast<unsigned char*>(&(m_receiveData.buffer.get())[4]);
+                ELOG_DEBUG("readHandler(%zu): [%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x...%x,%x,%x,%x]", bytes, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[payloadlen - 4], p[payloadlen - 3], p[payloadlen - 2], p[payloadlen - 1]);
                 if (!m_verified && m_isListener) {
                     receiveTicket(m_receiveData.buffer.get() + 4, payloadlen);
                 } else {
@@ -574,7 +570,7 @@ void RawTransport<prot>::readHandler(const boost::system::error_code& ec, std::s
     }
 }
 
-template<Protocol prot>
+template <Protocol prot>
 void RawTransport<prot>::readPacketHandler(const boost::system::error_code& ec, std::size_t bytes)
 {
     if (m_isClosing)
@@ -625,7 +621,7 @@ void RawTransport<prot>::readPacketHandler(const boost::system::error_code& ec, 
     }
 }
 
-template<Protocol prot>
+template <Protocol prot>
 void RawTransport<prot>::doSend()
 {
     if (m_isClosing)
@@ -673,7 +669,7 @@ void RawTransport<prot>::doSend()
     }
 }
 
-template<Protocol prot>
+template <Protocol prot>
 void RawTransport<prot>::writeHandler(const boost::system::error_code& ec, std::size_t bytes)
 {
     if (m_isClosing)
@@ -693,7 +689,7 @@ void RawTransport<prot>::writeHandler(const boost::system::error_code& ec, std::
         doSend();
 }
 
-template<Protocol prot>
+template <Protocol prot>
 void RawTransport<prot>::dumpTcpSSLv3Header(const char* buf, int len)
 {
     if (len >= 5) {
@@ -726,7 +722,7 @@ void RawTransport<prot>::dumpTcpSSLv3Header(const char* buf, int len)
     }
 }
 
-template<Protocol prot>
+template <Protocol prot>
 void RawTransport<prot>::sendData(const char* buf, int len)
 {
     if (!m_verified) {
@@ -751,7 +747,7 @@ void RawTransport<prot>::sendData(const char* buf, int len)
         doSend();
 }
 
-template<Protocol prot>
+template <Protocol prot>
 void RawTransport<prot>::sendData(const char* header, int headerLength, const char* payload, int payloadLength)
 {
     if (!m_verified) {
@@ -778,7 +774,7 @@ void RawTransport<prot>::sendData(const char* header, int headerLength, const ch
         doSend();
 }
 
-template<Protocol prot>
+template <Protocol prot>
 void RawTransport<prot>::receiveData()
 {
     if (!m_receiveData.buffer)

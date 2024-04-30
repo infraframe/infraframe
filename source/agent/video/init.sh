@@ -4,7 +4,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 this=$(dirname "$0")
-this=$(cd "${this}"; pwd)
+this=$(
+  cd "${this}"
+  pwd
+)
 
 usage() {
   echo
@@ -31,13 +34,13 @@ ENABLE_HARDWARE=false
 shopt -s extglob
 while [[ $# -gt 0 ]]; do
   case $1 in
-    *(-)hardware )
-      ENABLE_HARDWARE=true
-      ;;
-    *(-)help )
-      usage
-      exit 0
-      ;;
+  *(-)hardware)
+    ENABLE_HARDWARE=true
+    ;;
+  *(-)help)
+    usage
+    exit 0
+    ;;
   esac
   shift
 done
@@ -50,4 +53,3 @@ else
   echo -e "\x1b[36mHardware acceleration disbled\x1b[0m"
   sed -i 's/^hardwareAccelerated = true/hardwareAccelerated = false/' ${this}/agent.toml
 fi
-

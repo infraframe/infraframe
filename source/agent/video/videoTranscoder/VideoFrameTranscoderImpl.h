@@ -5,13 +5,13 @@
 #ifndef VideoFrameTranscoderImpl_h
 #define VideoFrameTranscoderImpl_h
 
+#include <MediaFramePipeline.h>
+#include <MediaUtilities.h>
+#include <VideoFrameTranscoder.h>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <map>
-#include <MediaUtilities.h>
-#include <MediaFramePipeline.h>
-#include <VideoFrameTranscoder.h>
 
 #include <VCMFrameDecoder.h>
 #include <VCMFrameEncoder.h>
@@ -44,24 +44,24 @@ public:
 
 #ifndef BUILD_FOR_ANALYTICS
     bool addOutput(int output,
-            owt_base::FrameFormat,
-            const owt_base::VideoCodecProfile profile,
-            const owt_base::VideoSize&,
-            const unsigned int framerateFPS,
-            const unsigned int bitrateKbps,
-            const unsigned int keyFrameIntervalSeconds,
-            owt_base::FrameDestination*);
+        owt_base::FrameFormat,
+        const owt_base::VideoCodecProfile profile,
+        const owt_base::VideoSize&,
+        const unsigned int framerateFPS,
+        const unsigned int bitrateKbps,
+        const unsigned int keyFrameIntervalSeconds,
+        owt_base::FrameDestination*);
 #else
     bool addOutput(int output,
-            owt_base::FrameFormat,
-            const owt_base::VideoCodecProfile profile,
-            const owt_base::VideoSize&,
-            const unsigned int framerateFPS,
-            const unsigned int bitrateKbps,
-            const unsigned int keyFrameIntervalSeconds,
-            const std::string& algorithm,
-            const std::string& pluginName,
-            owt_base::FrameDestination*);
+        owt_base::FrameFormat,
+        const owt_base::VideoCodecProfile profile,
+        const owt_base::VideoSize&,
+        const unsigned int framerateFPS,
+        const unsigned int bitrateKbps,
+        const unsigned int keyFrameIntervalSeconds,
+        const std::string& algorithm,
+        const std::string& pluginName,
+        owt_base::FrameDestination*);
 #endif
     void removeOutput(int output);
 
@@ -71,7 +71,10 @@ public:
     void clearText();
 #endif
 
-    void onFrame(const owt_base::Frame& frame) {deliverFrame(frame);}
+    void onFrame(const owt_base::Frame& frame)
+    {
+        deliverFrame(frame);
+    }
 
 private:
     struct Input {
@@ -156,7 +159,7 @@ inline bool VideoFrameTranscoderImpl::setInput(int input, owt_base::FrameFormat 
         decoder->addVideoDestination(this);
         source->addVideoDestination(decoder.get());
         boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
-        Input in{.source = source, .decoder = decoder};
+        Input in { .source = source, .decoder = decoder };
         m_inputs[input] = in;
         return true;
     }
@@ -177,24 +180,24 @@ inline void VideoFrameTranscoderImpl::unsetInput(int input)
 
 #ifndef BUILD_FOR_ANALYTICS
 inline bool VideoFrameTranscoderImpl::addOutput(int output,
-                                           owt_base::FrameFormat format,
-                                           const owt_base::VideoCodecProfile profile,
-                                           const owt_base::VideoSize& rootSize,
-                                           const unsigned int framerateFPS,
-                                           const unsigned int bitrateKbps,
-                                           const unsigned int keyFrameIntervalSeconds,
-                                           owt_base::FrameDestination* dest)
+    owt_base::FrameFormat format,
+    const owt_base::VideoCodecProfile profile,
+    const owt_base::VideoSize& rootSize,
+    const unsigned int framerateFPS,
+    const unsigned int bitrateKbps,
+    const unsigned int keyFrameIntervalSeconds,
+    owt_base::FrameDestination* dest)
 #else
 inline bool VideoFrameTranscoderImpl::addOutput(int output,
-                                           owt_base::FrameFormat format,
-                                           const owt_base::VideoCodecProfile profile,
-                                           const owt_base::VideoSize& rootSize,
-                                           const unsigned int framerateFPS,
-                                           const unsigned int bitrateKbps,
-                                           const unsigned int keyFrameIntervalSeconds,
-                                           const std::string& algorithm,
-                                           const std::string& pluginName,
-                                           owt_base::FrameDestination* dest)
+    owt_base::FrameFormat format,
+    const owt_base::VideoCodecProfile profile,
+    const owt_base::VideoSize& rootSize,
+    const unsigned int framerateFPS,
+    const unsigned int bitrateKbps,
+    const unsigned int keyFrameIntervalSeconds,
+    const std::string& algorithm,
+    const std::string& pluginName,
+    owt_base::FrameDestination* dest)
 #endif
 {
     boost::shared_ptr<owt_base::VideoFrameEncoder> encoder;
@@ -248,9 +251,9 @@ inline bool VideoFrameTranscoderImpl::addOutput(int output,
 
     boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
 #ifdef BUILD_FOR_ANALYTICS
-    Output out{.processer = processer, .analyzer = analyzer, .encoder = encoder, .streamId = streamId};
+    Output out { .processer = processer, .analyzer = analyzer, .encoder = encoder, .streamId = streamId };
 #else
-    Output out{.processer = processer, .encoder = encoder, .streamId = streamId};
+    Output out { .processer = processer, .encoder = encoder, .streamId = streamId };
 #endif
     m_outputs[output] = out;
     return true;

@@ -21,31 +21,31 @@ MediaFileOut::~MediaFileOut()
 bool MediaFileOut::isAudioFormatSupported(FrameFormat format)
 {
     switch (format) {
-        case FRAME_FORMAT_PCMU:
-        case FRAME_FORMAT_PCMA:
-        case FRAME_FORMAT_AAC:
-        case FRAME_FORMAT_AAC_48000_2:
-        case FRAME_FORMAT_OPUS:
-            return true;
-        default:
-            return false;
+    case FRAME_FORMAT_PCMU:
+    case FRAME_FORMAT_PCMA:
+    case FRAME_FORMAT_AAC:
+    case FRAME_FORMAT_AAC_48000_2:
+    case FRAME_FORMAT_OPUS:
+        return true;
+    default:
+        return false;
     }
 }
 
 bool MediaFileOut::isVideoFormatSupported(FrameFormat format)
 {
     switch (format) {
-        case FRAME_FORMAT_VP8:
-        case FRAME_FORMAT_VP9:
-        case FRAME_FORMAT_H264:
-        case FRAME_FORMAT_H265:
-            return true;
-        default:
-            return false;
+    case FRAME_FORMAT_VP8:
+    case FRAME_FORMAT_VP9:
+    case FRAME_FORMAT_H264:
+    case FRAME_FORMAT_H265:
+        return true;
+    default:
+        return false;
     }
 }
 
-const char *MediaFileOut::getFormatName(std::string& url)
+const char* MediaFileOut::getFormatName(std::string& url)
 {
     size_t pos;
 
@@ -61,7 +61,7 @@ const char *MediaFileOut::getFormatName(std::string& url)
     return NULL;
 }
 
-bool MediaFileOut::getHeaderOpt(std::string& url, AVDictionary **options)
+bool MediaFileOut::getHeaderOpt(std::string& url, AVDictionary** options)
 {
     return true;
 }
@@ -71,7 +71,7 @@ void MediaFileOut::onVideoSourceChanged()
     ELOG_DEBUG("onVideoSourceChanged");
 
     setVideoSourceChanged();
-    deliverFeedbackMsg(FeedbackMsg{.type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME});
+    deliverFeedbackMsg(FeedbackMsg { .type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME });
 }
 
 } // namespace owt_base

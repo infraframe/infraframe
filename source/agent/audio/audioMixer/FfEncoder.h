@@ -12,17 +12,17 @@
 
 #include <logger.h>
 
-#include "MediaFramePipeline.h"
 #include "AudioEncoder.h"
+#include "MediaFramePipeline.h"
 
 extern "C" {
-#include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libavutil/audio_fifo.h>
 #include <libavutil/avstring.h>
 #include <libavutil/channel_layout.h>
 #include <libavutil/opt.h>
 #include <libavutil/time.h>
-#include <libavutil/audio_fifo.h>
 }
 
 namespace mcu {
@@ -37,14 +37,14 @@ public:
     ~FfEncoder();
 
     bool init() override;
-    bool addAudioFrame(const AudioFrame *audioFrame) override;
+    bool addAudioFrame(const AudioFrame* audioFrame) override;
 
 protected:
     bool initEncoder(const FrameFormat format);
     bool addToFifo(const AudioFrame* audioFrame);
     void encode();
-    void sendOut(AVPacket &pkt);
-    char *ff_err2str(int errRet);
+    void sendOut(AVPacket& pkt);
+    char* ff_err2str(int errRet);
 
 private:
     FrameFormat m_format;

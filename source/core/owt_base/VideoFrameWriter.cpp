@@ -31,7 +31,7 @@ VideoFrameWriter::~VideoFrameWriter()
     }
 }
 
-FILE *VideoFrameWriter::getVideoFp(webrtc::VideoFrameBuffer *i420Buffer)
+FILE* VideoFrameWriter::getVideoFp(webrtc::VideoFrameBuffer* i420Buffer)
 {
     if (m_width != i420Buffer->width() || m_height != i420Buffer->height()) {
         if (m_fp) {
@@ -58,7 +58,7 @@ FILE *VideoFrameWriter::getVideoFp(webrtc::VideoFrameBuffer *i420Buffer)
     return m_fp;
 }
 
-void VideoFrameWriter::write(webrtc::VideoFrameBuffer *videoFrameBuffer)
+void VideoFrameWriter::write(webrtc::VideoFrameBuffer* videoFrameBuffer)
 {
     if (!videoFrameBuffer) {
         ELOG_ERROR_T("NULL pointer");
@@ -70,26 +70,20 @@ void VideoFrameWriter::write(webrtc::VideoFrameBuffer *videoFrameBuffer)
         return;
     }
 
-    FILE *fp = getVideoFp(videoFrameBuffer);
+    FILE* fp = getVideoFp(videoFrameBuffer);
     if (!fp) {
         ELOG_ERROR_T("NULL fp");
         return;
     }
 
     if (videoFrameBuffer->StrideY() != videoFrameBuffer->width()
-            || videoFrameBuffer->StrideU() * 2!= videoFrameBuffer->width()
-            || videoFrameBuffer->StrideV() * 2!= videoFrameBuffer->width()
-            ) {
-        ELOG_ERROR_T("Invalid strideY(%d), strideU(%d), strideV(%d), width(%d)\n"
-                , videoFrameBuffer->StrideY()
-                , videoFrameBuffer->StrideU()
-                , videoFrameBuffer->StrideV()
-                , videoFrameBuffer->width()
-              );
+        || videoFrameBuffer->StrideU() * 2 != videoFrameBuffer->width()
+        || videoFrameBuffer->StrideV() * 2 != videoFrameBuffer->width()) {
+        ELOG_ERROR_T("Invalid strideY(%d), strideU(%d), strideV(%d), width(%d)\n", videoFrameBuffer->StrideY(), videoFrameBuffer->StrideU(), videoFrameBuffer->StrideV(), videoFrameBuffer->width());
         return;
     }
 
-    fwrite(videoFrameBuffer->DataY(), 1, videoFrameBuffer->height() * videoFrameBuffer->StrideY() , fp);
+    fwrite(videoFrameBuffer->DataY(), 1, videoFrameBuffer->height() * videoFrameBuffer->StrideY(), fp);
     fwrite(videoFrameBuffer->DataU(), 1, videoFrameBuffer->height() * videoFrameBuffer->StrideU() / 2, fp);
     fwrite(videoFrameBuffer->DataV(), 1, videoFrameBuffer->height() * videoFrameBuffer->StrideV() / 2, fp);
 }
@@ -97,37 +91,33 @@ void VideoFrameWriter::write(webrtc::VideoFrameBuffer *videoFrameBuffer)
 void VideoFrameWriter::write(const Frame& frame)
 {
     switch (frame.format) {
-        case FRAME_FORMAT_I420:
-            {
-                VideoFrame *inputFrame = reinterpret_cast<VideoFrame*>(frame.payload);
-                rtc::scoped_refptr<webrtc::VideoFrameBuffer> inputBuffer = inputFrame->video_frame_buffer();
+    case FRAME_FORMAT_I420: {
+        VideoFrame* inputFrame = reinterpret_cast<VideoFrame*>(frame.payload);
+        rtc::scoped_refptr<webrtc::VideoFrameBuffer> inputBuffer = inputFrame->video_frame_buffer();
 
-                write(inputBuffer);
-            }
-            break;
+        write(inputBuffer);
+    } break;
 
 #ifdef ENABLE_MSDK
-        case FRAME_FORMAT_MSDK:
-            {
-                MsdkFrameHolder *holder = (MsdkFrameHolder *)frame.payload;
-                boost::shared_ptr<MsdkFrame> msdkFrame = holder->frame;
-                rtc::scoped_refptr<webrtc::I420Buffer> inputBuffer;
+    case FRAME_FORMAT_MSDK: {
+        MsdkFrameHolder* holder = (MsdkFrameHolder*)frame.payload;
+        boost::shared_ptr<MsdkFrame> msdkFrame = holder->frame;
+        rtc::scoped_refptr<webrtc::I420Buffer> inputBuffer;
 
-                if (!m_bufferManager)
-                    m_bufferManager.reset(new I420BufferManager(1));
+        if (!m_bufferManager)
+            m_bufferManager.reset(new I420BufferManager(1));
 
-                inputBuffer = m_bufferManager->getFreeBuffer(msdkFrame->getVideoWidth(), msdkFrame->getVideoHeight());
+        inputBuffer = m_bufferManager->getFreeBuffer(msdkFrame->getVideoWidth(), msdkFrame->getVideoHeight());
 
-                msdkFrame->convertTo(inputBuffer);
+        msdkFrame->convertTo(inputBuffer);
 
-                write(inputBuffer);
-            }
-            break;
+        write(inputBuffer);
+    } break;
 #endif
 
-        default:
-            assert(false);
-            return;
+    default:
+        assert(false);
+        return;
     }
 }
 

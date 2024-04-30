@@ -26,36 +26,40 @@
 
 // This file is borrowed from lynckia/licode with some modifications.
 
-'use strict';
+"use strict";
 
-var dataAccess = require('../../data_access');
-var crypto = require('crypto');
-var requestHandler = require('../../requestHandler');
-var logger = require('../../logger').logger;
-var e = require('../../errors');
+var dataAccess = require("../../data_access");
+var crypto = require("crypto");
+var requestHandler = require("../../requestHandler");
+var logger = require("../../logger").logger;
+var e = require("../../errors");
 
 // Logger
-var log = logger.getLogger('TokensResource');
+var log = logger.getLogger("TokensResource");
 
 var getTokenString = function (id, token) {
-    return dataAccess.token.key().then(function(serverKey) {
-        var toSign = id + ',' + token.host + ',' + token.webTransportUrl,
-            hex = crypto.createHmac('sha256', serverKey).update(toSign).digest('hex'),
-            signed = Buffer.from(hex).toString('base64'),
+  return dataAccess.token
+    .key()
+    .then(function (serverKey) {
+      var toSign = id + "," + token.host + "," + token.webTransportUrl,
+        hex = crypto
+          .createHmac("sha256", serverKey)
+          .update(toSign)
+          .digest("hex"),
+        signed = Buffer.from(hex).toString("base64"),
+        tokenJ = {
+          tokenId: id,
+          host: token.host,
+          secure: token.secure,
+          webTransportUrl: token.webTransportUrl,
+          signature: signed,
+        },
+        tokenS = Buffer.from(JSON.stringify(tokenJ)).toString("base64");
 
-            tokenJ = {
-                tokenId: id,
-                host: token.host,
-                secure: token.secure,
-                webTransportUrl: token.webTransportUrl,
-                signature: signed
-            },
-            tokenS = Buffer.from(JSON.stringify(tokenJ)).toString('base64');
-
-        return tokenS;
-
-    }).catch(function(err) {
-        log.error('Get serverKey error:', err);
+      return tokenS;
+    })
+    .catch(function (err) {
+      log.error("Get serverKey error:", err);
     });
 };
 
@@ -64,125 +68,131 @@ var getTokenString = function (id, token) {
  * The format of a token is:
  * {tokenId: id, host: erizoController host, signature: signature of the token};
  */
-var generateToken = function(currentRoom, authData, origin, callback) {
-    const databaseGenerateToken = function(token) {
-        return new Promise((resolve, reject) => {
-            dataAccess.token.create(token, (id) => {
-                if (id) {
-                    resolve(id);
-                } else {
-                    reject(new Error('Failed to get token ID.'));
-                }
-            });
-        }).then(id => {
-            return getTokenString(id, token);
-        });
-    };
-
-    var currentService = authData.service,
-        user = authData.user,
-        role = authData.role,
-        r,
-        tr,
-        token,
-        tokenS;
-
-    if (user === undefined || user === '') {
-        callback(undefined);
-        return;
-    }
-
-    if (authData.room && !authData.room.roles.find((r) => (r.role === role))) {
-        callback(undefined);
-        return;
-    }
-
-    token = {};
-    token.user = user;
-    token.room = currentRoom;
-    token.role = role;
-    token.service = currentService._id;
-    token.creationDate = new Date();
-    token.origin = origin;
-    token.code = Math.floor(Math.random() * 100000000000) + '';
-
-    // Values to be filled from the erizoController
-    token.secure = false;
-    token.domain = authData.domain;
-
-    requestHandler.schedulePortal (token.code, origin, function (ec) {
-        if (ec === 'timeout') {
-            callback('error');
-            return;
-        }
-
-        if(ec.via_host && ec.via_host !== '') {
-            if(ec.via_host.indexOf('https') == 0) {
-                token.secure = true;
-                token.host = ec.via_host.substr(8);
-            } else {
-                token.secure = false;
-                token.host = ec.via_host.substr(7);
-            }
-
+var generateToken = function (currentRoom, authData, origin, callback) {
+  const databaseGenerateToken = function (token) {
+    return new Promise((resolve, reject) => {
+      dataAccess.token.create(token, (id) => {
+        if (id) {
+          resolve(id);
         } else {
-            token.secure = ec.ssl;
-            if (ec.hostname !== '') {
-                token.host = ec.hostname;
-            } else {
-                token.host = ec.ip;
-            }
-
-            token.host += ':' + ec.port;
+          reject(new Error("Failed to get token ID."));
         }
-
-        if (!global.config.server.enableWebTransport){
-            databaseGenerateToken(token).then(tokenS => {
-                callback(tokenS);
-            });
-        } else {
-            // TODO: Schedule QUIC agent and portal parallelly.
-            requestHandler.scheduleQuicAgent(token.code, origin, info => {
-                if (info !== 'timeout') {
-                    let hostname = info.hostname;
-                    if (!hostname) {
-                        hostname = info.ip;
-                    }
-                    // TODO: Rename "echo".
-                    token.webTransportUrl = 'https://' + hostname + ':' + info.port + '/';
-                }
-                databaseGenerateToken(token).then(tokenS => {
-                    callback(tokenS);
-                });
-            });
-        }
+      });
+    }).then((id) => {
+      return getTokenString(id, token);
     });
+  };
+
+  var currentService = authData.service,
+    user = authData.user,
+    role = authData.role,
+    r,
+    tr,
+    token,
+    tokenS;
+
+  if (user === undefined || user === "") {
+    callback(undefined);
+    return;
+  }
+
+  if (authData.room && !authData.room.roles.find((r) => r.role === role)) {
+    callback(undefined);
+    return;
+  }
+
+  token = {};
+  token.user = user;
+  token.room = currentRoom;
+  token.role = role;
+  token.service = currentService._id;
+  token.creationDate = new Date();
+  token.origin = origin;
+  token.code = Math.floor(Math.random() * 100000000000) + "";
+
+  // Values to be filled from the erizoController
+  token.secure = false;
+  token.domain = authData.domain;
+
+  requestHandler.schedulePortal(token.code, origin, function (ec) {
+    if (ec === "timeout") {
+      callback("error");
+      return;
+    }
+
+    if (ec.via_host && ec.via_host !== "") {
+      if (ec.via_host.indexOf("https") == 0) {
+        token.secure = true;
+        token.host = ec.via_host.substr(8);
+      } else {
+        token.secure = false;
+        token.host = ec.via_host.substr(7);
+      }
+    } else {
+      token.secure = ec.ssl;
+      if (ec.hostname !== "") {
+        token.host = ec.hostname;
+      } else {
+        token.host = ec.ip;
+      }
+
+      token.host += ":" + ec.port;
+    }
+
+    if (!global.config.server.enableWebTransport) {
+      databaseGenerateToken(token).then((tokenS) => {
+        callback(tokenS);
+      });
+    } else {
+      // TODO: Schedule QUIC agent and portal parallelly.
+      requestHandler.scheduleQuicAgent(token.code, origin, (info) => {
+        if (info !== "timeout") {
+          let hostname = info.hostname;
+          if (!hostname) {
+            hostname = info.ip;
+          }
+          // TODO: Rename "echo".
+          token.webTransportUrl = "https://" + hostname + ":" + info.port + "/";
+        }
+        databaseGenerateToken(token).then((tokenS) => {
+          callback(tokenS);
+        });
+      });
+    }
+  });
 };
 
 /*
  * Post Token. Creates a new token for a determined room of a service.
  */
 exports.create = function (req, res, next) {
-    var authData = req.authData;
-    authData.user = (req.authData.user || (req.body && req.body.user));
-    authData.role = (req.authData.role || (req.body && req.body.role));
-    var origin = ((req.body && req.body.preference) || {isp: 'isp', region: 'region'});
-    if (req.body && req.body.domain) {
-        authData.domain = req.body.domain;
-        log.debug('Create token domain:', authData.domain);
+  var authData = req.authData;
+  authData.user = req.authData.user || (req.body && req.body.user);
+  authData.role = req.authData.role || (req.body && req.body.role);
+  var origin = (req.body && req.body.preference) || {
+    isp: "isp",
+    region: "region",
+  };
+  if (req.body && req.body.domain) {
+    authData.domain = req.body.domain;
+    log.debug("Create token domain:", authData.domain);
+  }
+
+  generateToken(req.params.room, authData, origin, function (tokenS) {
+    if (tokenS === undefined) {
+      log.info("Name and role?");
+      return next(new e.BadRequestError("Name or role not valid"));
     }
-
-    generateToken(req.params.room, authData, origin, function (tokenS) {
-        if (tokenS === undefined) {
-            log.info('Name and role?');
-            return next(new e.BadRequestError('Name or role not valid'));
-        }
-        if (tokenS === 'error') {
-            log.info('RequestHandler does not respond');
-            return next(new e.CloudError('Failed to get portal'));
-        }
-        log.debug('Created token for room ', req.params.room, 'and service ', authData.service._id);
-        res.send(tokenS);
-    });
+    if (tokenS === "error") {
+      log.info("RequestHandler does not respond");
+      return next(new e.CloudError("Failed to get portal"));
+    }
+    log.debug(
+      "Created token for room ",
+      req.params.room,
+      "and service ",
+      authData.service._id
+    );
+    res.send(tokenS);
+  });
 };
-

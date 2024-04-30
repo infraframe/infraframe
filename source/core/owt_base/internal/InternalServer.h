@@ -5,9 +5,9 @@
 #ifndef InternalServer_h
 #define InternalServer_h
 
+#include "MediaFramePipeline.h"
 #include "TransportServer.h"
 #include <logger.h>
-#include "MediaFramePipeline.h"
 
 #include <set>
 #include <unordered_map>
@@ -16,6 +16,7 @@ namespace owt_base {
 
 class InternalServer : public TransportServer::Listener {
     DECLARE_LOGGER();
+
 public:
     class Listener {
     public:
@@ -23,9 +24,9 @@ public:
         virtual void onDisconnected(const std::string& id) = 0;
     };
     InternalServer(const std::string& protocol,
-                   unsigned int minPort,
-                   unsigned int maxPort,
-                   Listener* listener);
+        unsigned int minPort,
+        unsigned int maxPort,
+        Listener* listener);
     virtual ~InternalServer();
 
     bool addSource(const std::string& streamId, FrameSource* src);
@@ -42,7 +43,10 @@ private:
     class InternalSession : public FrameDestination {
     public:
         InternalSession(int id, InternalServer* p)
-            : m_id(id), m_parent(p) {}
+            : m_id(id)
+            , m_parent(p)
+        {
+        }
         // Implements FrameDestination
         void onFrame(const Frame&) override;
         void onMetaData(const MetaData&) override;
@@ -53,6 +57,7 @@ private:
         {
             m_streamId = streamId;
         }
+
     private:
         int m_id;
         std::string m_streamId;

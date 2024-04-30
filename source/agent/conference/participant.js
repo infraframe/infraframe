@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
+"use strict";
 
-var Participant = function(spec, rpcReq) {
+var Participant = function (spec, rpcReq) {
   var that = {},
     id = spec.id,
     role = spec.role,
@@ -16,78 +16,96 @@ var Participant = function(spec, rpcReq) {
 
   that.update = (op, path, value) => {
     switch (path) {
-      case '/permission/subscribe':
-        if (op === 'replace') {
-          if (typeof value.audio === 'boolean' && typeof value.video === 'boolean') {
+      case "/permission/subscribe":
+        if (op === "replace") {
+          if (
+            typeof value.audio === "boolean" &&
+            typeof value.video === "boolean"
+          ) {
             permission.subscribe = value;
-            return Promise.resolve('ok');
+            return Promise.resolve("ok");
           } else {
-            return Promise.reject('Invalid json value');
+            return Promise.reject("Invalid json value");
           }
         } else {
-          return Promise.reject('Invalid json op');
+          return Promise.reject("Invalid json op");
         }
-      case '/permission/subscribe/audio':
-        if (op === 'replace') {
-          if (typeof value === 'boolean') {
-            permission.subscribe = (permission.subscribe || {audio: false, video: false});
+      case "/permission/subscribe/audio":
+        if (op === "replace") {
+          if (typeof value === "boolean") {
+            permission.subscribe = permission.subscribe || {
+              audio: false,
+              video: false,
+            };
             permission.subscribe.audio = value;
-            return Promise.resolve('ok');
+            return Promise.resolve("ok");
           } else {
-            return Promise.reject('Invalid json value');
+            return Promise.reject("Invalid json value");
           }
         } else {
-          return Promise.reject('Invalid json op');
+          return Promise.reject("Invalid json op");
         }
-      case '/permission/subscribe/video':
-        if (op === 'replace') {
-          if (typeof value === 'boolean') {
-            permission.subscribe = (permission.subscribe || {audio: false, video: false});
+      case "/permission/subscribe/video":
+        if (op === "replace") {
+          if (typeof value === "boolean") {
+            permission.subscribe = permission.subscribe || {
+              audio: false,
+              video: false,
+            };
             permission.subscribe.video = value;
-            return Promise.resolve('ok');
+            return Promise.resolve("ok");
           } else {
-            return Promise.reject('Invalid json value');
+            return Promise.reject("Invalid json value");
           }
         } else {
-          return Promise.reject('Invalid json op');
+          return Promise.reject("Invalid json op");
         }
-      case '/permission/publish':
-        if (op === 'replace') {
-          if (typeof value.audio === 'boolean' && typeof value.video === 'boolean') {
+      case "/permission/publish":
+        if (op === "replace") {
+          if (
+            typeof value.audio === "boolean" &&
+            typeof value.video === "boolean"
+          ) {
             permission.publish = value;
-            return Promise.resolve('ok');
+            return Promise.resolve("ok");
           } else {
-            return Promise.reject('Invalid json value');
+            return Promise.reject("Invalid json value");
           }
         } else {
-          return Promise.reject('Invalid json op');
+          return Promise.reject("Invalid json op");
         }
-      case '/permission/publish/audio':
-        if (op === 'replace') {
-          if (typeof value === 'boolean') {
-            permission.publish = (permission.publish || {audio: false, video: false});
+      case "/permission/publish/audio":
+        if (op === "replace") {
+          if (typeof value === "boolean") {
+            permission.publish = permission.publish || {
+              audio: false,
+              video: false,
+            };
             permission.publish.audio = value;
-            return Promise.resolve('ok');
+            return Promise.resolve("ok");
           } else {
-            return Promise.reject('Invalid json value');
+            return Promise.reject("Invalid json value");
           }
         } else {
-          return Promise.reject('Invalid json op');
+          return Promise.reject("Invalid json op");
         }
-      case '/permission/publish/video':
-        if (op === 'replace') {
-          if (typeof value === 'boolean') {
-            permission.publish = (permission.publish || {audio: false, video: false});
+      case "/permission/publish/video":
+        if (op === "replace") {
+          if (typeof value === "boolean") {
+            permission.publish = permission.publish || {
+              audio: false,
+              video: false,
+            };
             permission.publish.video = value;
-            return Promise.resolve('ok');
+            return Promise.resolve("ok");
           } else {
-            return Promise.reject('Invalid json value');
+            return Promise.reject("Invalid json value");
           }
         } else {
-          return Promise.reject('Invalid json op');
+          return Promise.reject("Invalid json op");
         }
       default:
-        return Promise.reject('Invalid json path');
+        return Promise.reject("Invalid json path");
     }
   };
 
@@ -116,7 +134,7 @@ var Participant = function(spec, rpcReq) {
       id: id,
       user: user,
       role: role,
-      permission: permission
+      permission: permission,
     };
   };
 
@@ -135,6 +153,4 @@ var Participant = function(spec, rpcReq) {
   return that;
 };
 
-
 module.exports = Participant;
-

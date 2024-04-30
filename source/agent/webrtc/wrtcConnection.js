@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
+"use strict";
 
-const { EventEmitter } = require('events');
+const { EventEmitter } = require("events");
 
 const {
   AudioFrameConstructor,
@@ -12,16 +12,16 @@ const {
   VideoFrameConstructor,
   VideoFramePacketizer,
   CallBase,
-} = require('../rtcFrame/build/Release/rtcFrame.node');
+} = require("../rtcFrame/build/Release/rtcFrame.node");
 
-const logger = require('../logger').logger;
-const cipher = require('../cipher');
+const logger = require("../logger").logger;
+const cipher = require("../cipher");
 // Logger
-const log = logger.getLogger('WrtcConnection');
+const log = logger.getLogger("WrtcConnection");
 
-const { Connection } = require('./connection');
+const { Connection } = require("./connection");
 
-const { SdpInfo } = require('./sdpInfo.js');
+const { SdpInfo } = require("./sdpInfo.js");
 
 /*
  * This class represents a filtered stream
@@ -29,17 +29,21 @@ const { SdpInfo } = require('./sdpInfo.js');
  */
 class LayerStream {
   constructor(parent, layerId, closeCb) {
-    this.id = parent.wrtc.id + '-' + parent.id + '-' + layerId;
+    this.id = parent.wrtc.id + "-" + parent.id + "-" + layerId;
     this.wrtc = parent.wrtc;
     this.closeCb = closeCb;
 
-    let pos = layerId.indexOf('l');
-    const spatialId = (pos >= 0) ? parseInt(layerId[pos + 1]) : -1;
-    pos = layerId.indexOf('t');
-    const temporalId = (pos >= 0) ? parseInt(layerId[pos + 1]) : -1;
+    let pos = layerId.indexOf("l");
+    const spatialId = pos >= 0 ? parseInt(layerId[pos + 1]) : -1;
+    pos = layerId.indexOf("t");
+    const temporalId = pos >= 0 ? parseInt(layerId[pos + 1]) : -1;
     this.videoFrameConstructor = new VideoFrameConstructor(
-      parent.wrtc.callBase, parent.videoFrameConstructor,
-      layerId, spatialId, temporalId);
+      parent.wrtc.callBase,
+      parent.videoFrameConstructor,
+      layerId,
+      spatialId,
+      temporalId
+    );
   }
 
   sender() {
@@ -48,7 +52,7 @@ class LayerStream {
       sender = this.videoFrameConstructor.source();
       sender.parent = this.videoFrameConstructor;
     } else {
-      log.error('sender error');
+      log.error("sender error");
     }
     if (sender) {
       sender.addDestination = (track, dest) => {
@@ -76,7 +80,6 @@ class LayerStream {
  * in simulcast refers to one WrtcStream.
  */
 class WrtcStream extends EventEmitter {
-
   /*
    * audio: { format, ssrc, mid, midExtId }
    * video: {
@@ -84,7 +87,7 @@ class WrtcStream extends EventEmitter {
    *   transportcc, red, ulpfec, scalabilityMode
    * }
    */
-  constructor(id, wrtc, direction, {audio, video, owner, enableBWE}) {
+  constructor(id, wrtc, direction, { audio, video, owner, enableBWE }) {
     super();
     this.id = id;
     this.wrtc = wrtc;
@@ -105,8 +108,8 @@ class WrtcStream extends EventEmitter {
       this.layerStreams = new Map();
     }
 
-    if (direction === 'in') {
-      wrtc.addMediaStream(id, {label: id}, true);
+    if (direction === "in") {
+      wrtc.addMediaStream(id, { label: id }, true);
 
       if (audio) {
         this.audioFrameConstructor = new AudioFrameConstructor();
@@ -115,16 +118,21 @@ class WrtcStream extends EventEmitter {
       }
       if (video) {
         this.videoFrameConstructor = new VideoFrameConstructor(
-          this._onMediaUpdate.bind(this), video.transportcc, wrtc.callBase);
+          this._onMediaUpdate.bind(this),
+          video.transportcc,
+          wrtc.callBase
+        );
         this.videoFrameConstructor.bindTransport(wrtc.getMediaStream(id));
         wrtc.setVideoSsrcList(id, video.ssrcs);
       }
-
     } else {
-      wrtc.addMediaStream(id, {label: id}, false);
+      wrtc.addMediaStream(id, { label: id }, false);
 
       if (audio) {
-        this.audioFramePacketizer = new AudioFramePacketizer(audio.mid, audio.midExtId);
+        this.audioFramePacketizer = new AudioFramePacketizer(
+          audio.mid,
+          audio.midExtId
+        );
         this.audioFramePacketizer.bindTransport(wrtc.getMediaStream(id));
         if (this.owner) {
           this.audioFramePacketizer.setOwner(this.owner);
@@ -132,8 +140,15 @@ class WrtcStream extends EventEmitter {
       }
       if (video) {
         this.videoFramePacketizer = new VideoFramePacketizer(
-          video.red, video.ulpfec, video.transportcc, video.mid,
-          video.midExtId, false, wrtc.callBase, enableBWE);
+          video.red,
+          video.ulpfec,
+          video.transportcc,
+          video.mid,
+          video.midExtId,
+          false,
+          wrtc.callBase,
+          enableBWE
+        );
         this.videoFramePacketizer.bindTransport(wrtc.getMediaStream(id));
       }
     }
@@ -183,43 +198,43 @@ class WrtcStream extends EventEmitter {
   }
 
   _onMediaUpdate(jsonUpdate) {
-    this.emit('media-update', jsonUpdate);
+    this.emit("media-update", jsonUpdate);
   }
 
   addDestination(track, dest) {
-    if (track === 'audio' && this.audioFrameConstructor) {
+    if (track === "audio" && this.audioFrameConstructor) {
       this.audioFrameConstructor.addDestination(dest);
-    } else if (track === 'video' && this.videoFrameConstructor) {
+    } else if (track === "video" && this.videoFrameConstructor) {
       this.videoFrameConstructor.addDestination(dest);
     } else {
-      log.warn('Wrong track:', track);
+      log.warn("Wrong track:", track);
     }
   }
 
   removeDestination(track, dest) {
-    if (track === 'audio' && this.audioFrameConstructor) {
+    if (track === "audio" && this.audioFrameConstructor) {
       this.audioFrameConstructor.removeDestination(dest);
-    } else if (track === 'video' && this.videoFrameConstructor) {
+    } else if (track === "video" && this.videoFrameConstructor) {
       this.videoFrameConstructor.removeDestination(dest);
     } else {
-      log.warn('Wrong track:' + track);
+      log.warn("Wrong track:" + track);
     }
   }
 
   sender(track) {
     let sender = null;
-    if (track === 'audio' && this.audioFrameConstructor) {
+    if (track === "audio" && this.audioFrameConstructor) {
       sender = this.audioFrameConstructor.source();
       sender.parent = this.audioFrameConstructor;
-    } else if (track === 'video' && this.videoFrameConstructor) {
+    } else if (track === "video" && this.videoFrameConstructor) {
       sender = this.videoFrameConstructor.source();
       sender.parent = this.videoFrameConstructor;
     } else if (!track) {
-      let parent = (this.audioFrameConstructor || this.videoFrameConstructor);
+      let parent = this.audioFrameConstructor || this.videoFrameConstructor;
       sender = parent.source();
       sender.parent = parent;
     } else {
-      log.error('sender error');
+      log.error("sender error");
     }
     if (sender) {
       sender.addDestination = (track, dest) => {
@@ -234,91 +249,92 @@ class WrtcStream extends EventEmitter {
 
   receiver(track) {
     let dest = null;
-    if (track === 'audio') {
+    if (track === "audio") {
       dest = this.audioFramePacketizer;
-    } else if (track === 'video') {
+    } else if (track === "video") {
       dest = this.videoFramePacketizer;
     } else {
-      log.error('receiver error');
+      log.error("receiver error");
     }
     return dest;
   }
 
   ssrc(track) {
-    if (track === 'audio' && this.audioFramePacketizer) {
+    if (track === "audio" && this.audioFramePacketizer) {
       return this.audioFramePacketizer.ssrc();
     }
-    if (track === 'video' && this.videoFramePacketizer) {
+    if (track === "video" && this.videoFramePacketizer) {
       return this.videoFramePacketizer.ssrc();
     }
     return null;
   }
 
   format(track) {
-    if (track === 'audio') {
+    if (track === "audio") {
       return this.audioFormat;
-    } else if (track === 'video') {
+    } else if (track === "video") {
       return this.videoFormat;
     }
     return null;
   }
 
   onTrackControl(track, dir, action, onOk, onError) {
-    if (['audio', 'video', 'av'].indexOf(track) < 0) {
-      onError('Invalid track.');
+    if (["audio", "video", "av"].indexOf(track) < 0) {
+      onError("Invalid track.");
       return;
     }
 
     var trackUpdate = false;
-    if (track === 'av' || track === 'audio') {
-      if (dir === 'in' && this.audioFrameConstructor) {
-        this.audioFrameConstructor.enable(action === 'on');
+    if (track === "av" || track === "audio") {
+      if (dir === "in" && this.audioFrameConstructor) {
+        this.audioFrameConstructor.enable(action === "on");
         trackUpdate = true;
       }
-      if (dir === 'out' && this.audioFramePacketizer) {
-        this.audioFramePacketizer.enable(action === 'on');
+      if (dir === "out" && this.audioFramePacketizer) {
+        this.audioFramePacketizer.enable(action === "on");
         trackUpdate = true;
       }
     }
-    if (track === 'av' || track === 'video') {
-      if (dir === 'in' && this.videoFrameConstructor) {
-        this.videoFrameConstructor.enable(action === 'on');
+    if (track === "av" || track === "video") {
+      if (dir === "in" && this.videoFrameConstructor) {
+        this.videoFrameConstructor.enable(action === "on");
         trackUpdate = true;
       }
-      if (dir === 'out' && this.videoFramePacketizer) {
-        this.videoFramePacketizer.enable(action === 'on');
+      if (dir === "out" && this.videoFramePacketizer) {
+        this.videoFramePacketizer.enable(action === "on");
         trackUpdate = true;
       }
     }
     if (trackUpdate) {
       onOk();
     } else {
-      onError('No track found');
+      onError("No track found");
     }
   }
 
   // Get or create a layer stream if SVC, return LayerStream | null
-  getOrCreateLayerStream({spatial, temporal}, closeCb) {
+  getOrCreateLayerStream({ spatial, temporal }, closeCb) {
     if (!this.scalabilityMode) {
-      log.info('No scalabilityMode for layer stream');
+      log.info("No scalabilityMode for layer stream");
       return null;
     }
     if (!(spatial >= 0) && !(temporal >= 0)) {
-      log.info('Invalid layer setting:', spatial, temporal);
+      log.info("Invalid layer setting:", spatial, temporal);
       return null;
     }
     // Check layer setting with scalabilityMode
     if (spatial >= 0 && spatial >= parseInt(this.scalabilityMode[1])) {
-      log.info('Set spatial:', spatial, this.scalabilityMode);
+      log.info("Set spatial:", spatial, this.scalabilityMode);
       return null;
     }
     if (temporal >= 0 && temporal >= parseInt(this.scalabilityMode[3])) {
-      log.info('Set temporal:', temporal, this.scalabilityMode);
+      log.info("Set temporal:", temporal, this.scalabilityMode);
       return null;
     }
 
-    const layerId = ((spatial >= 0) ? 'l' + spatial : '') +
-      ((temporal >= 0) ? 't' + temporal : '');
+    const layerId =
+      (spatial >= 0 ? "l" + spatial : "") +
+      (temporal >= 0 ? "t" + temporal : "");
     if (!this.layerStreams.has(layerId)) {
       this.layerStreams.set(layerId, new LayerStream(this, layerId, closeCb));
     }
@@ -330,17 +346,16 @@ class WrtcStream extends EventEmitter {
       this.videoFrameConstructor.setBitrate(bitrateKBPS);
       return onOk();
     }
-    return onError('no video track');
-  };
+    return onError("no video track");
+  }
 
   //FIXME: Temporarily add this interface to workround the hardware mode's absence of feedback mechanism.
   requestKeyFrame() {
     if (this.videoFrameConstructor) {
       this.videoFrameConstructor.requestKeyFrame();
     }
-  };
+  }
 }
-
 
 module.exports = function (spec, on_status, on_track) {
   var that = {};
@@ -365,17 +380,25 @@ module.exports = function (spec, on_status, on_track) {
   // option = {mid, type, formatPreference, scalabilityMode}
   that.addTrackOperation = function (operationId, sdpDirection, option) {
     var ret = false;
-    var {mid, type, formatPreference, scalabilityMode} = option;
+    var { mid, type, formatPreference, scalabilityMode } = option;
     if (!operationMap.has(mid)) {
       log.debug(`MID ${mid} for operation ${operationId} add`);
       const enabled = true;
-      operationMap.set(mid, {operationId, type, sdpDirection, formatPreference, enabled});
+      operationMap.set(mid, {
+        operationId,
+        type,
+        sdpDirection,
+        formatPreference,
+        enabled,
+      });
       if (scalabilityMode) {
         operationMap.get(mid).scalabilityMode = scalabilityMode;
       }
       ret = true;
     } else {
-      log.warn(`MID ${mid} has mapped operation ${operationMap.get(mid).operationId}`);
+      log.warn(
+        `MID ${mid} has mapped operation ${operationMap.get(mid).operationId}`
+      );
     }
     return ret;
   };
@@ -407,31 +430,31 @@ module.exports = function (spec, on_status, on_track) {
    * Given a WebRtcConnection waits for the state CANDIDATES_GATHERED for set remote SDP.
    */
   var initWebRtcConnection = function (wrtc) {
-    wrtc.on('status_event', (evt, status) => {
-      if (evt.type === 'answer') {
+    wrtc.on("status_event", (evt, status) => {
+      if (evt.type === "answer") {
         processAnswer(evt.sdp);
 
         const message = localSdp.toString();
-        log.debug('Answer SDP', message);
-        on_status({type: 'answer', sdp: message});
-
-      } else if (evt.type === 'candidate') {
+        log.debug("Answer SDP", message);
+        on_status({ type: "answer", sdp: message });
+      } else if (evt.type === "candidate") {
         let message = evt.candidate;
         networkInterfaces.forEach((i) => {
           if (i.ip_address && i.replaced_ip_address) {
-            message = message.replace(new RegExp(i.ip_address, 'g'), i.replaced_ip_address);
+            message = message.replace(
+              new RegExp(i.ip_address, "g"),
+              i.replaced_ip_address
+            );
           }
         });
-        on_status({type: 'candidate', candidate: message});
-
-      } else if (evt.type === 'failed') {
-        log.warn('ICE failed, ', status, wrtc.id);
-        on_status({type: 'failed', reason: 'Ice procedure failed.'});
-
-      } else if (evt.type === 'ready') {
-        log.debug('Connection ready, ', wrtc.wrtcId);
+        on_status({ type: "candidate", candidate: message });
+      } else if (evt.type === "failed") {
+        log.warn("ICE failed, ", status, wrtc.id);
+        on_status({ type: "failed", reason: "Ice procedure failed." });
+      } else if (evt.type === "ready") {
+        log.debug("Connection ready, ", wrtc.wrtcId);
         on_status({
-          type: 'ready'
+          type: "ready",
         });
       }
     });
@@ -439,21 +462,21 @@ module.exports = function (spec, on_status, on_track) {
   };
 
   const composeId = function (mid, rid) {
-    return mid + ':' + rid;
+    return mid + ":" + rid;
   };
 
   const decomposeId = function (trackId) {
-    const parts = trackId.split(':')[0];
+    const parts = trackId.split(":")[0];
     return {
       mid: parts[0],
-      rid: parts[1]
+      rid: parts[1],
     };
-  }
+  };
 
   const setupTransport = function (mid) {
     let rids = remoteSdp.rids(mid);
     const opSettings = operationMap.get(mid);
-    const direction = (opSettings.sdpDirection === 'sendonly') ? 'in' : 'out';
+    const direction = opSettings.sdpDirection === "sendonly" ? "in" : "out";
     const simSsrcs = remoteSdp.getLegacySimulcast(mid);
     const trackSettings = remoteSdp.getMediaSettings(mid);
     const mediaType = remoteSdp.mediaType(mid);
@@ -462,32 +485,35 @@ module.exports = function (spec, on_status, on_track) {
     trackSettings.enableBWE = that.enableBWE;
     if (opSettings.finalFormat) {
       trackSettings[mediaType].format = opSettings.finalFormat;
-      if (opSettings.finalFormat.codec === 'vp9' && simSsrcs) {
+      if (opSettings.finalFormat.codec === "vp9" && simSsrcs) {
         // Legacy simulcast for VP9 SVC
         rids = null;
-        trackSettings['video'].scalabilityMode = opSettings.scalabilityMode;
+        trackSettings["video"].scalabilityMode = opSettings.scalabilityMode;
       }
     }
 
     if (rids) {
       // Simulcast
       rids.forEach((rid, index) => {
-        const trackId = composeId(mid, rid);        
+        const trackId = composeId(mid, rid);
         if (simSsrcs) {
           // Assign ssrcs for legacy simulcast
           trackSettings[mediaType].ssrcs = [simSsrcs[index]];
         }
 
         if (!trackMap.has(trackId)) {
-          trackMap.set(trackId, new WrtcStream(trackId, wrtc, direction, trackSettings));
+          trackMap.set(
+            trackId,
+            new WrtcStream(trackId, wrtc, direction, trackSettings)
+          );
           wrtc.setRemoteSdp(remoteSdp.singleMediaSdp(mid).toString(), trackId);
           // Notify new track
           on_track({
-            type: 'track-added',
+            type: "track-added",
             track: trackMap.get(trackId),
             operationId: opSettings.operationId,
             mid: mid,
-            rid: rid
+            rid: rid,
           });
         } else {
           log.warn(`Conflict trackId ${trackId} for ${wrtcId}`);
@@ -498,7 +524,7 @@ module.exports = function (spec, on_status, on_track) {
       if (!trackMap.has(mid)) {
         trackMap.set(mid, new WrtcStream(mid, wrtc, direction, trackSettings));
         // Set ssrc in local sdp for out direction
-        if (direction === 'out') {
+        if (direction === "out") {
           const mtype = localSdp.mediaType(mid);
           const ssrc = trackMap.get(mid).ssrc(mtype);
           if (ssrc) {
@@ -516,10 +542,10 @@ module.exports = function (spec, on_status, on_track) {
         wrtc.setRemoteSdp(remoteSdp.singleMediaSdp(mid).toString(), mid);
         // Notify new track
         on_track({
-          type: 'track-added',
+          type: "track-added",
           track: trackMap.get(mid),
           operationId: opSettings.operationId,
-          mid: mid
+          mid: mid,
         });
       } else {
         log.warn(`Conflict trackId ${mid} for ${wrtcId}`);
@@ -541,7 +567,7 @@ module.exports = function (spec, on_status, on_track) {
         if (trackMap.has(trackId)) {
           // Let track be destroyed outside
           trackMap.delete(trackId);
-          on_track({type: 'track-removed', trackId});
+          on_track({ type: "track-removed", trackId });
         } else {
           log.info(`destroyTransport: No trackId ${trackId} for ${wrtcId}`);
         }
@@ -551,7 +577,7 @@ module.exports = function (spec, on_status, on_track) {
       if (trackMap.has(mid)) {
         // Let track be destroyed outside
         trackMap.delete(mid);
-        on_track({type: 'track-removed', trackId: mid});
+        on_track({ type: "track-removed", trackId: mid });
       } else {
         log.info(`destroyTransport: No trackId ${mid} for ${wrtcId}`);
       }
@@ -580,11 +606,11 @@ module.exports = function (spec, on_status, on_track) {
     }
 
     // Determine media format in offer
-    if (remoteSdp.mediaType(mid) === 'audio') {
+    if (remoteSdp.mediaType(mid) === "audio") {
       const audioPreference = operationMap.get(mid).formatPreference;
       const audioFormat = remoteSdp.filterAudioPayload(mid, audioPreference);
       operationMap.get(mid).finalFormat = audioFormat;
-    } else if (remoteSdp.mediaType(mid) === 'video') {
+    } else if (remoteSdp.mediaType(mid) === "video") {
       const videoPreference = operationMap.get(mid).formatPreference;
       const videoFormat = remoteSdp.filterVideoPayload(mid, videoPreference);
       operationMap.get(mid).finalFormat = videoFormat;
@@ -611,11 +637,10 @@ module.exports = function (spec, on_status, on_track) {
       }
       if (opId) {
         on_track({
-          type: 'tracks-complete',
-          operationId: opId
+          type: "tracks-complete",
+          operationId: opId,
         });
       }
-
     } else {
       // Later offer
       const laterSdp = new SdpInfo(sdp);
@@ -649,8 +674,8 @@ module.exports = function (spec, on_status, on_track) {
       }
       if (opId) {
         on_track({
-          type: 'tracks-complete',
-          operationId: opId
+          type: "tracks-complete",
+          operationId: opId,
         });
       }
 
@@ -665,8 +690,8 @@ module.exports = function (spec, on_status, on_track) {
       localSdp.setBundleMids(laterSdp.bundleMids());
       // Produce answer
       const message = localSdp.toString();
-      log.debug('Answer SDP', message);
-      on_status({type: 'answer', sdp: message});
+      log.debug("Answer SDP", message);
+      on_status({ type: "answer", sdp: message });
     }
   };
 
@@ -675,7 +700,10 @@ module.exports = function (spec, on_status, on_track) {
       // First answer from native
       networkInterfaces.forEach((i) => {
         if (i.ip_address && i.replaced_ip_address) {
-          sdpMsg = sdpMsg.replace(new RegExp(i.ip_address, 'g'), i.replaced_ip_address);
+          sdpMsg = sdpMsg.replace(
+            new RegExp(i.ip_address, "g"),
+            i.replaced_ip_address
+          );
         }
       });
 
@@ -686,17 +714,16 @@ module.exports = function (spec, on_status, on_track) {
         localSdp.setCredentials(tempSdp.getCredentials(tempMid));
         localSdp.setCandidates(tempSdp.getCandidates(tempMid));
       } else {
-        log.warn('No mid in answer', wrtcId);
+        log.warn("No mid in answer", wrtcId);
       }
-
     }
   };
 
   that.close = function () {
     if (wrtc) {
       if (wrtc.getNumMediaStreams() > 0) {
-        log.warn('MediaStream remaining when closing');
-        trackMap.forEach(track => {
+        log.warn("MediaStream remaining when closing");
+        trackMap.forEach((track) => {
           track.close();
         });
       }
@@ -709,12 +736,12 @@ module.exports = function (spec, on_status, on_track) {
 
   that.onSignalling = function (msg, operationId) {
     var processSignalling = function () {
-      if (msg.type === 'offer') {
-        log.debug('on offer:', msg.sdp);
+      if (msg.type === "offer") {
+        log.debug("on offer:", msg.sdp);
         processOffer(msg.sdp);
-      } else if (msg.type === 'candidate') {
+      } else if (msg.type === "candidate") {
         wrtc.addRemoteCandidate(msg.candidate);
-      } else if (msg.type === 'removed-candidates') {
+      } else if (msg.type === "removed-candidates") {
         wrtc.removeRemoteCandidates(msg.candidates);
       }
     };
@@ -723,7 +750,7 @@ module.exports = function (spec, on_status, on_track) {
       processSignalling();
     } else {
       // should not reach here
-      log.error('wrtc is not ready');
+      log.error("wrtc is not ready");
     }
   };
 

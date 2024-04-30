@@ -18,7 +18,6 @@ public:
 
 private:
     static uint32_t sTimestampOffset;
-
 };
 
 } /* namespace mcu */

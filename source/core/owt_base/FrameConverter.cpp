@@ -27,10 +27,10 @@ FrameConverter::~FrameConverter()
 }
 
 #ifdef ENABLE_MSDK
-bool FrameConverter::convert(MsdkFrame *srcMsdkFrame, webrtc::I420Buffer *dstI420Buffer)
+bool FrameConverter::convert(MsdkFrame* srcMsdkFrame, webrtc::I420Buffer* dstI420Buffer)
 {
     if (srcMsdkFrame->getVideoWidth() == (uint32_t)dstI420Buffer->width()
-            && srcMsdkFrame->getVideoHeight() == (uint32_t)dstI420Buffer->height()) {
+        && srcMsdkFrame->getVideoHeight() == (uint32_t)dstI420Buffer->height()) {
         if (!srcMsdkFrame->convertTo(dstI420Buffer)) {
             ELOG_ERROR("Fail to convert msdkFrame to i420Buffer");
             return false;
@@ -56,7 +56,7 @@ bool FrameConverter::convert(MsdkFrame *srcMsdkFrame, webrtc::I420Buffer *dstI42
     return true;
 }
 
-bool FrameConverter::convert(MsdkFrame *srcMsdkFrame, MsdkFrame *dstMsdkFrame)
+bool FrameConverter::convert(MsdkFrame* srcMsdkFrame, MsdkFrame* dstMsdkFrame)
 {
     if (m_scaler)
         return m_scaler->convert(srcMsdkFrame, dstMsdkFrame);
@@ -81,7 +81,7 @@ bool FrameConverter::convert(MsdkFrame *srcMsdkFrame, MsdkFrame *dstMsdkFrame)
     }
 }
 
-bool FrameConverter::convert(webrtc::VideoFrameBuffer *srcBuffer, MsdkFrame *dstMsdkFrame)
+bool FrameConverter::convert(webrtc::VideoFrameBuffer* srcBuffer, MsdkFrame* dstMsdkFrame)
 {
     if ((uint32_t)srcBuffer->width() == dstMsdkFrame->getVideoWidth() && (uint32_t)srcBuffer->height() == dstMsdkFrame->getVideoHeight()) {
         if (!dstMsdkFrame->convertFrom(srcBuffer)) {
@@ -110,34 +110,34 @@ bool FrameConverter::convert(webrtc::VideoFrameBuffer *srcBuffer, MsdkFrame *dst
 }
 #endif
 
-bool FrameConverter::convert(webrtc::VideoFrameBuffer *srcBuffer, webrtc::I420Buffer *dstI420Buffer)
+bool FrameConverter::convert(webrtc::VideoFrameBuffer* srcBuffer, webrtc::I420Buffer* dstI420Buffer)
 {
     int ret;
 
     if (srcBuffer->width() == dstI420Buffer->width() && srcBuffer->height() == dstI420Buffer->height()) {
         ret = libyuv::I420Copy(
-                srcBuffer->DataY(), srcBuffer->StrideY(),
-                srcBuffer->DataU(), srcBuffer->StrideU(),
-                srcBuffer->DataV(), srcBuffer->StrideV(),
-                dstI420Buffer->MutableDataY(), dstI420Buffer->StrideY(),
-                dstI420Buffer->MutableDataU(), dstI420Buffer->StrideU(),
-                dstI420Buffer->MutableDataV(), dstI420Buffer->StrideV(),
-                dstI420Buffer->width(),        dstI420Buffer->height());
+            srcBuffer->DataY(), srcBuffer->StrideY(),
+            srcBuffer->DataU(), srcBuffer->StrideU(),
+            srcBuffer->DataV(), srcBuffer->StrideV(),
+            dstI420Buffer->MutableDataY(), dstI420Buffer->StrideY(),
+            dstI420Buffer->MutableDataU(), dstI420Buffer->StrideU(),
+            dstI420Buffer->MutableDataV(), dstI420Buffer->StrideV(),
+            dstI420Buffer->width(), dstI420Buffer->height());
         if (ret != 0) {
             ELOG_ERROR("libyuv::I420Copy failed(%d)", ret);
             return false;
         }
     } else { // scale
         ret = libyuv::I420Scale(
-                srcBuffer->DataY(),   srcBuffer->StrideY(),
-                srcBuffer->DataU(),   srcBuffer->StrideU(),
-                srcBuffer->DataV(),   srcBuffer->StrideV(),
-                srcBuffer->width(),   srcBuffer->height(),
-                dstI420Buffer->MutableDataY(),  dstI420Buffer->StrideY(),
-                dstI420Buffer->MutableDataU(),  dstI420Buffer->StrideU(),
-                dstI420Buffer->MutableDataV(),  dstI420Buffer->StrideV(),
-                dstI420Buffer->width(),         dstI420Buffer->height(),
-                libyuv::kFilterBox);
+            srcBuffer->DataY(), srcBuffer->StrideY(),
+            srcBuffer->DataU(), srcBuffer->StrideU(),
+            srcBuffer->DataV(), srcBuffer->StrideV(),
+            srcBuffer->width(), srcBuffer->height(),
+            dstI420Buffer->MutableDataY(), dstI420Buffer->StrideY(),
+            dstI420Buffer->MutableDataU(), dstI420Buffer->StrideU(),
+            dstI420Buffer->MutableDataV(), dstI420Buffer->StrideV(),
+            dstI420Buffer->width(), dstI420Buffer->height(),
+            libyuv::kFilterBox);
         if (ret != 0) {
             ELOG_ERROR("libyuv::I420Scale failed(%d)", ret);
             return false;
@@ -147,4 +147,4 @@ bool FrameConverter::convert(webrtc::VideoFrameBuffer *srcBuffer, webrtc::I420Bu
     return true;
 }
 
-}//namespace owt_base
+} //namespace owt_base

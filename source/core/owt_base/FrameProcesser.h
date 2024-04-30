@@ -5,26 +5,26 @@
 #ifndef FrameProcesser_h
 #define FrameProcesser_h
 
-#include <vector>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <logger.h>
+#include <vector>
 
 #include <webrtc/api/video/video_frame.h>
 #include <webrtc/system_wrappers/include/clock.h>
 
-#include <JobTimer.h>
 #include "MediaFramePipeline.h"
+#include <JobTimer.h>
 
 #ifdef ENABLE_MSDK
-#include "MsdkFrame.h"
 #include "MsdkBase.h"
+#include "MsdkFrame.h"
 #endif
 
 #include "I420BufferManager.h"
 
-#include "FrameConverter.h"
 #include "FFmpegDrawText.h"
+#include "FrameConverter.h"
 
 namespace owt_base {
 
@@ -74,7 +74,7 @@ private:
 
     boost::shared_mutex m_mutex;
 
-    const webrtc::Clock *m_clock;
+    const webrtc::Clock* m_clock;
     boost::scoped_ptr<FrameConverter> m_converter;
     boost::scoped_ptr<JobTimer> m_jobTimer;
 
@@ -84,4 +84,3 @@ private:
 } /* namespace owt_base */
 
 #endif /* FrameProcesser_h */
-

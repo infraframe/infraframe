@@ -31,8 +31,8 @@ private:
     InternalClient();
     ~InternalClient();
 
-    Nan::Callback *stats_callback_;
-    uv_async_t *async_stats_;
+    Nan::Callback* stats_callback_;
+    uv_async_t* async_stats_;
 
     static Nan::Persistent<v8::Function> constructor;
 

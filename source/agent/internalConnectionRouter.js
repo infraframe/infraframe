@@ -5,36 +5,35 @@
 /**
  * Router class for internal connections between agents
  */
-'use strict';
+"use strict";
 
 const config = global.config;
 
-const log = require('../logger').logger.getLogger('InternalConnectionRouter');
-const Connections = require('./connections');
-const internalIO = require('../internalIO/build/Release/internalIO');
+const log = require("../logger").logger.getLogger("InternalConnectionRouter");
+const Connections = require("./connections");
+const internalIO = require("../internalIO/build/Release/internalIO");
 
-const {InternalServer, InternalClient} = internalIO;
+const { InternalServer, InternalClient } = internalIO;
 
 const setSecurePromise = new Promise(function (resolve) {
   try {
-    const cipher = require('../cipher');
-    cipher.unlock(cipher.k, cipher.astore, function cb (err, authConfig) {
+    const cipher = require("../cipher");
+    cipher.unlock(cipher.k, cipher.astore, function cb(err, authConfig) {
       if (!err) {
         if (authConfig.internalPass) {
-          log.debug('Secure enabled for internal IO');
+          log.debug("Secure enabled for internal IO");
           internalIO.setPassphrase(authConfig.internalPass);
         }
       } else {
-        log.debug('Unlock error:', err);
+        log.debug("Unlock error:", err);
       }
       resolve();
     });
   } catch (e) {
-    log.debug('No secure for internal IO');
+    log.debug("No secure for internal IO");
     resolve();
   }
 });
-
 
 /*
  * Wrapper class for addon FrameDestination object
@@ -51,9 +50,9 @@ class StreamDestination {
     this.id = id;
     this.conn = conn;
     this.srcs = {
-      'audio': new Map(), // id => StreamSource
-      'video': new Map(), // id => StreamSource
-      'data': new Map(), // id => StreamSource
+      audio: new Map(), // id => StreamSource
+      video: new Map(), // id => StreamSource
+      data: new Map(), // id => StreamSource
     };
   }
 
@@ -62,7 +61,7 @@ class StreamDestination {
    */
   clearSources() {
     for (const [track, srcMap] of this.srcs) {
-      for (const [/*srcId*/, src] of srcMap) {
+      for (const [, /*srcId*/ src] of srcMap) {
         src.removeDestination(track, this);
       }
       srcMap.clear();
@@ -98,9 +97,9 @@ class StreamSource {
     this.id = id;
     this.conn = conn;
     this.dests = {
-      'audio': new Map(), // id => StreamSink
-      'video': new Map(), // id => StreamSink
-      'data': new Map(), // id => StreamSink
+      audio: new Map(), // id => StreamSink
+      video: new Map(), // id => StreamSink
+      data: new Map(), // id => StreamSink
     };
   }
 
@@ -109,7 +108,7 @@ class StreamSource {
       this.dests[track].set(sink.id, sink);
       let isNanObject = false;
       if (sink instanceof QuicTransportStreamPipeline) {
-          isNanObject = true;
+        isNanObject = true;
       }
       this.conn.addDestination(track, sink.conn, isNanObject);
       sink._addSource(track, this);
@@ -126,7 +125,7 @@ class StreamSource {
 
   clearDestinations() {
     for (const [track, destMap] of this.dests) {
-      for (const [/*destId*/, sink] of destMap) {
+      for (const [, /*destId*/ sink] of destMap) {
         this.conn.removeDestination(track, sink.conn);
         sink._removeSource(track, this);
       }
@@ -146,20 +145,24 @@ class InternalConnectionRouter {
    * @param {number} minport Internal server listening min port
    * @param {number} maxport Internal server listening max port
    */
-  constructor({protocol, minport, maxport}) {
+  constructor({ protocol, minport, maxport }) {
     this.protocol = protocol;
     this.connections = Connections();
 
     this.internalServer = {
-      addSource: () => log.warn('Server is not initialized'),
-      removeSource: () => log.warn('Server is not initialized'),
+      addSource: () => log.warn("Server is not initialized"),
+      removeSource: () => log.warn("Server is not initialized"),
       internalPort: 0,
     };
     setSecurePromise.then(() => {
       this.internalServer = new InternalServer(
-        protocol, minport, maxport, (a, b) => {
-          log.debug('server stat:', a, b);
-      });
+        protocol,
+        minport,
+        maxport,
+        (a, b) => {
+          log.debug("server stat:", a, b);
+        }
+      );
       this.internalPort = this.internalServer.getListeningPort();
     });
     this.remoteStreams = new Map(); // id => Set {string}
@@ -171,9 +174,9 @@ class InternalConnectionRouter {
    * @param {FrameSource} source Wrapper class for FrameSource
    */
   addLocalSource(id, type, source) {
-    const isNativeSource = (type === 'quic' || type === 'mediabridge');
+    const isNativeSource = type === "quic" || type === "mediabridge";
     this.internalServer.addSource(id, source, isNativeSource);
-    return this.connections.addConnection(id, type, '', source, 'in');
+    return this.connections.addConnection(id, type, "", source, "in");
   }
 
   /*
@@ -182,35 +185,35 @@ class InternalConnectionRouter {
    * @param {FrameSource} source Wrapper class for FrameDestination
    */
   addLocalDestination(id, type, dest) {
-    log.debug('addLocalDestination:', id, type);
-    return this.connections.addConnection(id, type, '', dest, 'out');
+    log.debug("addLocalDestination:", id, type);
+    return this.connections.addConnection(id, type, "", dest, "out");
   }
 
   // Remove a connection with ID (either source or destination)
   removeConnection(id) {
-    log.debug('removeConnection:', id);
+    log.debug("removeConnection:", id);
     const conn = this.connections.getConnection(id);
     if (conn) {
-      if (conn.direction === 'in') {
+      if (conn.direction === "in") {
         return this.removeLocalSource(id);
-      } else if (conn.direction === 'out') {
+      } else if (conn.direction === "out") {
         return this.removeLocalDestination(id);
       } else {
-        return Promise.reject('Unexpected direction '+conn.direction);
+        return Promise.reject("Unexpected direction " + conn.direction);
       }
     } else {
-      return Promise.reject('Cannot find connection.');
+      return Promise.reject("Cannot find connection.");
     }
   }
 
   removeLocalSource(id) {
-    log.debug('removeLocalSource:', id);
+    log.debug("removeLocalSource:", id);
     this.internalServer.removeSource(id);
     return this.connections.removeConnection(id);
   }
 
   removeLocalDestination(id) {
-    log.debug('removeLocalDestination:', id);
+    log.debug("removeLocalDestination:", id);
     return this.connections.removeConnection(id);
   }
 
@@ -230,19 +233,19 @@ class InternalConnectionRouter {
    * @param {number} port
    * @param {function} onStat(stat) Callback for internal connection
    */
-  getOrCreateRemoteSource({id, ip, port}, onStat) {
+  getOrCreateRemoteSource({ id, ip, port }, onStat) {
     if (this.connections.getConnection(id)) {
       let conn = this.connections.getConnection(id).connection;
       return conn;
     } else if (!this.remoteStreams.has(id) && ip && port) {
-      log.debug('RemoteSource created:', id, ip, port);
+      log.debug("RemoteSource created:", id, ip, port);
       let conn = new InternalClient(id, this.protocol, ip, port, onStat);
       conn.receiver = () => conn;
-      this.connections.addConnection(id, 'internal', '', conn, 'in');
+      this.connections.addConnection(id, "internal", "", conn, "in");
       this.remoteStreams.set(id, new Set());
       return conn;
     } else {
-      log.info('Failed to get remote source:', id, ip, port);
+      log.info("Failed to get remote source:", id, ip, port);
       return null;
     }
   }
@@ -263,22 +266,24 @@ class InternalConnectionRouter {
    * from = {audio: SourceInfo, video: SourceInfo, data: SourceInfo}
    */
   linkup(dstId, from) {
-    log.debug('linkup:', dstId, from);
+    log.debug("linkup:", dstId, from);
     let audioFrom, videoFrom, dataFrom;
-    for(let [type, stream] of Object.entries(from)) {
+    for (let [type, stream] of Object.entries(from)) {
       if (!stream.id) {
         continue;
       }
       if (!this.connections.getConnection(stream.id)) {
         this.getOrCreateRemoteSource(stream, (stat) => {
-          log.debug('Remote source stat:', stream.id, stat);
-          if (stat === 'disconnected') {
+          log.debug("Remote source stat:", stream.id, stat);
+          if (stat === "disconnected") {
             this.destroyRemoteSource(stream.id);
           }
         });
         if (!this.remoteStreams.has(stream.id)) {
-          log.warn('Remote stream never added:', stream.id);
-          return Promise.reject('Invalid remote from:' + type + ', ' + stream.id);
+          log.warn("Remote stream never added:", stream.id);
+          return Promise.reject(
+            "Invalid remote from:" + type + ", " + stream.id
+          );
         }
         // Save destination mapping for remote stream
         // TODO: destroy remote streams when needed
@@ -290,7 +295,11 @@ class InternalConnectionRouter {
     if (from.data) dataFrom = from.data.id;
 
     return this.connections.linkupConnection(
-      dstId, audioFrom, videoFrom, dataFrom);
+      dstId,
+      audioFrom,
+      videoFrom,
+      dataFrom
+    );
   }
 
   cutoff(id) {
@@ -302,7 +311,7 @@ class InternalConnectionRouter {
     const connIds = this.connections.getIds();
     for (const id of connIds) {
       const conn = this.connections.getConnection(id);
-      if (conn.type === 'internal') {
+      if (conn.type === "internal") {
         this.destroyRemoteSource(id);
       } else {
         this.removeConnection(id);
@@ -310,11 +319,11 @@ class InternalConnectionRouter {
     }
   }
 
-  onFaultDetected(message)
-  {
-      log.error('Internal connection router detected error ' + JSON.stringify(message));
+  onFaultDetected(message) {
+    log.error(
+      "Internal connection router detected error " + JSON.stringify(message)
+    );
   }
-
 }
 
 exports.InternalConnectionRouter = InternalConnectionRouter;

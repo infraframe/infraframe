@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
+"use strict";
 
-const { EventEmitter } = require('events');
-const log = require('../logger').logger.getLogger('TypeController');
-const {Publication, Subscription} = require('../stateTypes')
+const { EventEmitter } = require("events");
+const log = require("../logger").logger.getLogger("TypeController");
+const { Publication, Subscription } = require("../stateTypes");
 
 /* Events
  * 'session-established': (id, Publication|Subscription)
@@ -15,11 +15,11 @@ const {Publication, Subscription} = require('../stateTypes')
  */
 class TypeController extends EventEmitter {
   static methods = [
-    'createSession',
-    'removeSession',
-    'controlSession',
-    'destroy',
-  ]
+    "createSession",
+    "removeSession",
+    "controlSession",
+    "destroy",
+  ];
 
   /*
    * rpc: {
@@ -37,30 +37,34 @@ class TypeController extends EventEmitter {
 
   // Return Promise<{agent: string, node: string}>
   async getWorkerNode(purpose, domain, taskId, preference) {
-    log.debug('getWorkerNode:', purpose, domain, taskId, preference);
-    const args =  [purpose, taskId, preference, 30 * 1000];
-    return this.makeRPC(this.clusterId, 'schedule', args)
-      .then((workerAgent) => {
-        const taskConfig = {room: domain, task: taskId};
-        return this.makeRPC(workerAgent.id, 'getNode', [taskConfig])
-          .then((workerNode) => {
-            return {agent: workerAgent.id, node: workerNode};
-          });
-      });
+    log.debug("getWorkerNode:", purpose, domain, taskId, preference);
+    const args = [purpose, taskId, preference, 30 * 1000];
+    return this.makeRPC(this.clusterId, "schedule", args).then(
+      (workerAgent) => {
+        const taskConfig = { room: domain, task: taskId };
+        return this.makeRPC(workerAgent.id, "getNode", [taskConfig]).then(
+          (workerNode) => {
+            return { agent: workerAgent.id, node: workerNode };
+          }
+        );
+      }
+    );
   }
 
   // locality: {agent: string, node: string}
   async recycleWorkerNode(locality, domain, taskId) {
-    log.debug('recycleWorkerNode:', locality, domain, taskId);
-    const args = [locality.node, {room: domain, task: taskId}];
-    return this.makeRPC(locality.agent, 'recycleNode', args);
+    log.debug("recycleWorkerNode:", locality, domain, taskId);
+    const args = [locality.node, { room: domain, task: taskId }];
+    return this.makeRPC(locality.agent, "recycleNode", args);
   }
 
   async controlSession(direction, config) {
-    if (config.operation === 'update') {
-      const data = direction === 'in' ?
-        Publication.from(config.data) : Subscription.from(config.data);
-      this.emit('session-updated', config.id, {type: 'update', data});
+    if (config.operation === "update") {
+      const data =
+        direction === "in"
+          ? Publication.from(config.data)
+          : Subscription.from(config.data);
+      this.emit("session-updated", config.id, { type: "update", data });
     } else {
       throw new Error(`Unknown control operation: ${config.operation}`);
     }

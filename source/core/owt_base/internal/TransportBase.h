@@ -60,16 +60,17 @@ private:
 /*
  * Combine buffer and size
  */
-struct TransportData{
-    TransportData() {}
+struct TransportData {
+    TransportData() { }
     TransportData(const uint8_t* data, uint32_t len)
-        : buffer(new uint8_t[len]), length(len)
+        : buffer(new uint8_t[len])
+        , length(len)
     {
         memcpy(buffer.get(), data, len);
     }
     boost::shared_array<uint8_t> buffer;
     uint32_t length;
-} ;
+};
 
 /*
  * BaseSession for RawTransport
@@ -77,6 +78,7 @@ struct TransportData{
 class TransportSession
     : public std::enable_shared_from_this<TransportSession> {
     DECLARE_LOGGER();
+
 public:
     class Listener {
     public:
@@ -86,14 +88,14 @@ public:
     typedef boost::asio::ssl::stream<boost::asio::ip::tcp::socket> SSLSocket;
 
     TransportSession(uint32_t id,
-                     std::shared_ptr<IOService> service,
-                     boost::asio::ip::tcp::socket socket,
-                     Listener* listener);
+        std::shared_ptr<IOService> service,
+        boost::asio::ip::tcp::socket socket,
+        Listener* listener);
     // Constructor for secured session
     TransportSession(uint32_t id,
-                     std::shared_ptr<IOService> service,
-                     std::shared_ptr<SSLSocket> sslSocket,
-                     Listener* listener);
+        std::shared_ptr<IOService> service,
+        std::shared_ptr<SSLSocket> sslSocket,
+        Listener* listener);
 
     virtual ~TransportSession();
 

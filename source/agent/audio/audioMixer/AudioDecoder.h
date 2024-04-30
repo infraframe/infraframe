@@ -5,8 +5,8 @@
 #ifndef AudioDecoder_h
 #define AudioDecoder_h
 
-#include <webrtc/modules/include/module_common_types.h>
 #include "MediaFramePipeline.h"
+#include <webrtc/modules/include/module_common_types.h>
 
 namespace mcu {
 
@@ -15,7 +15,7 @@ public:
     virtual ~AudioDecoder() { }
 
     virtual bool init() = 0;
-    virtual bool getAudioFrame(webrtc::AudioFrame *audioFrame) = 0;
+    virtual bool getAudioFrame(webrtc::AudioFrame* audioFrame) = 0;
 
     // Implements owt_base::FrameDestination
     virtual void onFrame(const owt_base::Frame& frame) = 0;

@@ -123,7 +123,7 @@ RUN git clone ${SVT_HEVC_REPO} && \
     mkdir -p ../../Bin/Release && \
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=lib/x86_64-linux-gnu -DCMAKE_ASM_NASM_COMPILER=yasm ../.. && \
     make -j8 && \
-    make install 
+    make install
 
 
 # Install json_hpp
@@ -155,7 +155,7 @@ ENV APP_PATH=${IMG_APP_PATH}
 
 RUN apt-get update && apt-get install -y -q --no-install-recommends python libglib2.0-dev rabbitmq-server mongodb libboost-thread-dev libboost-system-dev liblog4cxx-dev libgstreamer-plugins-base1.0-dev
 
-# 1. Clone OWT server source code 
+# 1. Clone OWT server source code
 # 2. Clone licode source code and patch
 # 3. Clone webrtc source code and patch
 RUN git config --global user.email "you@example.com" && \
@@ -177,7 +177,7 @@ RUN git config --global user.email "you@example.com" && \
     ln -s -v ${OPENH264_BINARYNAME} libopenh264.so.${OPENH264_SOVER} && \
     ln -s -v libopenh264.so.${OPENH264_SOVER} libopenh264.so && \
     echo 'const char* stub() {return "this is a stub lib";}' > pseudo-openh264.cpp && \
-    gcc pseudo-openh264.cpp -fPIC -shared -o pseudo-openh264.so 
+    gcc pseudo-openh264.cpp -fPIC -shared -o pseudo-openh264.so
 
 # Get licode for owt
 RUN cd ${SERVER_PATH}/third_party && git clone ${LICODE_REPO} && \
@@ -190,7 +190,7 @@ RUN cd ${SERVER_PATH}/third_party && mkdir webrtc  && cd webrtc &&\
     export GIT_SSL_NO_VERIFY=1 && \
     git clone -b 59-server ${WEBRTC_REPO} src && \
     ./src/tools-woogeen/install.sh && \
-    ./src/tools-woogeen/build.sh 
+    ./src/tools-woogeen/build.sh
 
 # Install webrtc88 for owt
 RUN mkdir ${SERVER_PATH}/third_party/webrtc-m88 && \

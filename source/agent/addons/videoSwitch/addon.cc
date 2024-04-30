@@ -8,8 +8,9 @@
 
 using namespace v8;
 
-void InitAll(Local<Object> exports) {
-  VideoSwitch::Init(exports);
+void InitAll(Local<Object> exports)
+{
+    VideoSwitch::Init(exports);
 }
 
 NODE_MODULE(addon, InitAll)

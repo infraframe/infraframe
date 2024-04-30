@@ -25,7 +25,7 @@ private:
     ~TaskRunnerPool();
 
     int m_nextRunner;
-    std::vector<boost::shared_ptr<WebRTCTaskRunner> > m_taskRunners;
+    std::vector<boost::shared_ptr<WebRTCTaskRunner>> m_taskRunners;
 };
 
 } /* namespace owt_base */

@@ -13,19 +13,19 @@ namespace owt_base {
 inline AVCodecID frameFormat2AVCodecID(int frameFormat)
 {
     switch (frameFormat) {
-        case FRAME_FORMAT_PCMU:
-            return AV_CODEC_ID_PCM_MULAW;
-        case FRAME_FORMAT_PCMA:
-            return AV_CODEC_ID_PCM_ALAW;
-        case FRAME_FORMAT_OPUS:
-            return AV_CODEC_ID_OPUS;
-        case FRAME_FORMAT_AAC_48000_2:
-            return AV_CODEC_ID_AAC;
-        case FRAME_FORMAT_G722_16000_1:
-        case FRAME_FORMAT_G722_16000_2:
-            return AV_CODEC_ID_ADPCM_G722;
-        default:
-            return AV_CODEC_ID_NONE;
+    case FRAME_FORMAT_PCMU:
+        return AV_CODEC_ID_PCM_MULAW;
+    case FRAME_FORMAT_PCMA:
+        return AV_CODEC_ID_PCM_ALAW;
+    case FRAME_FORMAT_OPUS:
+        return AV_CODEC_ID_OPUS;
+    case FRAME_FORMAT_AAC_48000_2:
+        return AV_CODEC_ID_AAC;
+    case FRAME_FORMAT_G722_16000_1:
+    case FRAME_FORMAT_G722_16000_2:
+        return AV_CODEC_ID_ADPCM_G722;
+    default:
+        return AV_CODEC_ID_NONE;
     }
 }
 
@@ -69,50 +69,50 @@ bool AudioFrameWriter::addAudioStream(FrameFormat format, uint32_t sampleRate, u
         return false;
     }
 
-    AVCodecParameters *par = m_audioStream->codecpar;
-    par->codec_type     = AVMEDIA_TYPE_AUDIO;
-    par->codec_id       = codec_id;
-    par->sample_rate    = sampleRate;
-    par->channels       = channels;
+    AVCodecParameters* par = m_audioStream->codecpar;
+    par->codec_type = AVMEDIA_TYPE_AUDIO;
+    par->codec_id = codec_id;
+    par->sample_rate = sampleRate;
+    par->channels = channels;
     par->channel_layout = av_get_default_channel_layout(par->channels);
-    switch(par->codec_id) {
-        case AV_CODEC_ID_AAC: //AudioSpecificConfig 48000-2
-            par->extradata_size = 2;
-            par->extradata      = (uint8_t *)av_malloc(par->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
-            par->extradata[0]   = 0x11;
-            par->extradata[1]   = 0x90;
-            break;
-        case AV_CODEC_ID_OPUS: //OpusHead 48000-2
-            par->extradata_size = 19;
-            par->extradata      = (uint8_t *)av_malloc(par->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
-            par->extradata[0]   = 'O';
-            par->extradata[1]   = 'p';
-            par->extradata[2]   = 'u';
-            par->extradata[3]   = 's';
-            par->extradata[4]   = 'H';
-            par->extradata[5]   = 'e';
-            par->extradata[6]   = 'a';
-            par->extradata[7]   = 'd';
-            //Version
-            par->extradata[8]   = 1;
-            //Channel Count
-            par->extradata[9]   = 2;
-            //Pre-skip
-            par->extradata[10]  = 0x38;
-            par->extradata[11]  = 0x1;
-            //Input Sample Rate (Hz)
-            par->extradata[12]  = 0x80;
-            par->extradata[13]  = 0xbb;
-            par->extradata[14]  = 0;
-            par->extradata[15]  = 0;
-            //Output Gain (Q7.8 in dB)
-            par->extradata[16]  = 0;
-            par->extradata[17]  = 0;
-            //Mapping Family
-            par->extradata[18]  = 0;
-            break;
-        default:
-            break;
+    switch (par->codec_id) {
+    case AV_CODEC_ID_AAC: //AudioSpecificConfig 48000-2
+        par->extradata_size = 2;
+        par->extradata = (uint8_t*)av_malloc(par->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
+        par->extradata[0] = 0x11;
+        par->extradata[1] = 0x90;
+        break;
+    case AV_CODEC_ID_OPUS: //OpusHead 48000-2
+        par->extradata_size = 19;
+        par->extradata = (uint8_t*)av_malloc(par->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
+        par->extradata[0] = 'O';
+        par->extradata[1] = 'p';
+        par->extradata[2] = 'u';
+        par->extradata[3] = 's';
+        par->extradata[4] = 'H';
+        par->extradata[5] = 'e';
+        par->extradata[6] = 'a';
+        par->extradata[7] = 'd';
+        //Version
+        par->extradata[8] = 1;
+        //Channel Count
+        par->extradata[9] = 2;
+        //Pre-skip
+        par->extradata[10] = 0x38;
+        par->extradata[11] = 0x1;
+        //Input Sample Rate (Hz)
+        par->extradata[12] = 0x80;
+        par->extradata[13] = 0xbb;
+        par->extradata[14] = 0;
+        par->extradata[15] = 0;
+        //Output Gain (Q7.8 in dB)
+        par->extradata[16] = 0;
+        par->extradata[17] = 0;
+        //Mapping Family
+        par->extradata[18] = 0;
+        break;
+    default:
+        break;
     }
 
     return true;
@@ -143,10 +143,7 @@ void AudioFrameWriter::writeCompressedFrame(const Frame& frame)
         }
 
         if (!addAudioStream(frame.format, frame.additionalInfo.audio.sampleRate, frame.additionalInfo.audio.channels)) {
-            ELOG_ERROR_T("Cannot add audio stream, %s, %d, %d"
-                    , getFormatStr(frame.format)
-                    , frame.additionalInfo.audio.sampleRate
-                    , frame.additionalInfo.audio.channels);
+            ELOG_ERROR_T("Cannot add audio stream, %s, %d, %d", getFormatStr(frame.format), frame.additionalInfo.audio.sampleRate, frame.additionalInfo.audio.channels);
 
             avformat_free_context(m_context);
             m_context = NULL;
@@ -171,7 +168,7 @@ void AudioFrameWriter::writeCompressedFrame(const Frame& frame)
     int ret;
     AVPacket pkt;
 
-    uint8_t *payload = frame.payload;
+    uint8_t* payload = frame.payload;
     uint32_t length = frame.length;
 
     if (frame.additionalInfo.audio.isRtpPacket) {
@@ -206,32 +203,32 @@ void AudioFrameWriter::writeCompressedFrame(const Frame& frame)
 void AudioFrameWriter::write(const Frame& frame)
 {
     switch (frame.format) {
-        case FRAME_FORMAT_PCM_48000_2:
-            assert(false);
-            break;
+    case FRAME_FORMAT_PCM_48000_2:
+        assert(false);
+        break;
 
-        case FRAME_FORMAT_PCMU:
-        case FRAME_FORMAT_PCMA:
-        case FRAME_FORMAT_OPUS:
-        case FRAME_FORMAT_ISAC16:
-        case FRAME_FORMAT_ISAC32:
-        case FRAME_FORMAT_ILBC:
-        case FRAME_FORMAT_G722_16000_1:
-        case FRAME_FORMAT_G722_16000_2:
-        case FRAME_FORMAT_AAC_48000_2:
-            writeCompressedFrame(frame);
-            break;
+    case FRAME_FORMAT_PCMU:
+    case FRAME_FORMAT_PCMA:
+    case FRAME_FORMAT_OPUS:
+    case FRAME_FORMAT_ISAC16:
+    case FRAME_FORMAT_ISAC32:
+    case FRAME_FORMAT_ILBC:
+    case FRAME_FORMAT_G722_16000_1:
+    case FRAME_FORMAT_G722_16000_2:
+    case FRAME_FORMAT_AAC_48000_2:
+        writeCompressedFrame(frame);
+        break;
 
-        default:
-            assert(false);
-            return;
+    default:
+        assert(false);
+        return;
     }
 }
 
-FILE *AudioFrameWriter::getAudioFp(const webrtc::AudioFrame *audioFrame)
+FILE* AudioFrameWriter::getAudioFp(const webrtc::AudioFrame* audioFrame)
 {
     if (m_sampleRate != audioFrame->sample_rate_hz_
-            || m_channels != (int32_t)audioFrame->num_channels_) {
+        || m_channels != (int32_t)audioFrame->num_channels_) {
         if (m_fp) {
             fclose(m_fp);
             m_fp = NULL;
@@ -256,7 +253,7 @@ FILE *AudioFrameWriter::getAudioFp(const webrtc::AudioFrame *audioFrame)
     return m_fp;
 }
 
-void AudioFrameWriter::write(const webrtc::AudioFrame *audioFrame)
+void AudioFrameWriter::write(const webrtc::AudioFrame* audioFrame)
 {
     if (!audioFrame) {
         ELOG_ERROR_T("NULL pointer");
@@ -268,13 +265,13 @@ void AudioFrameWriter::write(const webrtc::AudioFrame *audioFrame)
         return;
     }
 
-    FILE *fp = getAudioFp(audioFrame);
+    FILE* fp = getAudioFp(audioFrame);
     if (!fp) {
         ELOG_ERROR_T("NULL fp");
         return;
     }
 
-    fwrite(audioFrame->data(), 1, audioFrame->samples_per_channel_* audioFrame->num_channels_ * 2, fp);
+    fwrite(audioFrame->data(), 1, audioFrame->samples_per_channel_ * audioFrame->num_channels_ * 2, fp);
 }
 
 } /* namespace mcu */

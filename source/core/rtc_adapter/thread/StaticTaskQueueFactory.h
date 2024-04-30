@@ -13,6 +13,6 @@ namespace rtc_adapter {
 
 std::unique_ptr<webrtc::TaskQueueFactory> createStaticTaskQueueFactory();
 
-}  // namespace webrtc
+} // namespace webrtc
 
-#endif  // RTC_ADAPTER_THREAD_STATIC_TASK_QUEUE_FACTORY_
+#endif // RTC_ADAPTER_THREAD_STATIC_TASK_QUEUE_FACTORY_

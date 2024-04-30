@@ -3,9 +3,15 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-this=`dirname "$0"`
-this=`cd "$this"; pwd`
-ROOT=`cd "${this}/.."; pwd`
+this=$(dirname "$0")
+this=$(
+  cd "$this"
+  pwd
+)
+ROOT=$(
+  cd "${this}/.."
+  pwd
+)
 
 DB_URL='localhost/owtdb'
 
@@ -29,7 +35,10 @@ check_node_version() {
   local NODE_VERSION=v$(node -e "process.stdout.write(require('${this}/package.json').engine.node)")
   NODE_VERSION=$(echo ${NODE_VERSION} | cut -d '.' -f 1)
   local NODE_VERSION_USE=$(node --version | cut -d '.' -f 1)
-  [[ ${NODE_VERSION} == ${NODE_VERSION_USE} ]] && return 0 || (echo "node version not match. Please use node ${NODE_VERSION}"; return 1;)
+  [[ ${NODE_VERSION} == ${NODE_VERSION_USE} ]] && return 0 || (
+    echo "node version not match. Please use node ${NODE_VERSION}"
+    return 1
+  )
 }
 
 install_config() {
@@ -42,14 +51,14 @@ install_config() {
 shopt -s extglob
 while [[ $# -gt 0 ]]; do
   case $1 in
-    *(-)dburl=* )
-      DB_URL=$(echo $1 | cut -d '=' -f 2-)
-      echo -e "\x1b[36musing $DB_URL\x1b[0m"
-      ;;
-    *(-)help )
-      usage
-      exit 0
-      ;;
+  *(-)dburl=*)
+    DB_URL=$(echo $1 | cut -d '=' -f 2-)
+    echo -e "\x1b[36musing $DB_URL\x1b[0m"
+    ;;
+  *(-)help)
+    usage
+    exit 0
+    ;;
   esac
   shift
 done

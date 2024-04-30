@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
+"use strict";
 
 var restApi;
 var mode = "";
@@ -10,7 +10,7 @@ var metadata;
 var ENUMERATE = {
   SERVICE: "service",
   ROOM: "room",
-  RUNTIME: "runtime"
+  RUNTIME: "runtime",
 };
 var serviceId = "";
 var serviceKey = "";
@@ -19,12 +19,12 @@ var roomTotal = 1;
 
 function checkProfile(callback) {
   restApi = ManagementApi.init();
-  restApi.loginCheck(function(err, text) {
+  restApi.loginCheck(function (err, text) {
     if (err === 401) {
-      $('#myModal').modal('show');
+      $("#myModal").modal("show");
       return;
     } else if (err) {
-      notify('error', 'Failed to get service information', err);
+      notify("error", "Failed to get service information", err);
       return;
     } else {
       var myService = JSON.parse(text);
@@ -37,11 +37,11 @@ function checkProfile(callback) {
   });
 }
 
-$('button#clearCookie').click(function() {
+$("button#clearCookie").click(function () {
   restApi = ManagementApi.init();
-  restApi.logout(function(err) {
+  restApi.logout(function (err) {
     if (err) {
-      notify('error', 'Failed to logout', err);
+      notify("error", "Failed to logout", err);
       return;
     }
   });
@@ -49,14 +49,14 @@ $('button#clearCookie').click(function() {
   document.getElementById("inputKey").value = "";
 });
 
-$('button#saveServiceInfo').click(function() {
-  serviceId = $('.modal-body #inputId').val();
-  serviceKey = $('.modal-body #inputKey').val();
-  if (serviceId !== '' && serviceKey !== '') {
+$("button#saveServiceInfo").click(function () {
+  serviceId = $(".modal-body #inputId").val();
+  serviceKey = $(".modal-body #inputKey").val();
+  if (serviceId !== "" && serviceKey !== "") {
     restApi = ManagementApi.init();
-    restApi.login(serviceId, serviceKey, function(err) {
+    restApi.login(serviceId, serviceKey, function (err) {
       if (err) {
-        notify('error', 'Failed to login', err);
+        notify("error", "Failed to login", err);
         return;
       }
       document.getElementById("inputKey").value = "";
@@ -70,7 +70,7 @@ $('button#saveServiceInfo').click(function() {
 });
 
 function judgePermissions(flag) {
-  restApi.getServices(function(err, text) {
+  restApi.getServices(function (err, text) {
     if (!err) {
       $(".li").removeClass("hideLi");
     } else {
@@ -114,16 +114,16 @@ function a_click(nowList, dom) {
 }
 
 var login = new Promise((resolve, reject) => {
-  $(".close").on("click", function() {
-    if (serviceId === '' || serviceKey === '') {
+  $(".close").on("click", function () {
+    if (serviceId === "" || serviceKey === "") {
       return;
     } else {
       $("#myModal").modal("hide");
     }
   });
-  checkProfile(()=>resolve());
+  checkProfile(() => resolve());
 });
 
-login.then(()=> {
+login.then(() => {
   renderRoom();
 });

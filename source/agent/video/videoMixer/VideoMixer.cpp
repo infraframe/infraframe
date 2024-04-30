@@ -5,9 +5,9 @@
 #include <webrtc/base/logging.h>
 #include <webrtc/system_wrappers/include/trace.h>
 
-#include "VideoMixer.h"
-#include "VideoFrameMixerImpl.h"
 #include "VideoFrameMixer.h"
+#include "VideoFrameMixerImpl.h"
+#include "VideoMixer.h"
 
 using namespace webrtc;
 using namespace owt_base;
@@ -31,10 +31,7 @@ VideoMixer::VideoMixer(const VideoMixerConfig& config)
         rtc::LogMessage::LogToDebug(rtc::LS_INFO);
         rtc::LogMessage::LogTimestamps(true);
 
-        const int kTraceFilter = webrtc::kTraceNone | webrtc::kTraceTerseInfo |
-            webrtc::kTraceWarning | webrtc::kTraceError |
-            webrtc::kTraceCritical | webrtc::kTraceDebug |
-            webrtc::kTraceInfo;
+        const int kTraceFilter = webrtc::kTraceNone | webrtc::kTraceTerseInfo | webrtc::kTraceWarning | webrtc::kTraceError | webrtc::kTraceCritical | webrtc::kTraceDebug | webrtc::kTraceInfo;
 
         webrtc::Trace::CreateTrace();
         webrtc::Trace::SetTraceFile(NULL, false);
@@ -56,8 +53,8 @@ VideoMixer::VideoMixer(const VideoMixerConfig& config)
     }
 
 #ifdef ENABLE_MSDK
-    MsdkBase *msdkBase = MsdkBase::get();
-    if(msdkBase != NULL) {
+    MsdkBase* msdkBase = MsdkBase::get();
+    if (msdkBase != NULL) {
         msdkBase->setConfigHevcEncoderGaccPlugin(config.useGacc);
         msdkBase->setConfigMFETimeout(config.MFE_timeout);
     }
@@ -116,14 +113,7 @@ void VideoMixer::setInputActive(const int inputIndex, bool active)
 }
 
 bool VideoMixer::addOutput(
-    const std::string& outStreamID
-    , const std::string& codec
-    , const owt_base::VideoCodecProfile profile
-    , const std::string& resolution
-    , const unsigned int framerateFPS
-    , const unsigned int bitrateKbps
-    , const unsigned int keyFrameIntervalSeconds
-    , owt_base::FrameDestination* dest)
+    const std::string& outStreamID, const std::string& codec, const owt_base::VideoCodecProfile profile, const std::string& resolution, const unsigned int framerateFPS, const unsigned int bitrateKbps, const unsigned int keyFrameIntervalSeconds, owt_base::FrameDestination* dest)
 {
     owt_base::FrameFormat format = getFormat(codec);
     VideoSize vSize;
@@ -168,19 +158,14 @@ void VideoMixer::forceKeyFrame(const std::string& outStreamID)
     }
 }
 
-void VideoMixer::updateLayoutSolution(LayoutSolution& solution) {
+void VideoMixer::updateLayoutSolution(LayoutSolution& solution)
+{
     ELOG_DEBUG("updateLayoutSolution, size(%ld)", solution.size());
 
     for (auto& l : solution) {
-        Region *pRegion = &l.region;
+        Region* pRegion = &l.region;
 
-        ELOG_DEBUG("input(%d): shape(%s), left(%d/%d), top(%d/%d), width(%d/%d), height(%d/%d)"
-                , l.input
-                , pRegion->shape.c_str()
-                , pRegion->area.rect.left.numerator, pRegion->area.rect.left.denominator
-                , pRegion->area.rect.top.numerator, pRegion->area.rect.top.denominator
-                , pRegion->area.rect.width.numerator, pRegion->area.rect.width.denominator
-                , pRegion->area.rect.height.numerator, pRegion->area.rect.height.denominator);
+        ELOG_DEBUG("input(%d): shape(%s), left(%d/%d), top(%d/%d), width(%d/%d), height(%d/%d)", l.input, pRegion->shape.c_str(), pRegion->area.rect.left.numerator, pRegion->area.rect.left.denominator, pRegion->area.rect.top.numerator, pRegion->area.rect.top.denominator, pRegion->area.rect.width.numerator, pRegion->area.rect.width.denominator, pRegion->area.rect.height.numerator, pRegion->area.rect.height.denominator);
 
         assert(pRegion->shape.compare("rectangle") == 0);
         assert(pRegion->area.rect.left.denominator != 0 && pRegion->area.rect.left.denominator >= pRegion->area.rect.left.numerator);
@@ -188,12 +173,7 @@ void VideoMixer::updateLayoutSolution(LayoutSolution& solution) {
         assert(pRegion->area.rect.width.denominator != 0 && pRegion->area.rect.width.denominator >= pRegion->area.rect.width.numerator);
         assert(pRegion->area.rect.height.denominator != 0 && pRegion->area.rect.height.denominator >= pRegion->area.rect.height.numerator);
 
-        ELOG_TRACE("input(%d): left(%.2f), top(%.2f), width(%.2f), height(%.2f)"
-                , l.input
-                , (float)pRegion->area.rect.left.numerator / pRegion->area.rect.left.denominator
-                , (float)pRegion->area.rect.top.numerator / pRegion->area.rect.top.denominator
-                , (float)pRegion->area.rect.width.numerator / pRegion->area.rect.width.denominator
-                , (float)pRegion->area.rect.height.numerator / pRegion->area.rect.height.denominator);
+        ELOG_TRACE("input(%d): left(%.2f), top(%.2f), width(%.2f), height(%.2f)", l.input, (float)pRegion->area.rect.left.numerator / pRegion->area.rect.left.denominator, (float)pRegion->area.rect.top.numerator / pRegion->area.rect.top.denominator, (float)pRegion->area.rect.width.numerator / pRegion->area.rect.width.denominator, (float)pRegion->area.rect.height.numerator / pRegion->area.rect.height.denominator);
     }
 
     m_frameMixer->updateLayoutSolution(solution);
@@ -235,5 +215,4 @@ void VideoMixer::closeAll()
     ELOG_DEBUG("Closed all media in this Mixer");
 }
 
-
-}/* namespace mcu */
+} /* namespace mcu */

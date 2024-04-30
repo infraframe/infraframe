@@ -5,13 +5,13 @@
 #ifndef AVStreamOut_h
 #define AVStreamOut_h
 
-#include <queue>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
+#include <queue>
 
-#include <logger.h>
 #include <EventRegistry.h>
+#include <logger.h>
 #include <rtputils.h>
 
 #include "MediaFramePipeline.h"
@@ -37,7 +37,7 @@ public:
     {
         m_frame = frame;
         if (frame.length > 0) {
-            uint8_t *payload = frame.payload;
+            uint8_t* payload = frame.payload;
             uint32_t length = frame.length;
 
             if (isAudioFrame(frame) && frame.additionalInfo.audio.isRtpPacket) {
@@ -50,7 +50,7 @@ public:
                 m_frame.length = length;
             }
 
-            m_frame.payload = (uint8_t *)malloc(length);
+            m_frame.payload = (uint8_t*)malloc(length);
             memcpy(m_frame.payload, payload, length);
         } else {
             m_frame.payload = NULL;
@@ -181,17 +181,17 @@ public:
 
     // FrameDestination
     virtual void onFrame(const Frame&);
-    virtual void onVideoSourceChanged(void) {deliverFeedbackMsg(FeedbackMsg{.type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME });}
+    virtual void onVideoSourceChanged(void) { deliverFeedbackMsg(FeedbackMsg { .type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME }); }
 
 protected:
     virtual bool isAudioFormatSupported(FrameFormat format) = 0;
     virtual bool isVideoFormatSupported(FrameFormat format) = 0;
-    virtual const char *getFormatName(std::string& url) = 0;
+    virtual const char* getFormatName(std::string& url) = 0;
     virtual uint32_t getKeyFrameInterval(void) = 0;
     virtual uint32_t getReconnectCount(void) = 0;
 
     virtual bool writeHeader(void);
-    virtual bool getHeaderOpt(std::string& url, AVDictionary **options) = 0;
+    virtual bool getHeaderOpt(std::string& url, AVDictionary** options) = 0;
 
     // EventRegistry
     virtual bool notifyAsyncEvent(const std::string& event, const std::string& data)
@@ -218,13 +218,13 @@ protected:
     bool addAudioStream(FrameFormat format, uint32_t sampleRate, uint32_t channels);
     bool addVideoStream(FrameFormat format, uint32_t width, uint32_t height);
 
-    bool writeFrame(AVStream *stream, boost::shared_ptr<MediaFrame> mediaFrame);
+    bool writeFrame(AVStream* stream, boost::shared_ptr<MediaFrame> mediaFrame);
 
     void sendLoop(void);
 
-    void setVideoSourceChanged() {m_videoSourceChanged = true;};
+    void setVideoSourceChanged() { m_videoSourceChanged = true; };
 
-    char *ff_err2str(int errRet);
+    char* ff_err2str(int errRet);
 
 private:
     Status m_status;
@@ -232,7 +232,7 @@ private:
     std::string m_url;
     bool m_hasAudio;
     bool m_hasVideo;
-    EventRegistry *m_asyncHandle;
+    EventRegistry* m_asyncHandle;
     uint32_t m_timeOutMs;
 
     FrameFormat m_audioFormat;
@@ -247,9 +247,9 @@ private:
     boost::shared_ptr<owt_base::MediaFrame> m_videoKeyFrame;
     MediaFrameQueue m_frameQueue;
 
-    AVFormatContext *m_context;
-    AVStream *m_audioStream;
-    AVStream *m_videoStream;
+    AVFormatContext* m_context;
+    AVStream* m_audioStream;
+    AVStream* m_videoStream;
 
     int64_t m_lastKeyFrameTimestamp;
 

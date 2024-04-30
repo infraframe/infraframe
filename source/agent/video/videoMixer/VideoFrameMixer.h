@@ -22,8 +22,8 @@ public:
     virtual void pushInput(int input, const owt_base::Frame&) = 0;
     virtual void updateLayoutSolution(LayoutSolution& solution) = 0;
 
-    virtual bool addOutput(const uint32_t width, const uint32_t height, const uint32_t framerateFPS, owt_base::FrameDestination *dst) = 0;
-    virtual bool removeOutput(owt_base::FrameDestination *dst) = 0;
+    virtual bool addOutput(const uint32_t width, const uint32_t height, const uint32_t framerateFPS, owt_base::FrameDestination* dst) = 0;
+    virtual bool removeOutput(owt_base::FrameDestination* dst) = 0;
 
     virtual void drawText(const std::string& textSpec) = 0;
     virtual void clearText() = 0;
@@ -38,13 +38,14 @@ public:
     virtual void setInputActive(int input, bool active) = 0;
 
     virtual bool addOutput(int output,
-            owt_base::FrameFormat,
-            const owt_base::VideoCodecProfile profile,
-            const owt_base::VideoSize&,
-            const unsigned int framerateFPS,
-            const unsigned int bitrateKbps,
-            const unsigned int keyFrameIntervalSeconds,
-            owt_base::FrameDestination*) = 0;
+        owt_base::FrameFormat,
+        const owt_base::VideoCodecProfile profile,
+        const owt_base::VideoSize&,
+        const unsigned int framerateFPS,
+        const unsigned int bitrateKbps,
+        const unsigned int keyFrameIntervalSeconds,
+        owt_base::FrameDestination*)
+        = 0;
     virtual void removeOutput(int output) = 0;
 
     //virtual void setBitrate(unsigned short kbps, int output) = 0;

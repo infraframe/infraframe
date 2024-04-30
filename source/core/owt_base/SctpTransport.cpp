@@ -13,75 +13,79 @@ DEFINE_LOGGER(SctpTransport, "owt.SctpTransport");
 
 namespace {
 
-enum PreservedErrno {
-    SCTP_EINPROGRESS = EINPROGRESS,
-    SCTP_EWOULDBLOCK = EWOULDBLOCK
-};
+    enum PreservedErrno {
+        SCTP_EINPROGRESS = EINPROGRESS,
+        SCTP_EWOULDBLOCK = EWOULDBLOCK
+    };
 
-// Initialize with a large send space size currently
-const int MAX_MSGSIZE = 1024 * 1024;
+    // Initialize with a large send space size currently
+    const int MAX_MSGSIZE = 1024 * 1024;
 
-int usrsctp_ref_count = 0;
-boost::mutex usrsctp_ref_mutex;
+    int usrsctp_ref_count = 0;
+    boost::mutex usrsctp_ref_mutex;
 
-void debugSctpPrintf(const char *format, ...)
-{
-    va_list ap;
+    void debugSctpPrintf(const char* format, ...)
+    {
+        va_list ap;
 
-    va_start(ap, format);
-    vprintf(format, ap);
-    va_end(ap);
-}
+        va_start(ap, format);
+        vprintf(format, ap);
+        va_end(ap);
+    }
 
-void initUsrSctp() {
-    //printf("### initUsrSctp\n");
-    usrsctp_init(0, &SctpTransport::onSctpOutboundPacket, &debugSctpPrintf);
+    void initUsrSctp()
+    {
+        //printf("### initUsrSctp\n");
+        usrsctp_init(0, &SctpTransport::onSctpOutboundPacket, &debugSctpPrintf);
 
-    usrsctp_sysctl_set_sctp_sendspace((uint32_t) MAX_MSGSIZE);
-    usrsctp_sysctl_set_sctp_recvspace((uint32_t) MAX_MSGSIZE);
+        usrsctp_sysctl_set_sctp_sendspace((uint32_t)MAX_MSGSIZE);
+        usrsctp_sysctl_set_sctp_recvspace((uint32_t)MAX_MSGSIZE);
 
-    // uint32_t delay_time = 100;
-    // usrsctp_sysctl_set_sctp_delayed_sack_time_default(delay_time);
+        // uint32_t delay_time = 100;
+        // usrsctp_sysctl_set_sctp_delayed_sack_time_default(delay_time);
 
-    // uint32_t enable_immediate_sack = 1;
-    // usrsctp_sysctl_set_sctp_enable_sack_immediately(enable_immediate_sack);
-    // uint32_t on = 1;
-    // usrsctp_sysctl_set_sctp_nr_sack_on_off(on);
+        // uint32_t enable_immediate_sack = 1;
+        // usrsctp_sysctl_set_sctp_enable_sack_immediately(enable_immediate_sack);
+        // uint32_t on = 1;
+        // usrsctp_sysctl_set_sctp_nr_sack_on_off(on);
 
-    // send_size = usrsctp_sysctl_get_sctp_sendspace();
-    // if (send_size < MAX_MSGSIZE) {
-    //     //printf("Got smaller send size than expected: %d\n", send_size);
-    // }
-}
+        // send_size = usrsctp_sysctl_get_sctp_sendspace();
+        // if (send_size < MAX_MSGSIZE) {
+        //     //printf("Got smaller send size than expected: %d\n", send_size);
+        // }
+    }
 
-void uninitUsrSctp() {
-    //printf("### uninitUsrSctp\n");
-    for (size_t i = 0; i < 300; ++i) {
-        if (usrsctp_finish() == 0) {
-            //printf("### usrsctp finish\n");
-            return;
+    void uninitUsrSctp()
+    {
+        //printf("### uninitUsrSctp\n");
+        for (size_t i = 0; i < 300; ++i) {
+            if (usrsctp_finish() == 0) {
+                //printf("### usrsctp finish\n");
+                return;
+            }
+            boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
         }
-        boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
     }
-}
 
-void incrementUsrSctpCount() {
-    boost::lock_guard<boost::mutex> lock(usrsctp_ref_mutex);
-    //printf("### increment %d\n", usrsctp_ref_count);
-    if (!usrsctp_ref_count) {
-        initUsrSctp();
+    void incrementUsrSctpCount()
+    {
+        boost::lock_guard<boost::mutex> lock(usrsctp_ref_mutex);
+        //printf("### increment %d\n", usrsctp_ref_count);
+        if (!usrsctp_ref_count) {
+            initUsrSctp();
+        }
+        usrsctp_ref_count++;
     }
-    usrsctp_ref_count++;
-}
 
-void decrementUsrSctpCount() {
-    boost::lock_guard<boost::mutex> lock(usrsctp_ref_mutex);
-    //printf("### decrement %d\n", usrsctp_ref_count);
-    usrsctp_ref_count--;
-    if (!usrsctp_ref_count) {
-        uninitUsrSctp();
+    void decrementUsrSctpCount()
+    {
+        boost::lock_guard<boost::mutex> lock(usrsctp_ref_mutex);
+        //printf("### decrement %d\n", usrsctp_ref_count);
+        usrsctp_ref_count--;
+        if (!usrsctp_ref_count) {
+            uninitUsrSctp();
+        }
     }
-}
 
 } // End of namespace
 
@@ -141,7 +145,7 @@ void SctpTransport::close()
     ELOG_DEBUG("Done Closing...");
 }
 
-void SctpTransport::handleNotification(union sctp_notification *notif, size_t n)
+void SctpTransport::handleNotification(union sctp_notification* notif, size_t n)
 {
     if (notif->sn_header.sn_length != (uint32_t)n) {
         return;
@@ -198,7 +202,7 @@ void SctpTransport::handleNotification(union sctp_notification *notif, size_t n)
     }
 }
 
-void SctpTransport::handleAssociationChangeEvent(struct sctp_assoc_change *sac)
+void SctpTransport::handleAssociationChangeEvent(struct sctp_assoc_change* sac)
 {
     ELOG_DEBUG("Association change ");
     switch (sac->sac_state) {
@@ -234,16 +238,14 @@ void SctpTransport::handleAssociationChangeEvent(struct sctp_assoc_change *sac)
         break;
     }
 
-    if ((sac->sac_state == SCTP_CANT_STR_ASSOC) ||
-        (sac->sac_state == SCTP_SHUTDOWN_COMP) ||
-        (sac->sac_state == SCTP_COMM_LOST)) {
+    if ((sac->sac_state == SCTP_CANT_STR_ASSOC) || (sac->sac_state == SCTP_SHUTDOWN_COMP) || (sac->sac_state == SCTP_COMM_LOST)) {
         ELOG_INFO("Disconnect due to notifications");
         m_ready = false;
     }
 }
 
-int SctpTransport::onSctpInboundPacket(struct socket *sock, union sctp_sockstore addr, void *data,
-                                              size_t datalen, struct sctp_rcvinfo rcv, int flags, void *ulp_info)
+int SctpTransport::onSctpInboundPacket(struct socket* sock, union sctp_sockstore addr, void* data,
+    size_t datalen, struct sctp_rcvinfo rcv, int flags, void* ulp_info)
 {
     // printf("Msg of length %d received via %p:%u on stream %d with SSN %u and TSN %u, PPID %u, context %u.\n",
     //    (int)datalen,
@@ -260,12 +262,12 @@ int SctpTransport::onSctpInboundPacket(struct socket *sock, union sctp_sockstore
         SctpTransport* transport = static_cast<SctpTransport*>(ulp_info);
 
         if (flags & MSG_NOTIFICATION) {
-            transport->handleNotification((union sctp_notification *)data, datalen);
+            transport->handleNotification((union sctp_notification*)data, datalen);
         } else {
             if (transport->m_tag) {
-                transport->processPacket((char*) data, datalen, rcv.rcv_tsn);
+                transport->processPacket((char*)data, datalen, rcv.rcv_tsn);
             } else {
-                transport->m_listener->onTransportData((char*) data, datalen);
+                transport->m_listener->onTransportData((char*)data, datalen);
             }
         }
 
@@ -277,7 +279,7 @@ int SctpTransport::onSctpInboundPacket(struct socket *sock, union sctp_sockstore
     return 1;
 }
 
-int SctpTransport::onSctpOutboundPacket(void *addr, void *buf, size_t length, uint8_t tos, uint8_t set_df)
+int SctpTransport::onSctpOutboundPacket(void* addr, void* buf, size_t length, uint8_t tos, uint8_t set_df)
 {
     ELOG_DEBUG("onSctpOutboundPacket, length:%zu, buf:%p", length, buf);
 
@@ -288,12 +290,13 @@ int SctpTransport::onSctpOutboundPacket(void *addr, void *buf, size_t length, ui
     // }
 
     SctpTransport* transport = static_cast<SctpTransport*>(addr);
-    transport->postPacket((char*) buf, length);
+    transport->postPacket((char*)buf, length);
 
     return 0;
 }
 
-bool SctpTransport::createSctpSocket() {
+bool SctpTransport::createSctpSocket()
+{
     incrementUsrSctpCount();
 
     m_sctpSocket = usrsctp_socket(
@@ -320,7 +323,8 @@ bool SctpTransport::createSctpSocket() {
     linger_opt.l_onoff = 1;
     linger_opt.l_linger = 0;
     if (usrsctp_setsockopt(m_sctpSocket, SOL_SOCKET, SO_LINGER, &linger_opt,
-                           sizeof(linger_opt)) < 0) {
+            sizeof(linger_opt))
+        < 0) {
         ELOG_ERROR("SCTP set SO_LINGER fail.");
         return false;
     }
@@ -328,7 +332,7 @@ bool SctpTransport::createSctpSocket() {
     // Nagle.
     uint32_t nodelay = 1;
     if (usrsctp_setsockopt(m_sctpSocket, IPPROTO_SCTP, SCTP_NODELAY, &nodelay,
-                         sizeof(nodelay))) {
+            sizeof(nodelay))) {
         ELOG_ERROR("SCTP set NO DELAY fail.");
         return false;
     }
@@ -345,12 +349,13 @@ bool SctpTransport::createSctpSocket() {
     memset(&event, 0, sizeof(event));
     event.se_assoc_id = SCTP_ALL_ASSOC;
     event.se_on = 1;
-    for (size_t i = 0; i < (sizeof(event_types)/sizeof(int)); i++) {
+    for (size_t i = 0; i < (sizeof(event_types) / sizeof(int)); i++) {
         event.se_type = event_types[i];
         if (usrsctp_setsockopt(m_sctpSocket, IPPROTO_SCTP, SCTP_EVENT, &event,
-                               sizeof(event)) < 0) {
-          ELOG_ERROR("SCTP set SCTP_EVENT type: %d fail.", event.se_type);
-          return false;
+                sizeof(event))
+            < 0) {
+            ELOG_ERROR("SCTP set SCTP_EVENT type: %d fail.", event.se_type);
+            return false;
         }
     }
 
@@ -366,7 +371,8 @@ bool SctpTransport::createSctpSocket() {
     return true;
 }
 
-void SctpTransport::destroySctpSocket() {
+void SctpTransport::destroySctpSocket()
+{
     if (m_sctpSocket) {
         ELOG_DEBUG("Destroy sctp socket");
         // We assume that SO_LINGER option is set to close the association when
@@ -379,7 +385,8 @@ void SctpTransport::destroySctpSocket() {
     }
 }
 
-bool SctpTransport::setupSctpPeer() {
+bool SctpTransport::setupSctpPeer()
+{
     if (m_isClosing) {
         ELOG_WARN("setupSctpPeer ignored during closing");
         return false;
@@ -414,19 +421,19 @@ bool SctpTransport::setupSctpPeer() {
     sconn.sconn_family = AF_CONN;
     sconn.sconn_port = htons(0);
     sconn.sconn_addr = this;
-    if (usrsctp_bind(m_sctpSocket, (struct sockaddr *)&sconn, sizeof(struct sockaddr_conn)) < 0) {
+    if (usrsctp_bind(m_sctpSocket, (struct sockaddr*)&sconn, sizeof(struct sockaddr_conn)) < 0) {
         ELOG_ERROR("SCTP usrsctp_bind error");
         return false;
     }
 
-    struct sockaddr *addrs;
+    struct sockaddr* addrs;
     int addrNum = usrsctp_getladdrs(m_sctpSocket, 0, &addrs);
     if (addrNum != 1) {
         ELOG_ERROR("SCTP usrsctp_getladdrs error");
         return false;
     }
 
-    sconn = *((struct sockaddr_conn*) addrs);
+    sconn = *((struct sockaddr_conn*)addrs);
     m_localSctpPort = ntohs(sconn.sconn_port);
 
     usrsctp_freeladdrs(addrs);
@@ -436,7 +443,8 @@ bool SctpTransport::setupSctpPeer() {
     return true;
 }
 
-void SctpTransport::startSctpConnection() {
+void SctpTransport::startSctpConnection()
+{
     if (m_isClosing) {
         ELOG_WARN("startSctpConnection ignored during closing");
         return;
@@ -453,7 +461,7 @@ void SctpTransport::startSctpConnection() {
 
     // Connect usrsctp on main thread
     int connect_result = usrsctp_connect(
-        m_sctpSocket, reinterpret_cast<sockaddr *>(&sconn), sizeof(sconn));
+        m_sctpSocket, reinterpret_cast<sockaddr*>(&sconn), sizeof(sconn));
     if (connect_result < 0 && errno != SCTP_EINPROGRESS) {
         ELOG_ERROR("SCTP connect ERROR");
         destroySctpSocket();
@@ -487,7 +495,7 @@ void SctpTransport::startSctpConnection() {
     boost::asio::ip::udp::resolver::iterator iterator = resolver.resolve(query);
 
     m_udpSocket->async_connect(*iterator,
-        [this] (const boost::system::error_code& error) {
+        [this](const boost::system::error_code& error) {
             // Start receving on udp port
             ELOG_DEBUG("Udp async connect callback");
             receiveData();
@@ -523,7 +531,7 @@ void SctpTransport::doSend()
     ELOG_DEBUG("Send to remote udp port %d->%d", m_localUdpPort, m_remoteUdpPort);
 
     m_udpSocket->async_send(boost::asio::buffer(data.buffer.get(), data.length),
-        [this] (const boost::system::error_code& ec, std::size_t bytes) {
+        [this](const boost::system::error_code& ec, std::size_t bytes) {
             if (ec) {
                 ELOG_WARN("wrote data error: %s", ec.message().c_str());
                 m_listener->onTransportError();
@@ -550,7 +558,7 @@ void SctpTransport::receiveData()
     ELOG_DEBUG("!!! %d start udp receive data from:%d", m_localUdpPort, m_remoteUdpPort);
 
     m_udpSocket->async_receive(boost::asio::buffer(m_receiveData.buffer.get(), m_bufferSize),
-        [this] (const boost::system::error_code& ec, std::size_t bytes) {
+        [this](const boost::system::error_code& ec, std::size_t bytes) {
             if (ec) {
                 ELOG_WARN("udp async receive error:%s", ec.message().c_str());
                 m_listener->onTransportError();
@@ -641,7 +649,6 @@ void SctpTransport::processPacket(const char* data, int len, uint32_t tsn)
         m_listener->onTransportData(m_fragments.buffer.get(), m_fragments.length);
         m_receivedBytes = 0;
     }
-
 }
 
 void SctpTransport::open()
@@ -654,7 +661,8 @@ void SctpTransport::open()
     }
 }
 
-void SctpTransport::connect(const std::string &ip, uint32_t udpPort, uint32_t sctpPort) {
+void SctpTransport::connect(const std::string& ip, uint32_t udpPort, uint32_t sctpPort)
+{
     ELOG_DEBUG("Sctp Connect Start: %u, %u", udpPort, sctpPort);
     m_remoteIp = ip;
     m_remoteUdpPort = udpPort;
@@ -714,7 +722,8 @@ void SctpTransport::sendData(const char* header, int headerLength, const char* d
     trySending();
 }
 
-void SctpTransport::trySending() {
+void SctpTransport::trySending()
+{
     // Need m_sendBufferMutex lock before calling
     if (!m_sending || !m_ready || m_isClosing)
         return;
@@ -747,14 +756,16 @@ void SctpTransport::trySending() {
                 int sndbufsize = MAX_MSGSIZE;
                 int intlen = sizeof(int);
                 if (usrsctp_getsockopt(m_sctpSocket, SOL_SOCKET, SO_SNDBUF, &sndbufsize,
-                                       (socklen_t *)&intlen) < 0) {
+                        (socklen_t*)&intlen)
+                    < 0) {
                     ELOG_INFO("usrsctp_getsockopt: Can not get SNDBUF");
                 } else {
                     ELOG_DEBUG("Send buffer size origin: %d", sndbufsize);
                     if (sndbufsize < MAX_MSGSIZE * 16) {
                         sndbufsize *= 2;
                         if (usrsctp_setsockopt(m_sctpSocket, SOL_SOCKET, SO_SNDBUF, &sndbufsize,
-                                               sizeof(int)) < 0) {
+                                sizeof(int))
+                            < 0) {
                             ELOG_WARN("SCTP set SO_SNDBUF fail.");
                         }
                     } else {
@@ -776,7 +787,6 @@ void SctpTransport::trySending() {
         }
     });
 }
-
 
 }
 /* namespace owt_base */

@@ -2,42 +2,48 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
-var fs = require('fs');
-var toml = require('toml');
-var logger = require('./logger').logger;
-var log = logger.getLogger('Main');
+"use strict";
+var fs = require("fs");
+var toml = require("toml");
+var logger = require("./logger").logger;
+var log = logger.getLogger("Main");
 
 var config;
 try {
-  config = toml.parse(fs.readFileSync('./agent.toml'));
+  config = toml.parse(fs.readFileSync("./agent.toml"));
 } catch (e) {
-  log.error('Parsing config error on line ' + e.line + ', column ' + e.column + ': ' + e.message);
+  log.error(
+    "Parsing config error on line " +
+      e.line +
+      ", column " +
+      e.column +
+      ": " +
+      e.message
+  );
   process.exit(1);
 }
 
 // Configuration default values
 config.bridge = config.bridge || {};
-config.bridge.ip_address = config.bridge.ip_address || '';
+config.bridge.ip_address = config.bridge.ip_address || "";
 config.bridge.hostname = config.bridge.hostname || undefined;
 config.bridge.port = config.bridge.port || 0;
 
 config.cluster = config.cluster || {};
-config.cluster.name = config.cluster.name || 'owt-cluster';
+config.cluster.name = config.cluster.name || "owt-cluster";
 config.cluster.join_retry = config.cluster.join_retry || 60;
-config.cluster.report_load_interval = config.cluster.report_load_interval || 1000;
+config.cluster.report_load_interval =
+  config.cluster.report_load_interval || 1000;
 config.cluster.max_load = config.cluster.max_load || 0.85;
 config.cluster.network_max_scale = config.cluster.network_max_scale || 1000;
 
-
 config.rabbit = config.rabbit || {};
-config.rabbit.host = config.rabbit.host || 'localhost';
+config.rabbit.host = config.rabbit.host || "localhost";
 config.rabbit.port = config.rabbit.port || 5672;
 
 global.config = config;
 
-
-var amqper = require('./amqpClient')();
+var amqper = require("./amqpClient")();
 var rpcClient;
 var bridge;
 var event_cascading;
@@ -47,7 +53,7 @@ var rpcid;
 var ip_address;
 (function getPublicIP() {
   var BINDED_INTERFACE_NAME = config.bridge.networkInterface;
-  var interfaces = require('os').networkInterfaces(),
+  var interfaces = require("os").networkInterfaces(),
     addresses = [],
     k,
     k2,
@@ -58,14 +64,14 @@ var ip_address;
       for (k2 in interfaces[k]) {
         if (interfaces[k].hasOwnProperty(k2)) {
           address = interfaces[k][k2];
-          if (address.family === 'IPv4' && !address.internal) {
+          if (address.family === "IPv4" && !address.internal) {
             if (k === BINDED_INTERFACE_NAME || !BINDED_INTERFACE_NAME) {
               addresses.push(address.address);
             }
           }
-          if (address.family === 'IPv6' && !address.internal) {
+          if (address.family === "IPv6" && !address.internal) {
             if (k === BINDED_INTERFACE_NAME || !BINDED_INTERFACE_NAME) {
-              addresses.push('[' + address.address + ']');
+              addresses.push("[" + address.address + "]");
             }
           }
         }
@@ -73,7 +79,10 @@ var ip_address;
     }
   }
 
-  if (config.bridge.ip_address === '' || config.bridge.ip_address === undefined){
+  if (
+    config.bridge.ip_address === "" ||
+    config.bridge.ip_address === undefined
+  ) {
     ip_address = addresses[0];
   } else {
     ip_address = config.bridge.ip_address;
@@ -84,51 +93,59 @@ var joinCluster = function (on_ok) {
   var joinOK = on_ok;
 
   var joinFailed = function (reason) {
-    log.error('event bridge join cluster failed. reason:', reason);
+    log.error("event bridge join cluster failed. reason:", reason);
     worker && worker.quit();
     process.exit();
   };
 
   var loss = function () {
-    log.info('event bridge lost.');
+    log.info("event bridge lost.");
   };
 
   var recovery = function () {
-    log.info('event bridge recovered.');
+    log.info("event bridge recovered.");
   };
 
-  var spec = {rpcClient: rpcClient,
-              purpose: 'eventbridge',
-              clusterName: config.cluster.name,
-              joinRetry: config.cluster.join_retry,
-              info: {ip: config.bridge.hostname || ip_address,
-                     port: config.bridge.port,
-                     state: 2,
-                     maxLoad: config.cluster.max_load,
-                     capacity: {}
-                    },
-              onJoinOK: joinOK,
-              onJoinFailed: joinFailed,
-              onLoss: loss,
-              onRecovery: recovery,
-              loadCollection: {period: config.cluster.report_load_interval,
-                               item: {name: 'cpu'}}
-             };
+  var spec = {
+    rpcClient: rpcClient,
+    purpose: "eventbridge",
+    clusterName: config.cluster.name,
+    joinRetry: config.cluster.join_retry,
+    info: {
+      ip: config.bridge.hostname || ip_address,
+      port: config.bridge.port,
+      state: 2,
+      maxLoad: config.cluster.max_load,
+      capacity: {},
+    },
+    onJoinOK: joinOK,
+    onJoinFailed: joinFailed,
+    onLoss: loss,
+    onRecovery: recovery,
+    loadCollection: {
+      period: config.cluster.report_load_interval,
+      item: { name: "cpu" },
+    },
+  };
 
-  worker = require('./clusterWorker')(spec);
+  worker = require("./clusterWorker")(spec);
 };
 
-var startServers = function(id) {
-  var rpcChannel = require('./rpcChannel')(rpcClient);
-  var rpcReq = require('./rpcRequest')(rpcChannel);
+var startServers = function (id) {
+  var rpcChannel = require("./rpcChannel")(rpcClient);
+  var rpcReq = require("./rpcRequest")(rpcChannel);
 
-  event_cascading = require('./eventCascading')({port: config.bridge.port,
-                                                   ssl: config.bridge.ssl,
-                                                   clusterName: config.cluster.name,
-                                                   selfRpcId: id},
-                                                   rpcReq);
-    event_cascading.start();
-    /*return event_cascading.start()
+  event_cascading = require("./eventCascading")(
+    {
+      port: config.bridge.port,
+      ssl: config.bridge.ssl,
+      clusterName: config.cluster.name,
+      selfRpcId: id,
+    },
+    rpcReq
+  );
+  event_cascading.start();
+  /*return event_cascading.start()
       .then(function() {
         log.info('start event bridge server ok.');
       })
@@ -138,100 +155,135 @@ var startServers = function(id) {
       });*/
 };
 
-var stopServers = function() {
-  log.info('stop event bridge server ok.');
+var stopServers = function () {
+  log.info("stop event bridge server ok.");
   if (event_cascading) {
-    return event_cascading.stop()
-            .then (() => {
-              event_cascading = undefined;
-              return Promise.resolve('ok');
-            }) ;
+    return event_cascading.stop().then(() => {
+      event_cascading = undefined;
+      return Promise.resolve("ok");
+    });
   }
 
-  return Promise.resolve('ok');
+  return Promise.resolve("ok");
 };
 
 var rpcPublic = {
-  drop: function(participantId, callback) {
+  drop: function (participantId, callback) {
     event_cascading && event_cascading.drop(participantId);
-    callback('callback', 'ok');
+    callback("callback", "ok");
   },
-  notify: function(participantId, event, data, callback) {
+  notify: function (participantId, event, data, callback) {
     // The "notify" is called on socket.io server,
     // but one client ID should not be exists in both servers,
     // there must be one failure, ignore this notify error here.
     var notifyFail = (err) => {};
-    event_cascading && event_cascading.notify(participantId, event, data).catch(notifyFail);
-    callback('callback', 'ok');
+    event_cascading &&
+      event_cascading.notify(participantId, event, data).catch(notifyFail);
+    callback("callback", "ok");
   },
-  broadcast: function(controller, excludeList, event, data, callback) {
-    event_cascading && event_cascading.broadcast(controller, excludeList, event, data);
-    callback('callback', 'ok');
+  broadcast: function (controller, excludeList, event, data, callback) {
+    event_cascading &&
+      event_cascading.broadcast(controller, excludeList, event, data);
+    callback("callback", "ok");
   },
-  getInfo: function(callback) {
+  getInfo: function (callback) {
     var listenPort = config.bridge.port;
     if (listenPort === 0) {
       listenPort = event_cascading.getListeningPort();
     }
-    callback('callback', {id: rpcid, ip:ip_address, port:listenPort})
+    callback("callback", { id: rpcid, ip: ip_address, port: listenPort });
   },
-  startCascading: function(data, callback) {
-    event_cascading && event_cascading.startCascading(data, function () {
-      callback('callback', 'ok');
-    }, function(error) {
-      callback('callback', 'error', error);
-    });
+  startCascading: function (data, callback) {
+    event_cascading &&
+      event_cascading.startCascading(
+        data,
+        function () {
+          callback("callback", "ok");
+        },
+        function (error) {
+          callback("callback", "error", error);
+        }
+      );
   },
-  destroyRoom: function(participantId, event, data, callback) {
+  destroyRoom: function (participantId, event, data, callback) {
     event_cascading && event_cascading.destroyRoom(data);
-    callback('callback', 'ok');
-  }
+    callback("callback", "ok");
+  },
 };
 
-amqper.connect(config.rabbit, function () {
-  amqper.asRpcClient(function(rpcClnt) {
-    rpcClient = rpcClnt;
-    log.info('bridge initializing as rpc client ok and client is:', rpcClnt);
-    joinCluster(function(id) {
-      log.info('bridge join cluster ok, with rpcID:', id);
-        amqper.asRpcServer(id, rpcPublic, function(rpcSvr) {
-          log.info('bridge initializing as rpc server ok');
-          rpcid = id;
-            amqper.asMonitor(function (data) {
-              if (data.reason === 'abnormal' || data.reason === 'error' || data.reason === 'quit') {
-                if (event_cascading) {
-                  if (data.message.purpose === 'conference') {
-                    return event_cascading.onFaultDetected(data.message);
+amqper.connect(
+  config.rabbit,
+  function () {
+    amqper.asRpcClient(
+      function (rpcClnt) {
+        rpcClient = rpcClnt;
+        log.info(
+          "bridge initializing as rpc client ok and client is:",
+          rpcClnt
+        );
+        joinCluster(function (id) {
+          log.info("bridge join cluster ok, with rpcID:", id);
+          amqper.asRpcServer(
+            id,
+            rpcPublic,
+            function (rpcSvr) {
+              log.info("bridge initializing as rpc server ok");
+              rpcid = id;
+              amqper.asMonitor(
+                function (data) {
+                  if (
+                    data.reason === "abnormal" ||
+                    data.reason === "error" ||
+                    data.reason === "quit"
+                  ) {
+                    if (event_cascading) {
+                      if (data.message.purpose === "conference") {
+                        return event_cascading.onFaultDetected(data.message);
+                      }
+                    }
                   }
+                },
+                function (monitor) {
+                  log.info("eventbridge as monitor ready");
+                  startServers(id);
+                },
+                function (reason) {
+                  log.error(
+                    "bridge initializing as monitor failed, reason:",
+                    reason
+                  );
+                  stopServers();
+                  process.exit();
                 }
-              }
-            }, function (monitor) {
-              log.info('eventbridge as monitor ready');
-              startServers(id);
-            }, function(reason) {
-              log.error('bridge initializing as monitor failed, reason:', reason);
+              );
+            },
+            function (reason) {
+              log.error(
+                "bridge initializing as rpc server failed, reason:",
+                reason
+              );
               stopServers();
               process.exit();
-            });
-      }, function(reason) {
-        log.error('bridge initializing as rpc server failed, reason:', reason);
+            }
+          );
+        });
+      },
+      function (reason) {
+        log.error("bridge initializing as rpc client failed, reason:", reason);
         stopServers();
         process.exit();
-      });
-    });
-  }, function(reason) {
-    log.error('bridge initializing as rpc client failed, reason:', reason);
-    stopServers();
+      }
+    );
+  },
+  function (reason) {
+    log.error("bridge connect to rabbitMQ server failed, reason:", reason);
     process.exit();
-  });
-}, function(reason) {
-    log.error('bridge connect to rabbitMQ server failed, reason:', reason);
-    process.exit();
-});
+  }
+);
 
-['SIGINT', 'SIGTERM'].map(function (sig) {
+["SIGINT", "SIGTERM"].map(function (sig) {
   process.on(sig, async function () {
-    log.warn('Exiting on', sig);
+    log.warn("Exiting on", sig);
     await stopServers();
     setTimeout(() => {
       amqper.disconnect();
@@ -240,18 +292,18 @@ amqper.connect(config.rabbit, function () {
   });
 });
 
-process.on('SIGPIPE', function () {
-  log.warn('SIGPIPE!!');
+process.on("SIGPIPE", function () {
+  log.warn("SIGPIPE!!");
 });
 
-process.on('exit', function () {
-  log.info('Process exit');
+process.on("exit", function () {
+  log.info("Process exit");
 });
 
-process.on('unhandledRejection', (reason) => {
-    log.info('Reason: ' + reason);
+process.on("unhandledRejection", (reason) => {
+  log.info("Reason: " + reason);
 });
 
-process.on('SIGUSR2', function () {
+process.on("SIGUSR2", function () {
   logger.reconfigure();
 });

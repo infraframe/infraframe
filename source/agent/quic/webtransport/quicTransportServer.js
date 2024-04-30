@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /*global require*/
-'use strict';
-const EventEmitter = require('events');
-const logger = require('../../logger').logger;
-const log = logger.getLogger('QuicTransportServer');
-const zeroUuid = '00000000000000000000000000000000';
+"use strict";
+const EventEmitter = require("events");
+const logger = require("../../logger").logger;
+const log = logger.getLogger("QuicTransportServer");
+const zeroUuid = "00000000000000000000000000000000";
 
 /* Every QUIC agent is a QuicTransportServer which accepts QuicTransport
  * connections from clients.
@@ -38,53 +38,62 @@ module.exports = class QuicTransportServer extends EventEmitter {
       setTimeout(() => {
         // Must be authenticated in `authenticationTimeout` seconds.
         if (!connection.transportId) {
-          connection.close(
-              {closeCode: 0, reason: 'Timeout for authentication.'});
+          connection.close({
+            closeCode: 0,
+            reason: "Timeout for authentication.",
+          });
         }
       }, authenticationTimeout * 1000);
       connection.onincomingstream = (stream) => {
-        log.info('New incoming stream.');
+        log.info("New incoming stream.");
         stream.oncontentsessionid = (id) => {
-          const streamId = this._uuidBytesToString(new Uint8Array(id))
+          const streamId = this._uuidBytesToString(new Uint8Array(id));
           stream.contentSessionId = streamId;
           stream.transportId = connection.transportId;
           if (streamId === zeroUuid) {
             if (connection.transportId) {
               log.error(
-                  'Received a new signaling stream on an authenticated connection. Close connection.')
+                "Received a new signaling stream on an authenticated connection. Close connection."
+              );
               connection.close({
                 closeCode: 0,
                 reason:
-                    'Received a new signaling stream on an authenticated connection.'
+                  "Received a new signaling stream on an authenticated connection.",
               });
             }
             // Signaling stream. Waiting for transport ID then.
           } else if (!connection.transportId) {
             log.error(
-                'Stream ' + streamId +
-                ' added on unauthenticated transport. Close connection.');
+              "Stream " +
+                streamId +
+                " added on unauthenticated transport. Close connection."
+            );
             connection.close({
               closeCode: 0,
-              reason: 'Stream added on unauthenticated transport'
+              reason: "Stream added on unauthenticated transport",
             });
           } else {
             log.debug(
-                'A new stream ' + streamId + ' is created on transport ' +
-                connection.transportId);
-            this.emit('streamadded', stream);
-            const uuidBytes =
-                this._uuidStringToUint8Array(connection.transportId);
+              "A new stream " +
+                streamId +
+                " is created on transport " +
+                connection.transportId
+            );
+            this.emit("streamadded", stream);
+            const uuidBytes = this._uuidStringToUint8Array(
+              connection.transportId
+            );
             stream.write(uuidBytes, uuidBytes.length);
           }
         };
         stream.ontrackid = (id) => {
           if (stream.trackId) {
-            log.warn('Duplicate events for track ID.');
+            log.warn("Duplicate events for track ID.");
             return;
           }
-          const trackId = this._uuidBytesToString(new Uint8Array(id))
+          const trackId = this._uuidBytesToString(new Uint8Array(id));
           stream.trackId = trackId;
-          this.emit('trackid', stream);
+          this.emit("trackid", stream);
         };
         stream.ondata = (data) => {
           if (stream.contentSessionId === zeroUuid) {
@@ -96,16 +105,17 @@ module.exports = class QuicTransportServer extends EventEmitter {
             let unreadSize = data.length;
             let nextReadSize = stream.frameSize ? stream.frameSize : 0;
             while (unreadSize != 0) {
-              if (nextReadSize == 0) {  // Starts a new frame.
+              if (nextReadSize == 0) {
+                // Starts a new frame.
                 // 32 bit indicates the length of next frame.
                 const lengthSize = 4;
                 if (data.length >= lengthSize) {
                   for (let i = 0; i < lengthSize; i++) {
-                    nextReadSize += (data[i] << 8 * i);
+                    nextReadSize += data[i] << (8 * i);
                   }
                   unreadSize -= lengthSize;
                 } else {
-                  log.error('Not implemented.');
+                  log.error("Not implemented.");
                   return;
                 }
               } else {
@@ -119,7 +129,7 @@ module.exports = class QuicTransportServer extends EventEmitter {
                   stream.unreadData = null;
                   stream.frameSize = 0;
                 }
-                const message = frame.toString('utf8');
+                const message = frame.toString("utf8");
                 unreadSize -= nextReadSize;
                 // Currently, Signaling over WebTransport is not supported, so
                 // only one message (WebTransport token) will be sent on this
@@ -127,20 +137,25 @@ module.exports = class QuicTransportServer extends EventEmitter {
                 // messages.
                 let token;
                 try {
-                  token = JSON.parse(Buffer.from(message, 'base64').toString());
+                  token = JSON.parse(Buffer.from(message, "base64").toString());
                 } catch (error) {
-                  log.error('Invalid token.');
-                  connection.close({closeCode: 0, reason: 'Invalid token.'});
+                  log.error("Invalid token.");
+                  connection.close({ closeCode: 0, reason: "Invalid token." });
                   return;
                 }
-                this._validateTokenCallback(token).then(result => {
-                  if (result !== 'ok') {
-                    log.error('Authentication failed.');
-                    connection.close(
-                        {closeCode: 0, reason: 'Authentication failed.'});
+                this._validateTokenCallback(token).then((result) => {
+                  if (result !== "ok") {
+                    log.error("Authentication failed.");
+                    connection.close({
+                      closeCode: 0,
+                      reason: "Authentication failed.",
+                    });
                     return;
                   }
-                  log.debug('Created connection for transport ID '+connection.transportId);
+                  log.debug(
+                    "Created connection for transport ID " +
+                      connection.transportId
+                  );
                   connection.transportId = token.transportId;
                   connection.participantId = token.participantId;
                   // A user can join multiple rooms. And it would be better if a
@@ -150,12 +165,13 @@ module.exports = class QuicTransportServer extends EventEmitter {
                   connection.roomId = token.roomId;
                   stream.transportId = token.transportId;
                   this._connections.set(connection.transportId, connection);
-                  this.emit('connectionadded', connection);
+                  this.emit("connectionadded", connection);
                   const uuidBytes = this._uuidStringToUint8Array(zeroUuid);
                   stream.write(uuidBytes, uuidBytes.length);
                 });
                 return;
-              } else {  // Store the data.
+              } else {
+                // Store the data.
                 stream.unreadData = data.slice(startIndex);
                 stream.frameSize = nextReadSize;
               }
@@ -163,8 +179,8 @@ module.exports = class QuicTransportServer extends EventEmitter {
             return;
           }
         };
-      }
-    }
+      };
+    };
   }
 
   start() {
@@ -176,16 +192,23 @@ module.exports = class QuicTransportServer extends EventEmitter {
   // doesn't exist, no stream will be created.
   createSendStream(transportId, contentSessionId, trackId) {
     log.debug(
-        'Create send stream ' + contentSessionId + ' on transport ' +
-        transportId + ', track ID: ' + trackId);
+      "Create send stream " +
+        contentSessionId +
+        " on transport " +
+        transportId +
+        ", track ID: " +
+        trackId
+    );
     if (!this._connections.has(transportId)) {
       // TODO: Waiting for transport to be created, and create stream for it.
       // It's a common case that subscribe request is received by QUIC agent
       // before client creates QuicTransport.
-      log.error('No QUIC transport for ' + transportId);
+      log.error("No QUIC transport for " + transportId);
       return;
     }
-    const stream = this._connections.get(transportId).createBidirectionalStream();
+    const stream = this._connections
+      .get(transportId)
+      .createBidirectionalStream();
     let uuidBytes = this._uuidStringToUint8Array(contentSessionId);
     stream.write(uuidBytes, uuidBytes.length);
     this._streams.set(contentSessionId + trackId, stream);
@@ -202,20 +225,20 @@ module.exports = class QuicTransportServer extends EventEmitter {
 
   _uuidBytesToString(uuidBytes) {
     if (uuidBytes.length != 16) {
-      log.error('Invalid UUID.');
+      log.error("Invalid UUID.");
       return;
     }
-    let s = '';
+    let s = "";
     for (let hex of uuidBytes) {
-      const str=hex.toString(16);
-      s += str.padStart(2, '0');
+      const str = hex.toString(16);
+      s += str.padStart(2, "0");
     }
     return s;
-  };
+  }
 
   _uuidStringToUint8Array(uuidString) {
     if (uuidString.length != 32) {
-      log.error('Invalid UUID.');
+      log.error("Invalid UUID.");
       return;
     }
     const uuidArray = new Uint8Array(16);
@@ -226,7 +249,7 @@ module.exports = class QuicTransportServer extends EventEmitter {
   }
 
   _validateToken(tokenString) {
-    const token = JSON.parse(Buffer.from(tokenString, 'base64').toString());
+    const token = JSON.parse(Buffer.from(tokenString, "base64").toString());
     return this._validateTokenCallback(token);
   }
 };

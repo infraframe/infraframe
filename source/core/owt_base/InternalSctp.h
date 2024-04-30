@@ -19,7 +19,7 @@ public:
     unsigned int getLocalUdpPort() { return m_transport->getLocalUdpPort(); }
     unsigned int getLocalSctpPort() { return m_transport->getLocalSctpPort(); }
 
-    void connect(const std::string &ip, unsigned int udpPort, unsigned int sctpPort);
+    void connect(const std::string& ip, unsigned int udpPort, unsigned int sctpPort);
 
     // Implements FrameSource
     void onFeedback(const FeedbackMsg&);

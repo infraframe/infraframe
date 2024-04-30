@@ -13,13 +13,11 @@
 
 namespace owt_base {
 
-struct FreeDelete
-{
+struct FreeDelete {
     void operator()(void* x) { free(x); }
 };
 
-struct MockDelete
-{
+struct MockDelete {
     void operator()(void* x) { }
 };
 
@@ -41,32 +39,32 @@ MsdkFrame::MsdkFrame(uint32_t width, uint32_t height, boost::shared_ptr<mfxFrame
 
     m_request.Type = MFX_MEMTYPE_FROM_VPPIN | MFX_MEMTYPE_DXVA2_PROCESSOR_TARGET | MFX_MEMTYPE_EXTERNAL_FRAME;
 
-    m_request.NumFrameMin         = 1;
-    m_request.NumFrameSuggested   = 1;
+    m_request.NumFrameMin = 1;
+    m_request.NumFrameSuggested = 1;
 
-    m_request.Info.FourCC         = MFX_FOURCC_NV12;
-    m_request.Info.ChromaFormat   = MFX_CHROMAFORMAT_YUV420;
-    m_request.Info.PicStruct      = MFX_PICSTRUCT_PROGRESSIVE;
+    m_request.Info.FourCC = MFX_FOURCC_NV12;
+    m_request.Info.ChromaFormat = MFX_CHROMAFORMAT_YUV420;
+    m_request.Info.PicStruct = MFX_PICSTRUCT_PROGRESSIVE;
 
-    m_request.Info.BitDepthLuma   = 0;
+    m_request.Info.BitDepthLuma = 0;
     m_request.Info.BitDepthChroma = 0;
-    m_request.Info.Shift          = 0;
+    m_request.Info.Shift = 0;
 
-    m_request.Info.AspectRatioW   = 0;
-    m_request.Info.AspectRatioH   = 0;
+    m_request.Info.AspectRatioW = 0;
+    m_request.Info.AspectRatioH = 0;
 
-    m_request.Info.FrameRateExtN  = 30;
-    m_request.Info.FrameRateExtD  = 1;
+    m_request.Info.FrameRateExtN = 30;
+    m_request.Info.FrameRateExtD = 1;
 
-    m_request.Info.Width          = ALIGN16(width);
-    m_request.Info.Height         = ALIGN16(height);
-    m_request.Info.CropX          = 0;
-    m_request.Info.CropY          = 0;
-    m_request.Info.CropW          = width;
-    m_request.Info.CropH          = height;
+    m_request.Info.Width = ALIGN16(width);
+    m_request.Info.Height = ALIGN16(height);
+    m_request.Info.CropX = 0;
+    m_request.Info.CropY = 0;
+    m_request.Info.CropW = width;
+    m_request.Info.CropH = height;
 }
 
-MsdkFrame::MsdkFrame(mfxFrameInfo &info, mfxMemId &id, boost::shared_ptr<mfxFrameAllocator> allocator)
+MsdkFrame::MsdkFrame(mfxFrameInfo& info, mfxMemId& id, boost::shared_ptr<mfxFrameAllocator> allocator)
     : m_allocator(allocator)
     , m_valid(false)
     , m_externalAlloc(true)
@@ -91,9 +89,9 @@ MsdkFrame::~MsdkFrame()
 
         uint32_t i = 0;
         while (m_surface.Data.Locked > 0 && i < TIMEOUT) {
-          ELOG_DEBUG("Wait(%d ms), locked %d...", i, m_surface.Data.Locked);
-          usleep(1000); //1ms
-          i++;
+            ELOG_DEBUG("Wait(%d ms), locked %d...", i, m_surface.Data.Locked);
+            usleep(1000); //1ms
+            i++;
         }
 
         if (m_surface.Data.Locked > 0) {
@@ -143,7 +141,7 @@ void MsdkFrame::sync(void)
     m_needSync = false;
 
     if (!m_mainSession) {
-        MsdkBase *msdkBase = MsdkBase::get();
+        MsdkBase* msdkBase = MsdkBase::get();
         if (msdkBase)
             m_mainSession = msdkBase->getMainSession();
 
@@ -154,8 +152,7 @@ void MsdkFrame::sync(void)
     }
 
     sts = m_mainSession->SyncOperation(m_syncP, MFX_INFINITE);
-    if(sts != MFX_ERR_NONE)
-    {
+    if (sts != MFX_ERR_NONE) {
         ELOG_ERROR("SyncOperation failed, ret %d", sts);
         return;
     }
@@ -163,18 +160,10 @@ void MsdkFrame::sync(void)
 
 bool MsdkFrame::setCrop(uint32_t cropX, uint32_t cropY, uint32_t cropW, uint32_t cropH)
 {
-    ELOG_TRACE("setCrop %d-%d-%d-%d(%dx%d) -> %d-%d-%d-%d"
-            , m_surface.Info.CropX, m_surface.Info.CropY
-            , m_surface.Info.CropW, m_surface.Info.CropH
-            , m_surface.Info.Width, m_surface.Info.Height
-            , cropX, cropY
-            , cropW, cropH
-            );
+    ELOG_TRACE("setCrop %d-%d-%d-%d(%dx%d) -> %d-%d-%d-%d", m_surface.Info.CropX, m_surface.Info.CropY, m_surface.Info.CropW, m_surface.Info.CropH, m_surface.Info.Width, m_surface.Info.Height, cropX, cropY, cropW, cropH);
 
-    if (cropX + cropW > m_surface.Info.Width || cropY + cropH >  m_surface.Info.Height) {
-        ELOG_ERROR("Can not crop %dx%d into %d-%d-%d-%d"
-                , m_surface.Info.Width, m_surface.Info.Height
-                , cropX, cropY, cropW, cropH);
+    if (cropX + cropW > m_surface.Info.Width || cropY + cropH > m_surface.Info.Height) {
+        ELOG_ERROR("Can not crop %dx%d into %d-%d-%d-%d", m_surface.Info.Width, m_surface.Info.Height, cropX, cropY, cropW, cropH);
 
         return false;
     }
@@ -198,7 +187,7 @@ bool MsdkFrame::fillFrame(uint8_t y, uint8_t u, uint8_t v)
 
     mfxStatus sts = MFX_ERR_NONE;
 
-    mfxFrameSurface1 *pSurface = &m_surface;
+    mfxFrameSurface1* pSurface = &m_surface;
 
     mfxFrameInfo& pInfo = pSurface->Info;
     mfxFrameData& pData = pSurface->Data;
@@ -207,11 +196,10 @@ bool MsdkFrame::fillFrame(uint8_t y, uint8_t u, uint8_t v)
     // other formats may be added if application requires such functionality
     if (MFX_FOURCC_NV12 != pInfo.FourCC) {
         ELOG_ERROR("Format (%c%c%c%c) is not upported!",
-                pInfo.FourCC & 0xff,
-                (pInfo.FourCC >> 8) & 0xff,
-                (pInfo.FourCC >> 16) & 0xff,
-                (pInfo.FourCC >> 24) & 0xff
-                );
+            pInfo.FourCC & 0xff,
+            (pInfo.FourCC >> 8) & 0xff,
+            (pInfo.FourCC >> 16) & 0xff,
+            (pInfo.FourCC >> 24) & 0xff);
 
         return ret;
     }
@@ -226,13 +214,12 @@ bool MsdkFrame::fillFrame(uint8_t y, uint8_t u, uint8_t v)
     }
 
     mfxU16 w, h, i, pitch;
-    mfxU8 *ptr;
+    mfxU8* ptr;
 
     if (pInfo.CropH > 0 && pInfo.CropW > 0) {
         w = pInfo.CropW;
         h = pInfo.CropH;
-    }
-    else {
+    } else {
         w = pInfo.Width;
         h = pInfo.Height;
     }
@@ -241,38 +228,35 @@ bool MsdkFrame::fillFrame(uint8_t y, uint8_t u, uint8_t v)
     ptr = pData.Y + pInfo.CropX + pInfo.CropY * pData.Pitch;
 
     // set luminance plane
-    for(i = 0; i < h; i++) {
+    for (i = 0; i < h; i++) {
         memset(ptr + i * pitch, y, w);
     }
 
     // set chroma planes
-    switch (pSurface->Info.FourCC)
-    {
-        case MFX_FOURCC_NV12:
-            mfxU32 j;
-            w /= 2;
-            h /= 2;
-            ptr = pData.UV + pInfo.CropX + (pInfo.CropY / 2) * pitch;
+    switch (pSurface->Info.FourCC) {
+    case MFX_FOURCC_NV12:
+        mfxU32 j;
+        w /= 2;
+        h /= 2;
+        ptr = pData.UV + pInfo.CropX + (pInfo.CropY / 2) * pitch;
 
-            for (i = 0; i < h; i++) {
-                for (j = 0; j < w; j++)
-                {
-                    ptr[i * pitch + j * 2]      = u;
-                    ptr[i * pitch + j * 2 + 1]  = v;
-                }
+        for (i = 0; i < h; i++) {
+            for (j = 0; j < w; j++) {
+                ptr[i * pitch + j * 2] = u;
+                ptr[i * pitch + j * 2 + 1] = v;
             }
+        }
 
-            ret = true;
-            break;
+        ret = true;
+        break;
 
-        default:
-            ELOG_ERROR("Format (%c%c%c%c) is not upported!",
-                    pInfo.FourCC & 0xff,
-                    (pInfo.FourCC >> 8) & 0xff,
-                    (pInfo.FourCC >> 16) & 0xff,
-                    (pInfo.FourCC >> 24) & 0xff
-                    );
-            break;
+    default:
+        ELOG_ERROR("Format (%c%c%c%c) is not upported!",
+            pInfo.FourCC & 0xff,
+            (pInfo.FourCC >> 8) & 0xff,
+            (pInfo.FourCC >> 16) & 0xff,
+            (pInfo.FourCC >> 24) & 0xff);
+        break;
     }
 
     sts = m_allocator->Unlock(m_allocator.get()->pthis, pData.MemId, &pData);
@@ -285,39 +269,43 @@ bool MsdkFrame::fillFrame(uint8_t y, uint8_t u, uint8_t v)
     return ret;
 }
 
-bool MsdkFrame::convertFrom(webrtc::VideoFrameBuffer *buffer)
+bool MsdkFrame::convertFrom(webrtc::VideoFrameBuffer* buffer)
 {
     bool ret = false;
     mfxStatus sts = MFX_ERR_NONE;
 
-    mfxFrameSurface1 *pSurface = &m_surface;
+    mfxFrameSurface1* pSurface = &m_surface;
     mfxFrameInfo& pInfo = pSurface->Info;
     mfxFrameData& pData = pSurface->Data;
 
     mfxU16 w, h, pitch;
-    mfxU8 *ptr;
+    mfxU8* ptr;
     mfxU32 i, j;
 
     uint32_t srcW = buffer->width();
     uint32_t srcH = buffer->height();
 
     uint32_t srcStrideY = buffer->StrideY();
-    uint32_t srcStrideU = buffer->StrideU();;
-    uint32_t srcStrideV = buffer->StrideV();;
+    uint32_t srcStrideU = buffer->StrideU();
+    ;
+    uint32_t srcStrideV = buffer->StrideV();
+    ;
 
-    const uint8_t *pSrcY = buffer->DataY();;
-    const uint8_t *pSrcU = buffer->DataU();;
-    const uint8_t *pSrcV = buffer->DataV();;
+    const uint8_t* pSrcY = buffer->DataY();
+    ;
+    const uint8_t* pSrcU = buffer->DataU();
+    ;
+    const uint8_t* pSrcV = buffer->DataV();
+    ;
 
     // supports only NV12 mfx surfaces for code transparency,
     // other formats may be added if application requires such functionality
     if (MFX_FOURCC_NV12 != pInfo.FourCC) {
         ELOG_ERROR("Format (%c%c%c%c) is not upported!",
-                pInfo.FourCC & 0xff,
-                (pInfo.FourCC >> 8) & 0xff,
-                (pInfo.FourCC >> 16) & 0xff,
-                (pInfo.FourCC >> 24) & 0xff
-                );
+            pInfo.FourCC & 0xff,
+            (pInfo.FourCC >> 8) & 0xff,
+            (pInfo.FourCC >> 16) & 0xff,
+            (pInfo.FourCC >> 24) & 0xff);
 
         return false;
     }
@@ -330,15 +318,14 @@ bool MsdkFrame::convertFrom(webrtc::VideoFrameBuffer *buffer)
     if (pInfo.CropH > 0 && pInfo.CropW > 0) {
         w = pInfo.CropW;
         h = pInfo.CropH;
-    }
-    else {
+    } else {
         w = pInfo.Width;
         h = pInfo.Height;
     }
 
     if (w != srcW || h != srcH) {
         ELOG_WARN("Not support scale/crop src VideoFrame(%dx%d) into dst msdk surface(%dx%d)!",
-                srcW, srcH, w, h);
+            srcW, srcH, w, h);
         return false;
     }
 
@@ -355,38 +342,36 @@ bool MsdkFrame::convertFrom(webrtc::VideoFrameBuffer *buffer)
     ptr = pData.Y + pInfo.CropX + pInfo.CropY * pData.Pitch;
 
     // set luminance plane
-    for(i = 0; i < h; i++) {
+    for (i = 0; i < h; i++) {
         memcpy(ptr + i * pitch, pSrcY + i * srcStrideY, w);
     }
 
     // set chroma planes
-    switch (pSurface->Info.FourCC)
-    {
-        case MFX_FOURCC_NV12:
-            w /= 2;
-            h /= 2;
-            ptr = pData.UV + pInfo.CropX + (pInfo.CropY / 2) * pitch;
+    switch (pSurface->Info.FourCC) {
+    case MFX_FOURCC_NV12:
+        w /= 2;
+        h /= 2;
+        ptr = pData.UV + pInfo.CropX + (pInfo.CropY / 2) * pitch;
 
-            for (i = 0; i < h; i++) {
-                for (j = 0; j < w; j++) {
-                    ptr[i * pitch + j * 2]      = pSrcU[i * srcStrideU + j];
-                    ptr[i * pitch + j * 2 + 1]  = pSrcV[i * srcStrideV + j];
-                }
+        for (i = 0; i < h; i++) {
+            for (j = 0; j < w; j++) {
+                ptr[i * pitch + j * 2] = pSrcU[i * srcStrideU + j];
+                ptr[i * pitch + j * 2 + 1] = pSrcV[i * srcStrideV + j];
             }
+        }
 
-            ret = true;
-            break;
+        ret = true;
+        break;
 
-        default:
-            ELOG_ERROR("Format (%c%c%c%c) is not upported!",
-                    pInfo.FourCC & 0xff,
-                    (pInfo.FourCC >> 8) & 0xff,
-                    (pInfo.FourCC >> 16) & 0xff,
-                    (pInfo.FourCC >> 24) & 0xff
-                    );
+    default:
+        ELOG_ERROR("Format (%c%c%c%c) is not upported!",
+            pInfo.FourCC & 0xff,
+            (pInfo.FourCC >> 8) & 0xff,
+            (pInfo.FourCC >> 16) & 0xff,
+            (pInfo.FourCC >> 24) & 0xff);
 
-            ret = false;
-            break;
+        ret = false;
+        break;
     }
 
     sts = m_allocator->Unlock(m_allocator.get()->pthis, pData.MemId, &pData);
@@ -399,13 +384,13 @@ bool MsdkFrame::convertFrom(webrtc::VideoFrameBuffer *buffer)
     return ret;
 }
 
-bool MsdkFrame::nv12ConvertTo(mfxFrameInfo& pInfo, mfxFrameData& pData, webrtc::I420Buffer *buffer)
+bool MsdkFrame::nv12ConvertTo(mfxFrameInfo& pInfo, mfxFrameData& pData, webrtc::I420Buffer* buffer)
 {
     uint32_t w = getCropW();
     uint32_t h = getCropH();
 
     if (!m_nv12TBuffer.get()) {
-        m_nv12TBuffer.reset((uint8_t*) memalign(16, h * pData.Pitch * 3 / 2));
+        m_nv12TBuffer.reset((uint8_t*)memalign(16, h * pData.Pitch * 3 / 2));
         if (!m_nv12TBuffer.get()) {
             ELOG_ERROR("memalign failed, %p", m_nv12TBuffer.get());
 
@@ -435,8 +420,8 @@ bool MsdkFrame::nv12ConvertTo(mfxFrameInfo& pInfo, mfxFrameData& pData, webrtc::
     pDstU = buffer->MutableDataU();
     pDstV = buffer->MutableDataV();
 
-    uint8_t *ptrY;
-    uint8_t *ptrUV;
+    uint8_t* ptrY;
+    uint8_t* ptrUV;
 
     ptrY = m_nv12TBuffer.get();
     ptrUV = m_nv12TBuffer.get() + h * pData.Pitch;
@@ -444,7 +429,7 @@ bool MsdkFrame::nv12ConvertTo(mfxFrameInfo& pInfo, mfxFrameData& pData, webrtc::
     uint32_t i, j;
 
     // set luminance plane
-    for(i = 0; i < h; i++) {
+    for (i = 0; i < h; i++) {
         memcpy(pDstY + i * dstStrideY, ptrY + i * pData.Pitch, w);
     }
 
@@ -454,28 +439,27 @@ bool MsdkFrame::nv12ConvertTo(mfxFrameInfo& pInfo, mfxFrameData& pData, webrtc::
     for (i = 0; i < h; i++) {
         for (j = 0; j < w; j++) {
             pDstU[i * dstStrideU + j] = ptrUV[i * pData.Pitch + j * 2];
-            pDstV[i * dstStrideV + j] = ptrUV[i * pData.Pitch + j * 2 + 1] ;
+            pDstV[i * dstStrideV + j] = ptrUV[i * pData.Pitch + j * 2 + 1];
         }
     }
 
     return true;
 }
 
-bool MsdkFrame::convertTo(webrtc::I420Buffer *buffer)
+bool MsdkFrame::convertTo(webrtc::I420Buffer* buffer)
 {
     mfxStatus sts = MFX_ERR_NONE;
 
-    mfxFrameSurface1 *pSurface = &m_surface;
+    mfxFrameSurface1* pSurface = &m_surface;
     mfxFrameInfo& pInfo = pSurface->Info;
     mfxFrameData& pData = pSurface->Data;
 
     if (MFX_FOURCC_NV12 != pInfo.FourCC) {
         ELOG_ERROR("Format (%c%c%c%c) is not upported!",
-                pInfo.FourCC & 0xff,
-                (pInfo.FourCC >> 8) & 0xff,
-                (pInfo.FourCC >> 16) & 0xff,
-                (pInfo.FourCC >> 24) & 0xff
-                );
+            pInfo.FourCC & 0xff,
+            (pInfo.FourCC >> 8) & 0xff,
+            (pInfo.FourCC >> 16) & 0xff,
+            (pInfo.FourCC >> 24) & 0xff);
 
         return false;
     }
@@ -488,7 +472,7 @@ bool MsdkFrame::convertTo(webrtc::I420Buffer *buffer)
 
     if (m_surface.Info.CropW != buffer->width() || m_surface.Info.CropH != buffer->height()) {
         ELOG_WARN("Dont support scale/crop msdk frame(%dx%d) into to i420 buffer(%dx%d)!",
-                m_surface.Info.CropW, m_surface.Info.CropH, buffer->width(), buffer->height());
+            m_surface.Info.CropW, m_surface.Info.CropH, buffer->width(), buffer->height());
         return false;
     }
 
@@ -502,21 +486,19 @@ bool MsdkFrame::convertTo(webrtc::I420Buffer *buffer)
     }
 
     int ret;
-    switch (pSurface->Info.FourCC)
-    {
-        case MFX_FOURCC_NV12:
-            ret = nv12ConvertTo(pInfo, pData, buffer);
-            break;
+    switch (pSurface->Info.FourCC) {
+    case MFX_FOURCC_NV12:
+        ret = nv12ConvertTo(pInfo, pData, buffer);
+        break;
 
-        default:
-            ELOG_ERROR("Format (%c%c%c%c) is not upported!",
-                    pInfo.FourCC & 0xff,
-                    (pInfo.FourCC >> 8) & 0xff,
-                    (pInfo.FourCC >> 16) & 0xff,
-                    (pInfo.FourCC >> 24) & 0xff
-                    );
-            ret = false;
-            break;
+    default:
+        ELOG_ERROR("Format (%c%c%c%c) is not upported!",
+            pInfo.FourCC & 0xff,
+            (pInfo.FourCC >> 8) & 0xff,
+            (pInfo.FourCC >> 16) & 0xff,
+            (pInfo.FourCC >> 24) & 0xff);
+        ret = false;
+        break;
     }
 
     sts = m_allocator->Unlock(m_allocator.get()->pthis, pData.MemId, &pData);
@@ -542,7 +524,7 @@ MsdkFramePool::MsdkFramePool(const uint32_t width, const uint32_t height, const 
     }
 }
 
-MsdkFramePool::MsdkFramePool(mfxFrameAllocRequest &request, boost::shared_ptr<mfxFrameAllocator> allocator)
+MsdkFramePool::MsdkFramePool(mfxFrameAllocRequest& request, boost::shared_ptr<mfxFrameAllocator> allocator)
     : m_allocator(allocator)
 {
     mfxStatus sts = MFX_ERR_NONE;
@@ -581,7 +563,7 @@ boost::shared_ptr<MsdkFrame> MsdkFramePool::getFreeFrame()
     boost::unique_lock<boost::shared_mutex> lock(m_mutex);
 
     for (auto& it : m_framePool) {
-        if(it.use_count() == 1 && it->isFree()) {
+        if (it.use_count() == 1 && it->isFree()) {
             return it;
         }
     }
@@ -589,12 +571,12 @@ boost::shared_ptr<MsdkFrame> MsdkFramePool::getFreeFrame()
     return NULL;
 }
 
-boost::shared_ptr<MsdkFrame> MsdkFramePool::getFrame(mfxFrameSurface1 *pSurface)
+boost::shared_ptr<MsdkFrame> MsdkFramePool::getFrame(mfxFrameSurface1* pSurface)
 {
     boost::unique_lock<boost::shared_mutex> lock(m_mutex);
 
     for (auto& it : m_framePool) {
-        if(pSurface == it->getSurface()) {
+        if (pSurface == it->getSurface()) {
             return it;
         }
     }
@@ -609,12 +591,11 @@ void MsdkFramePool::dumpInfo()
 
     i = 0;
     for (auto& it : m_framePool) {
-        ELOG_DEBUG("Frame(%d), use_count(%ld), isFree(%d)"
-                , i, it.use_count(), it->isFree());
+        ELOG_DEBUG("Frame(%d), use_count(%ld), isFree(%d)", i, it.use_count(), it->isFree());
         i++;
     }
 }
 
-}//namespace owt_base
+} //namespace owt_base
 
 #endif /* ENABLE_MSDK */

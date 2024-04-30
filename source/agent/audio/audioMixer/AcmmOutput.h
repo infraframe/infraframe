@@ -28,21 +28,21 @@ public:
     AcmmOutput(int32_t id);
     ~AcmmOutput();
 
-    int32_t id() {return m_id;}
+    int32_t id() { return m_id; }
 
     bool addDest(FrameFormat format, FrameDestination* destination);
     void removeDest(FrameDestination* destination);
 
-    bool hasDest() {return m_destinations.size() > 0;}
+    bool hasDest() { return m_destinations.size() > 0; }
 
     int32_t NeededFrequency();
-    bool newAudioFrame(const webrtc::AudioFrame *audioFrame);
+    bool newAudioFrame(const webrtc::AudioFrame* audioFrame);
 
 private:
     int32_t m_id;
 
     FrameFormat m_dstFormat;
-    std::list<FrameDestination *> m_destinations;
+    std::list<FrameDestination*> m_destinations;
 
     boost::shared_ptr<AudioEncoder> m_encoder;
 };

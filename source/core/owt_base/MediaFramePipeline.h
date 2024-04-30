@@ -14,21 +14,21 @@
 namespace owt_base {
 
 enum FrameFormat {
-    FRAME_FORMAT_UNKNOWN    = 0,
+    FRAME_FORMAT_UNKNOWN = 0,
 
-    FRAME_FORMAT_I420       = 100,
+    FRAME_FORMAT_I420 = 100,
 
-    FRAME_FORMAT_VP8        = 200,
+    FRAME_FORMAT_VP8 = 200,
     FRAME_FORMAT_VP9,
     FRAME_FORMAT_H264,
     FRAME_FORMAT_H265,
     FRAME_FORMAT_AV1,
 
-    FRAME_FORMAT_MSDK       = 300,
+    FRAME_FORMAT_MSDK = 300,
 
-    FRAME_FORMAT_PCM_48000_2    = 800,
+    FRAME_FORMAT_PCM_48000_2 = 800,
 
-    FRAME_FORMAT_PCMU       = 900,
+    FRAME_FORMAT_PCMU = 900,
     FRAME_FORMAT_PCMA,
     FRAME_FORMAT_OPUS,
     FRAME_FORMAT_ISAC16,
@@ -37,26 +37,26 @@ enum FrameFormat {
     FRAME_FORMAT_G722_16000_1,
     FRAME_FORMAT_G722_16000_2,
 
-    FRAME_FORMAT_AAC,           // ignore sample rate and channels for decoder, default is 48000_2
-    FRAME_FORMAT_AAC_48000_2,   // specify sample rate and channels for encoder
+    FRAME_FORMAT_AAC, // ignore sample rate and channels for decoder, default is 48000_2
+    FRAME_FORMAT_AAC_48000_2, // specify sample rate and channels for encoder
 
     FRAME_FORMAT_AC3,
     FRAME_FORMAT_NELLYMOSER,
 
-    FRAME_FORMAT_DATA,  // Generic data frame. We don't know its detailed structure.
+    FRAME_FORMAT_DATA, // Generic data frame. We don't know its detailed structure.
 
-    FRAME_FORMAT_RTP,  // RTP packet.
+    FRAME_FORMAT_RTP, // RTP packet.
 };
 
 enum VideoCodecProfile {
-    PROFILE_UNKNOWN                     = 0,
+    PROFILE_UNKNOWN = 0,
 
     /* AVC Profiles */
-    PROFILE_AVC_CONSTRAINED_BASELINE    = 66 + (0x100 << 1),
-    PROFILE_AVC_BASELINE                = 66,
-    PROFILE_AVC_MAIN                    = 77,
+    PROFILE_AVC_CONSTRAINED_BASELINE = 66 + (0x100 << 1),
+    PROFILE_AVC_BASELINE = 66,
+    PROFILE_AVC_MAIN = 77,
     //PROFILE_AVC_EXTENDED                = 88,
-    PROFILE_AVC_HIGH                    = 100,
+    PROFILE_AVC_HIGH = 100,
 };
 
 struct VideoFrameSpecificInfo {
@@ -81,11 +81,11 @@ typedef union MediaSpecInfo {
 } MediaSpecInfo;
 
 struct Frame {
-    FrameFormat     format;
-    uint8_t*        payload;
-    uint32_t        length;
-    uint32_t        timeStamp;
-    MediaSpecInfo   additionalInfo;
+    FrameFormat format;
+    uint8_t* payload;
+    uint32_t length;
+    uint32_t timeStamp;
+    MediaSpecInfo additionalInfo;
 };
 
 enum MetaDataType {
@@ -98,7 +98,8 @@ struct MetaData {
     uint32_t length;
 };
 
-inline FrameFormat getFormat(const std::string& codec) {
+inline FrameFormat getFormat(const std::string& codec)
+{
     if (codec == "vp8") {
         return owt_base::FRAME_FORMAT_VP8;
     } else if (codec == "h264") {
@@ -141,82 +142,86 @@ inline FrameFormat getFormat(const std::string& codec) {
     }
 }
 
-inline const char *getFormatStr(const FrameFormat &format) {
-    switch(format) {
-        case FRAME_FORMAT_UNKNOWN:
-            return "UNKNOWN";
-        case FRAME_FORMAT_I420:
-            return "I420";
-        case FRAME_FORMAT_MSDK:
-            return "MSDK";
-        case FRAME_FORMAT_VP8:
-            return "VP8";
-        case FRAME_FORMAT_VP9:
-            return "VP9";
-        case FRAME_FORMAT_H264:
-            return "H264";
-        case FRAME_FORMAT_H265:
-            return "H265";
-        case FRAME_FORMAT_AV1:
-            return "AV1X";
-        case FRAME_FORMAT_PCM_48000_2:
-            return "PCM_48000_2";
-        case FRAME_FORMAT_PCMU:
-            return "PCMU";
-        case FRAME_FORMAT_PCMA:
-            return "PCMA";
-        case FRAME_FORMAT_OPUS:
-            return "OPUS";
-        case FRAME_FORMAT_ISAC16:
-            return "ISAC16";
-        case FRAME_FORMAT_ISAC32:
-            return "ISAC32";
-        case FRAME_FORMAT_ILBC:
-            return "ILBC";
-        case FRAME_FORMAT_G722_16000_1:
-            return "G722_16000_1";
-        case FRAME_FORMAT_G722_16000_2:
-            return "G722_16000_2";
-        case FRAME_FORMAT_AAC:
-            return "AAC";
-        case FRAME_FORMAT_AAC_48000_2:
-            return "AAC_48000_2";
-        case FRAME_FORMAT_AC3:
-            return "AC3";
-        case FRAME_FORMAT_NELLYMOSER:
-            return "NELLYMOSER";
-        default:
-            return "INVALID";
+inline const char* getFormatStr(const FrameFormat& format)
+{
+    switch (format) {
+    case FRAME_FORMAT_UNKNOWN:
+        return "UNKNOWN";
+    case FRAME_FORMAT_I420:
+        return "I420";
+    case FRAME_FORMAT_MSDK:
+        return "MSDK";
+    case FRAME_FORMAT_VP8:
+        return "VP8";
+    case FRAME_FORMAT_VP9:
+        return "VP9";
+    case FRAME_FORMAT_H264:
+        return "H264";
+    case FRAME_FORMAT_H265:
+        return "H265";
+    case FRAME_FORMAT_AV1:
+        return "AV1X";
+    case FRAME_FORMAT_PCM_48000_2:
+        return "PCM_48000_2";
+    case FRAME_FORMAT_PCMU:
+        return "PCMU";
+    case FRAME_FORMAT_PCMA:
+        return "PCMA";
+    case FRAME_FORMAT_OPUS:
+        return "OPUS";
+    case FRAME_FORMAT_ISAC16:
+        return "ISAC16";
+    case FRAME_FORMAT_ISAC32:
+        return "ISAC32";
+    case FRAME_FORMAT_ILBC:
+        return "ILBC";
+    case FRAME_FORMAT_G722_16000_1:
+        return "G722_16000_1";
+    case FRAME_FORMAT_G722_16000_2:
+        return "G722_16000_2";
+    case FRAME_FORMAT_AAC:
+        return "AAC";
+    case FRAME_FORMAT_AAC_48000_2:
+        return "AAC_48000_2";
+    case FRAME_FORMAT_AC3:
+        return "AC3";
+    case FRAME_FORMAT_NELLYMOSER:
+        return "NELLYMOSER";
+    default:
+        return "INVALID";
     }
 }
 
-inline bool isAudioFrame(const Frame& frame) {
+inline bool isAudioFrame(const Frame& frame)
+{
     return frame.format == FRAME_FORMAT_PCM_48000_2
-          || frame.format == FRAME_FORMAT_PCMU
-          || frame.format == FRAME_FORMAT_PCMA
-          || frame.format == FRAME_FORMAT_OPUS
-          || frame.format == FRAME_FORMAT_ISAC16
-          || frame.format == FRAME_FORMAT_ISAC32
-          || frame.format == FRAME_FORMAT_ILBC
-          || frame.format == FRAME_FORMAT_G722_16000_1
-          || frame.format == FRAME_FORMAT_G722_16000_2
-          || frame.format == FRAME_FORMAT_AAC
-          || frame.format == FRAME_FORMAT_AAC_48000_2
-          || frame.format == FRAME_FORMAT_AC3
-          || frame.format == FRAME_FORMAT_NELLYMOSER;
+        || frame.format == FRAME_FORMAT_PCMU
+        || frame.format == FRAME_FORMAT_PCMA
+        || frame.format == FRAME_FORMAT_OPUS
+        || frame.format == FRAME_FORMAT_ISAC16
+        || frame.format == FRAME_FORMAT_ISAC32
+        || frame.format == FRAME_FORMAT_ILBC
+        || frame.format == FRAME_FORMAT_G722_16000_1
+        || frame.format == FRAME_FORMAT_G722_16000_2
+        || frame.format == FRAME_FORMAT_AAC
+        || frame.format == FRAME_FORMAT_AAC_48000_2
+        || frame.format == FRAME_FORMAT_AC3
+        || frame.format == FRAME_FORMAT_NELLYMOSER;
 }
 
-inline bool isVideoFrame(const Frame& frame) {
+inline bool isVideoFrame(const Frame& frame)
+{
     return frame.format == FRAME_FORMAT_I420
-          || frame.format ==FRAME_FORMAT_MSDK
-          || frame.format == FRAME_FORMAT_VP8
-          || frame.format == FRAME_FORMAT_VP9
-          || frame.format == FRAME_FORMAT_H264
-          || frame.format == FRAME_FORMAT_H265
-          || frame.format == FRAME_FORMAT_AV1;
+        || frame.format == FRAME_FORMAT_MSDK
+        || frame.format == FRAME_FORMAT_VP8
+        || frame.format == FRAME_FORMAT_VP9
+        || frame.format == FRAME_FORMAT_H264
+        || frame.format == FRAME_FORMAT_H265
+        || frame.format == FRAME_FORMAT_AV1;
 }
 
-inline bool isDataFrame(const Frame& frame) {
+inline bool isDataFrame(const Frame& frame)
+{
     return frame.format == FRAME_FORMAT_DATA || frame.format == FRAME_FORMAT_RTP;
 }
 
@@ -232,25 +237,29 @@ enum FeedbackCmd {
     SET_BITRATE,
     REQUEST_OWNER_ID,
     INIT_STREAM_ID,
-    RTCP_PACKET  // FIXME: Temporarily use FeedbackMsg to carry audio rtcp-packets due to the premature AudioFrameConstructor implementation.
+    RTCP_PACKET // FIXME: Temporarily use FeedbackMsg to carry audio rtcp-packets due to the premature AudioFrameConstructor implementation.
 };
 
 struct FeedbackMsg {
     static const int kMaxBufferByteLength = 128;
     FeedbackType type;
-    FeedbackCmd  cmd;
+    FeedbackCmd cmd;
     union {
         unsigned short kbps;
-        struct RtcpPacket{// FIXME: Temporarily use FeedbackMsg to carry audio rtcp-packets due to the premature AudioFrameConstructor implementation.
+        struct RtcpPacket { // FIXME: Temporarily use FeedbackMsg to carry audio rtcp-packets due to the premature AudioFrameConstructor implementation.
             uint32_t len;
-            char     buf[kMaxBufferByteLength];
+            char buf[kMaxBufferByteLength];
         } rtcp;
     } data;
-    struct MsgBuffer{
+    struct MsgBuffer {
         uint32_t len;
-        char     data[kMaxBufferByteLength];
+        char data[kMaxBufferByteLength];
     } buffer;
-    FeedbackMsg(FeedbackType t, FeedbackCmd c) : type{t}, cmd{c} {}
+    FeedbackMsg(FeedbackType t, FeedbackCmd c)
+        : type { t }
+        , cmd { c }
+    {
+    }
 };
 
 class FrameDestination;
@@ -259,7 +268,7 @@ public:
     FrameSource() { }
     virtual ~FrameSource();
 
-    virtual void onFeedback(const FeedbackMsg&) { };
+    virtual void onFeedback(const FeedbackMsg&) {};
 
     virtual void addAudioDestination(FrameDestination*);
     virtual void removeAudioDestination(FrameDestination*);
@@ -283,15 +292,19 @@ private:
     boost::shared_mutex m_data_dests_mutex;
 };
 
-
 class FrameDestination {
 public:
-    FrameDestination() : m_audio_src(nullptr), m_video_src(nullptr), m_data_src(nullptr) { }
+    FrameDestination()
+        : m_audio_src(nullptr)
+        , m_video_src(nullptr)
+        , m_data_src(nullptr)
+    {
+    }
     virtual ~FrameDestination() { }
 
     virtual void onFrame(const Frame&) = 0;
-    virtual void onMetaData(const MetaData&) {}
-    virtual void onVideoSourceChanged() {}
+    virtual void onMetaData(const MetaData&) { }
+    virtual void onVideoSourceChanged() { }
 
     void setAudioSource(FrameSource*);
     void unsetAudioSource();

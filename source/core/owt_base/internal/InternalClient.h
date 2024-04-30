@@ -5,9 +5,9 @@
 #ifndef InternalClient_h
 #define InternalClient_h
 
+#include "MediaFramePipeline.h"
 #include "TransportClient.h"
 #include <logger.h>
-#include "MediaFramePipeline.h"
 
 namespace owt_base {
 
@@ -17,6 +17,7 @@ namespace owt_base {
 class InternalClient : public FrameSource,
                        public TransportClient::Listener {
     DECLARE_LOGGER();
+
 public:
     class Listener {
     public:
@@ -24,13 +25,13 @@ public:
         virtual void onDisconnected() = 0;
     };
     InternalClient(const std::string& streamId,
-                   const std::string& protocol,
-                   Listener* listener);
+        const std::string& protocol,
+        Listener* listener);
     InternalClient(const std::string& streamId,
-                   const std::string& protocol,
-                   const std::string& ip,
-                   unsigned int port,
-                   Listener* listener);
+        const std::string& protocol,
+        const std::string& ip,
+        unsigned int port,
+        Listener* listener);
     virtual ~InternalClient();
 
     void connect(const std::string& ip, unsigned int port);

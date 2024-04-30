@@ -4,9 +4,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
+"use strict";
 
-const {calcResolution} = require('./formatUtil');
+const { calcResolution } = require("./formatUtil");
 
 // Domain and its controller node
 class Domain {
@@ -23,7 +23,7 @@ class Domain {
   static from(obj) {
     const dm = new Domain();
     Object.assign(dm, obj);
-    dm.portals = new Set(obj.portals)
+    dm.portals = new Set(obj.portals);
     return dm;
   }
 }
@@ -48,8 +48,8 @@ class User {
   static from(obj) {
     const user = new User();
     Object.assign(user, obj);
-    user.pubs = new Set(obj.pubs)
-    user.subs = new Set(obj.subs)
+    user.pubs = new Set(obj.pubs);
+    user.subs = new Set(obj.subs);
     return user;
   }
 }
@@ -78,9 +78,9 @@ class WorkerNode {
   static from(obj) {
     const node = new WorkerNode();
     Object.assign(node, obj);
-    node.pubs = new Set(obj.pubs)
-    node.subs = new Set(obj.subs)
-    node.procs = new Set(obj.procs)
+    node.pubs = new Set(obj.pubs);
+    node.subs = new Set(obj.subs);
+    node.procs = new Set(obj.procs);
     return node;
   }
 }
@@ -98,11 +98,11 @@ class Publication {
     };
     this.locality = null;
     this.participant = null;
-    this.domain = '';
+    this.domain = "";
   }
   addSource(trackType, trackId, format, parameters) {
     if (this.source[trackType]) {
-      this.source[trackType].push({id: trackId, format, parameters});
+      this.source[trackType].push({ id: trackId, format, parameters });
       return true;
     } else {
       return false;
@@ -110,20 +110,21 @@ class Publication {
   }
   removeSource(trackType, trackId) {
     if (this.source[trackType]) {
-      const idx = this.source[trackType]
-        .findIndex((track) => (track.id === trackId));
+      const idx = this.source[trackType].findIndex(
+        (track) => track.id === trackId
+      );
       if (idx >= 0) {
         this.source[trackType].splice(idx, 1);
         return true;
       }
     }
     return false;
-  };
+  }
   toSignalingFormat() {
     const info = this.info || {};
     const tracks = [];
     const optional = {
-      audio: {format: []},
+      audio: { format: [] },
       video: {
         format: [],
         parameters: {
@@ -131,8 +132,8 @@ class Publication {
           bitrate: [],
           framerate: [],
           keyFrameInterval: [],
-        }
-      }
+        },
+      },
     };
     const audioOptional = info.optional?.audio;
     if (audioOptional) {
@@ -159,26 +160,31 @@ class Publication {
     }
     const generateResolutions = (base) => {
       if (Array.isArray(params?.resolution)) {
-        const resolutions = params.resolution.map((res) => {
-          return calcResolution(res, base);
-        }).filter((res) => {
-          return res.width <= base.width && res.height <= base.height;
-        });
+        const resolutions = params.resolution
+          .map((res) => {
+            return calcResolution(res, base);
+          })
+          .filter((res) => {
+            return res.width <= base.width && res.height <= base.height;
+          });
         return resolutions;
       }
       return [];
     };
     this.source.audio.forEach((track) => {
-        tracks.push(Object.assign(
-          {type: 'audio', optional: optional.audio}, track));
+      tracks.push(
+        Object.assign({ type: "audio", optional: optional.audio }, track)
+      );
     });
     this.source.video.forEach((track) => {
-        if (track.parameters?.resolution) {
-          optional.video.parameters.resolution =
-            generateResolutions(track.parameters.resolution);
-        }
-        tracks.push(Object.assign(
-          {type: 'video', optional: optional.video}, track));
+      if (track.parameters?.resolution) {
+        optional.video.parameters.resolution = generateResolutions(
+          track.parameters.resolution
+        );
+      }
+      tracks.push(
+        Object.assign({ type: "video", optional: optional.video }, track)
+      );
     });
     return {
       id: this.id,
@@ -186,13 +192,13 @@ class Publication {
       media: {
         tracks,
       },
-      data: (this.source.data.length > 0),
+      data: this.source.data.length > 0,
       info: {
         owner: this.participant || info.owner,
         type: this.type,
         inViews: info.inViews || [],
         attributes: info.attributes,
-      }
+      },
     };
   }
   plain() {
@@ -218,7 +224,7 @@ class Subscription {
       data: [],
     };
     this.locality = null;
-    this.domain = '';
+    this.domain = "";
   }
   plain() {
     const plain = Object.assign({}, this);
@@ -248,7 +254,7 @@ class Processor {
       data: [],
     };
     this.locality = null;
-    this.domain = '';
+    this.domain = "";
   }
   plain() {
     const plain = Object.assign({}, this);

@@ -204,7 +204,8 @@ NAN_METHOD(QuicTransportStream::removeDestination)
     obj->m_hasSink = false;
 }
 
-NAN_METHOD(QuicTransportStream::readTrackId){
+NAN_METHOD(QuicTransportStream::readTrackId)
+{
     QuicTransportStream* obj = Nan::ObjectWrap::Unwrap<QuicTransportStream>(info.Holder());
     obj->ReadTrackId();
 }
@@ -216,7 +217,8 @@ void QuicTransportStream::CheckReadableData()
     }
 }
 
-NAN_GETTER(QuicTransportStream::trackKindGetter){
+NAN_GETTER(QuicTransportStream::trackKindGetter)
+{
     QuicTransportStream* obj = Nan::ObjectWrap::Unwrap<QuicTransportStream>(info.Holder());
     info.GetReturnValue().Set(Nan::New(obj->m_trackKind).ToLocalChecked());
 }
@@ -321,7 +323,8 @@ NAUV_WORK_CB(QuicTransportStream::onData)
     }
 }
 
-NAUV_WORK_CB(QuicTransportStream::onTrackId){
+NAUV_WORK_CB(QuicTransportStream::onTrackId)
+{
     Nan::HandleScope scope;
     QuicTransportStream* obj = reinterpret_cast<QuicTransportStream*>(async->data);
     if (obj == nullptr) {

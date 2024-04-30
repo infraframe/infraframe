@@ -30,13 +30,13 @@ public:
     void write(const Frame& frame);
 
 protected:
-    FILE *getVideoFp(webrtc::VideoFrameBuffer *videoFrameBuffer);
-    void write(webrtc::VideoFrameBuffer *videoFrameBuffer);
+    FILE* getVideoFp(webrtc::VideoFrameBuffer* videoFrameBuffer);
+    void write(webrtc::VideoFrameBuffer* videoFrameBuffer);
 
 private:
     std::string m_name;
 
-    FILE *m_fp;
+    FILE* m_fp;
     uint32_t m_index;
 
     int32_t m_width;

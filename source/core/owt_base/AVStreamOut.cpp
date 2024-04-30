@@ -8,31 +8,31 @@ namespace owt_base {
 inline AVCodecID frameFormat2AVCodecID(int frameFormat)
 {
     switch (frameFormat) {
-        case FRAME_FORMAT_VP8:
-            return AV_CODEC_ID_VP8;
-        case FRAME_FORMAT_VP9:
-            return AV_CODEC_ID_VP9;
-        case FRAME_FORMAT_H264:
-            return AV_CODEC_ID_H264;
-        case FRAME_FORMAT_H265:
-            return AV_CODEC_ID_H265;
-        case FRAME_FORMAT_PCMU:
-            return AV_CODEC_ID_PCM_MULAW;
-        case FRAME_FORMAT_PCMA:
-            return AV_CODEC_ID_PCM_ALAW;
-        case FRAME_FORMAT_OPUS:
-            return AV_CODEC_ID_OPUS;
-        case FRAME_FORMAT_AAC:
-        case FRAME_FORMAT_AAC_48000_2:
-            return AV_CODEC_ID_AAC;
-        default:
-            return AV_CODEC_ID_NONE;
+    case FRAME_FORMAT_VP8:
+        return AV_CODEC_ID_VP8;
+    case FRAME_FORMAT_VP9:
+        return AV_CODEC_ID_VP9;
+    case FRAME_FORMAT_H264:
+        return AV_CODEC_ID_H264;
+    case FRAME_FORMAT_H265:
+        return AV_CODEC_ID_H265;
+    case FRAME_FORMAT_PCMU:
+        return AV_CODEC_ID_PCM_MULAW;
+    case FRAME_FORMAT_PCMA:
+        return AV_CODEC_ID_PCM_ALAW;
+    case FRAME_FORMAT_OPUS:
+        return AV_CODEC_ID_OPUS;
+    case FRAME_FORMAT_AAC:
+    case FRAME_FORMAT_AAC_48000_2:
+        return AV_CODEC_ID_AAC;
+    default:
+        return AV_CODEC_ID_NONE;
     }
 }
 
 DEFINE_LOGGER(AVStreamOut, "owt.AVStreamOut");
 
-AVStreamOut::AVStreamOut(const std::string& url, bool hasAudio, bool hasVideo, EventRegistry *handle, int timeout)
+AVStreamOut::AVStreamOut(const std::string& url, bool hasAudio, bool hasVideo, EventRegistry* handle, int timeout)
     : m_status(Context_EMPTY)
     , m_url(url)
     , m_hasAudio(hasAudio)
@@ -94,16 +94,11 @@ void AVStreamOut::onFrame(const owt_base::Frame& frame)
         }
 
         if (m_audioFormat == FRAME_FORMAT_UNKNOWN) {
-            ELOG_INFO("Initial audio options format(%s), sample rate(%d), channels(%d), isRtpPacket(%d)"
-                    , getFormatStr(frame.format)
-                    , frame.additionalInfo.audio.sampleRate
-                    , frame.additionalInfo.audio.channels
-                    , frame.additionalInfo.audio.isRtpPacket
-                    );
+            ELOG_INFO("Initial audio options format(%s), sample rate(%d), channels(%d), isRtpPacket(%d)", getFormatStr(frame.format), frame.additionalInfo.audio.sampleRate, frame.additionalInfo.audio.channels, frame.additionalInfo.audio.isRtpPacket);
 
-            m_sampleRate    = frame.additionalInfo.audio.sampleRate;
-            m_channels      = frame.additionalInfo.audio.channels;
-            m_audioFormat   = frame.format;
+            m_sampleRate = frame.additionalInfo.audio.sampleRate;
+            m_channels = frame.additionalInfo.audio.channels;
+            m_audioFormat = frame.format;
         }
 
         if (m_audioFormat != frame.format) {
@@ -116,9 +111,8 @@ void AVStreamOut::onFrame(const owt_base::Frame& frame)
             return;
 
         if (m_channels != frame.additionalInfo.audio.channels
-                || m_sampleRate != frame.additionalInfo.audio.sampleRate) {
-            ELOG_ERROR("Invalid audio frame channels %d, or sample rate: %d"
-                    , frame.additionalInfo.audio.channels, frame.additionalInfo.audio.sampleRate);
+            || m_sampleRate != frame.additionalInfo.audio.sampleRate) {
+            ELOG_ERROR("Invalid audio frame channels %d, or sample rate: %d", frame.additionalInfo.audio.channels, frame.additionalInfo.audio.sampleRate);
 
             notifyAsyncEvent("fatal", "Invalid audio frame channels or sample rate");
             return;
@@ -140,20 +134,20 @@ void AVStreamOut::onFrame(const owt_base::Frame& frame)
         if (m_videoFormat == FRAME_FORMAT_UNKNOWN) {
             if (!frame.additionalInfo.video.isKeyFrame) {
                 ELOG_DEBUG("Request video key frame for initialization");
-                deliverFeedbackMsg(FeedbackMsg{.type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME});
+                deliverFeedbackMsg(FeedbackMsg { .type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME });
                 return;
             }
 
             ELOG_INFO("Initial video options: format(%s), %dx%d",
-                    getFormatStr(frame.format),
-                    frame.additionalInfo.video.width, frame.additionalInfo.video.height);
+                getFormatStr(frame.format),
+                frame.additionalInfo.video.width, frame.additionalInfo.video.height);
 
             m_videoSourceChanged = false;
             m_videoKeyFrame.reset(new MediaFrame(frame));
 
-            m_width         = frame.additionalInfo.video.width;
-            m_height        = frame.additionalInfo.video.height;
-            m_videoFormat   = frame.format;
+            m_width = frame.additionalInfo.video.width;
+            m_height = frame.additionalInfo.video.height;
+            m_videoFormat = frame.format;
         }
 
         if (m_videoFormat != frame.format) {
@@ -163,12 +157,11 @@ void AVStreamOut::onFrame(const owt_base::Frame& frame)
         }
 
         if (!m_videoSourceChanged
-                && (m_width != frame.additionalInfo.video.width || m_height != frame.additionalInfo.video.height)) {
+            && (m_width != frame.additionalInfo.video.width || m_height != frame.additionalInfo.video.height)) {
 
             ELOG_DEBUG("Video resolution changed %dx%d -> %dx%d",
-                    m_width, m_height,
-                    frame.additionalInfo.video.width, frame.additionalInfo.video.height
-                    );
+                m_width, m_height,
+                frame.additionalInfo.video.width, frame.additionalInfo.video.height);
 
             m_videoSourceChanged = true;
         }
@@ -176,20 +169,20 @@ void AVStreamOut::onFrame(const owt_base::Frame& frame)
         if (m_videoSourceChanged) {
             if (!frame.additionalInfo.video.isKeyFrame) {
                 ELOG_DEBUG("Request video key frame for video changed");
-                deliverFeedbackMsg(FeedbackMsg{.type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME});
+                deliverFeedbackMsg(FeedbackMsg { .type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME });
                 return;
             }
 
             ELOG_DEBUG("Ready after video changed: format(%s), %dx%d",
-                    getFormatStr(frame.format),
-                    frame.additionalInfo.video.width, frame.additionalInfo.video.height);
+                getFormatStr(frame.format),
+                frame.additionalInfo.video.width, frame.additionalInfo.video.height);
 
             m_videoSourceChanged = false;
             m_videoKeyFrame.reset(new MediaFrame(frame));
 
-            m_width         = frame.additionalInfo.video.width;
-            m_height        = frame.additionalInfo.video.height;
-            m_videoFormat   = frame.format;
+            m_width = frame.additionalInfo.video.width;
+            m_height = frame.additionalInfo.video.height;
+            m_videoFormat = frame.format;
         }
 
 #if 0 // dont drop key frame
@@ -215,12 +208,7 @@ void AVStreamOut::sendLoop()
             goto exit;
 
         if (timeOut >= m_timeOutMs) {
-            ELOG_ERROR("No a/v frames, hasAudio(%d) - ready(%d), hasVideo(%d) - ready(%d), timeOutMs %d"
-                    , m_hasAudio
-                    , (m_audioFormat != FRAME_FORMAT_UNKNOWN)
-                    , m_hasVideo
-                    , (m_videoFormat != FRAME_FORMAT_UNKNOWN)
-                    , m_timeOutMs);
+            ELOG_ERROR("No a/v frames, hasAudio(%d) - ready(%d), hasVideo(%d) - ready(%d), timeOutMs %d", m_hasAudio, (m_audioFormat != FRAME_FORMAT_UNKNOWN), m_hasVideo, (m_videoFormat != FRAME_FORMAT_UNKNOWN), m_timeOutMs);
             notifyAsyncEvent("fatal", "No a/v frames");
             goto exit;
         }
@@ -228,13 +216,12 @@ void AVStreamOut::sendLoop()
         timeOut += waitMs;
         usleep(waitMs * 1000);
 
-        ELOG_DEBUG("Wait for av options available, hasAudio(%d) - ready(%d), hasVideo(%d) - ready(%d), waitMs %d"
-                , m_hasAudio, m_audioFormat != FRAME_FORMAT_UNKNOWN, m_hasVideo, m_videoFormat != FRAME_FORMAT_UNKNOWN, timeOut);
+        ELOG_DEBUG("Wait for av options available, hasAudio(%d) - ready(%d), hasVideo(%d) - ready(%d), waitMs %d", m_hasAudio, m_audioFormat != FRAME_FORMAT_UNKNOWN, m_hasVideo, m_videoFormat != FRAME_FORMAT_UNKNOWN, timeOut);
     }
 
-     connectRetry = getReconnectCount();
+    connectRetry = getReconnectCount();
 reconnect:
-    if(!connect()) {
+    if (!connect()) {
         notifyAsyncEvent("init", "Cannot open connection");
         goto exit;
     }
@@ -288,7 +275,7 @@ exit:
 
 bool AVStreamOut::connect()
 {
-    const char *formatName = getFormatName(m_url);
+    const char* formatName = getFormatName(m_url);
 
     avformat_alloc_output_context2(&m_context, NULL, formatName, m_url.c_str());
     if (!m_context) {
@@ -341,50 +328,50 @@ bool AVStreamOut::addAudioStream(FrameFormat format, uint32_t sampleRate, uint32
         return false;
     }
 
-    AVCodecParameters *par = m_audioStream->codecpar;
-    par->codec_type     = AVMEDIA_TYPE_AUDIO;
-    par->codec_id       = codec_id;
-    par->sample_rate    = sampleRate;
-    par->channels       = channels;
+    AVCodecParameters* par = m_audioStream->codecpar;
+    par->codec_type = AVMEDIA_TYPE_AUDIO;
+    par->codec_id = codec_id;
+    par->sample_rate = sampleRate;
+    par->channels = channels;
     par->channel_layout = av_get_default_channel_layout(par->channels);
-    switch(par->codec_id) {
-        case AV_CODEC_ID_AAC: //AudioSpecificConfig 48000-2
-            par->extradata_size = 2;
-            par->extradata      = (uint8_t *)av_malloc(par->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
-            par->extradata[0]   = 0x11;
-            par->extradata[1]   = 0x90;
-            break;
-        case AV_CODEC_ID_OPUS: //OpusHead 48000-2
-            par->extradata_size = 19;
-            par->extradata      = (uint8_t *)av_malloc(par->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
-            par->extradata[0]   = 'O';
-            par->extradata[1]   = 'p';
-            par->extradata[2]   = 'u';
-            par->extradata[3]   = 's';
-            par->extradata[4]   = 'H';
-            par->extradata[5]   = 'e';
-            par->extradata[6]   = 'a';
-            par->extradata[7]   = 'd';
-            //Version
-            par->extradata[8]   = 1;
-            //Channel Count
-            par->extradata[9]   = 2;
-            //Pre-skip
-            par->extradata[10]  = 0x38;
-            par->extradata[11]  = 0x1;
-            //Input Sample Rate (Hz)
-            par->extradata[12]  = 0x80;
-            par->extradata[13]  = 0xbb;
-            par->extradata[14]  = 0;
-            par->extradata[15]  = 0;
-            //Output Gain (Q7.8 in dB)
-            par->extradata[16]  = 0;
-            par->extradata[17]  = 0;
-            //Mapping Family
-            par->extradata[18]  = 0;
-            break;
-        default:
-            break;
+    switch (par->codec_id) {
+    case AV_CODEC_ID_AAC: //AudioSpecificConfig 48000-2
+        par->extradata_size = 2;
+        par->extradata = (uint8_t*)av_malloc(par->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
+        par->extradata[0] = 0x11;
+        par->extradata[1] = 0x90;
+        break;
+    case AV_CODEC_ID_OPUS: //OpusHead 48000-2
+        par->extradata_size = 19;
+        par->extradata = (uint8_t*)av_malloc(par->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
+        par->extradata[0] = 'O';
+        par->extradata[1] = 'p';
+        par->extradata[2] = 'u';
+        par->extradata[3] = 's';
+        par->extradata[4] = 'H';
+        par->extradata[5] = 'e';
+        par->extradata[6] = 'a';
+        par->extradata[7] = 'd';
+        //Version
+        par->extradata[8] = 1;
+        //Channel Count
+        par->extradata[9] = 2;
+        //Pre-skip
+        par->extradata[10] = 0x38;
+        par->extradata[11] = 0x1;
+        //Input Sample Rate (Hz)
+        par->extradata[12] = 0x80;
+        par->extradata[13] = 0xbb;
+        par->extradata[14] = 0;
+        par->extradata[15] = 0;
+        //Output Gain (Q7.8 in dB)
+        par->extradata[16] = 0;
+        par->extradata[17] = 0;
+        //Mapping Family
+        par->extradata[18] = 0;
+        break;
+    default:
+        break;
     }
 
     return true;
@@ -399,13 +386,13 @@ bool AVStreamOut::addVideoStream(FrameFormat format, uint32_t width, uint32_t he
         return false;
     }
 
-    AVCodecParameters *par = m_videoStream->codecpar;
+    AVCodecParameters* par = m_videoStream->codecpar;
     par->codec_type = AVMEDIA_TYPE_VIDEO;
-    par->codec_id   = codec_id;
-    par->width      = width;
-    par->height     = height;
+    par->codec_id = codec_id;
+    par->width = width;
+    par->height = height;
     if (codec_id == AV_CODEC_ID_H264 || codec_id == AV_CODEC_ID_H265) { //extradata
-        AVCodecParserContext *parser = av_parser_init(codec_id);
+        AVCodecParserContext* parser = av_parser_init(codec_id);
         if (!parser) {
             ELOG_ERROR("Cannot find video parser");
             return false;
@@ -414,7 +401,7 @@ bool AVStreamOut::addVideoStream(FrameFormat format, uint32_t width, uint32_t he
         int size = parser->parser->split(NULL, m_videoKeyFrame->m_frame.payload, m_videoKeyFrame->m_frame.length);
         if (size > 0) {
             par->extradata_size = size;
-            par->extradata      = (uint8_t *)av_malloc(par->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
+            par->extradata = (uint8_t*)av_malloc(par->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
             memcpy(par->extradata, m_videoKeyFrame->m_frame.payload, par->extradata_size);
         } else {
             ELOG_WARN("Cannot find video extradata");
@@ -433,7 +420,7 @@ bool AVStreamOut::addVideoStream(FrameFormat format, uint32_t width, uint32_t he
 bool AVStreamOut::writeHeader()
 {
     int ret;
-    AVDictionary *options = NULL;
+    AVDictionary* options = NULL;
 
     ret = getHeaderOpt(m_url, &options);
     if (!ret) {
@@ -450,7 +437,7 @@ bool AVStreamOut::writeHeader()
     return true;
 }
 
-bool AVStreamOut::writeFrame(AVStream *stream, boost::shared_ptr<MediaFrame> mediaFrame)
+bool AVStreamOut::writeFrame(AVStream* stream, boost::shared_ptr<MediaFrame> mediaFrame)
 {
     int ret;
     AVPacket pkt;
@@ -463,7 +450,7 @@ bool AVStreamOut::writeFrame(AVStream *stream, boost::shared_ptr<MediaFrame> med
     pkt.size = mediaFrame->m_frame.length;
     pkt.dts = (int64_t)(mediaFrame->m_timeStamp / (av_q2d(stream->time_base) * 1000));
     pkt.pts = pkt.dts;
-    pkt.duration =  (int64_t)(mediaFrame->m_duration / (av_q2d(stream->time_base) * 1000));
+    pkt.duration = (int64_t)(mediaFrame->m_duration / (av_q2d(stream->time_base) * 1000));
     pkt.stream_index = stream->index;
 
     if (isVideoFrame(mediaFrame->m_frame)) {
@@ -478,18 +465,12 @@ bool AVStreamOut::writeFrame(AVStream *stream, boost::shared_ptr<MediaFrame> med
         if (m_lastKeyFrameTimestamp + 1.1 * getKeyFrameInterval() < currentTimeMs()) {
             ELOG_DEBUG("Request video key frame");
 
-            deliverFeedbackMsg(FeedbackMsg{.type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME});
+            deliverFeedbackMsg(FeedbackMsg { .type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME });
             m_lastKeyFrameTimestamp = currentTimeMs();
         }
     }
 
-    ELOG_TRACE("Send %s frame, timestamp %ld, duration %ld, size %4d%s"
-            , isVideoFrame(mediaFrame->m_frame) ? "video" : "audio"
-            , pkt.dts
-            , pkt.duration
-            , pkt.size
-            , (pkt.flags & AV_PKT_FLAG_KEY) ? " - key" : ""
-            );
+    ELOG_TRACE("Send %s frame, timestamp %ld, duration %ld, size %4d%s", isVideoFrame(mediaFrame->m_frame) ? "video" : "audio", pkt.dts, pkt.duration, pkt.size, (pkt.flags & AV_PKT_FLAG_KEY) ? " - key" : "");
 
     ret = av_interleaved_write_frame(m_context, &pkt);
     if (ret < 0)
@@ -498,7 +479,7 @@ bool AVStreamOut::writeFrame(AVStream *stream, boost::shared_ptr<MediaFrame> med
     return ret >= 0 ? true : false;
 }
 
-char *AVStreamOut::ff_err2str(int errRet)
+char* AVStreamOut::ff_err2str(int errRet)
 {
     av_strerror(errRet, (char*)(&m_errbuff), 500);
     return m_errbuff;

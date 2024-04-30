@@ -27,10 +27,10 @@ public:
     ~AudioFrameWriter();
 
     void write(const Frame& frame);
-    void write(const webrtc::AudioFrame *audioFrame);
+    void write(const webrtc::AudioFrame* audioFrame);
 
 protected:
-    FILE *getAudioFp(const webrtc::AudioFrame *audioFrame);
+    FILE* getAudioFp(const webrtc::AudioFrame* audioFrame);
 
     void writeCompressedFrame(const Frame& frame);
     bool addAudioStream(FrameFormat format, uint32_t sampleRate, uint32_t channels);
@@ -38,14 +38,14 @@ protected:
 private:
     std::string m_name;
 
-    FILE *m_fp;
+    FILE* m_fp;
     uint32_t m_index;
 
     int32_t m_sampleRate;
     int32_t m_channels;
 
-    AVFormatContext *m_context;
-    AVStream *m_audioStream;
+    AVFormatContext* m_context;
+    AVStream* m_audioStream;
 };
 
 }

@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /*global require*/
-'use strict';
-const logger = require('../logger').logger;
-const log = logger.getLogger('QuicTransportStreamPipeline');
+"use strict";
+const logger = require("../logger").logger;
+const log = logger.getLogger("QuicTransportStreamPipeline");
 
 /* `QuicTransportStreamPipeline` is pipeline for a publication or a subscription
  * to send or receive data through a QUIC stream. The pipeline might be created
@@ -24,22 +24,22 @@ module.exports = class QuicTransportStreamPipeline {
     this._quicStream = null;
     this._notifiedReady = false;
 
-    this.quicStream = function(stream) {
+    this.quicStream = function (stream) {
       this._quicStream = stream;
       if (this.bindRouterAsSourceCallback) {
         this.bindRouterAsSourceCallback(stream);
       }
     };
 
-    this.addDestination = function(name, dst, isNanObj) {
+    this.addDestination = function (name, dst, isNanObj) {
       this._quicStream.addDestination(name, dst, isNanObj);
     };
 
-    this.receiver = function(kind) {
+    this.receiver = function (kind) {
       return this._quicStream;
     };
 
-    this.close = function() {
+    this.close = function () {
       this._quicStream.close();
     };
 

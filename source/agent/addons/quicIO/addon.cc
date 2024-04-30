@@ -7,9 +7,10 @@
 
 using namespace v8;
 
-void InitAll(Handle<Object> exports) {
-  InternalQuicIn::Init(exports);
-  InternalQuicOut::Init(exports);
+void InitAll(Handle<Object> exports)
+{
+    InternalQuicIn::Init(exports);
+    InternalQuicOut::Init(exports);
 }
 
 NODE_MODULE(addon, InitAll)

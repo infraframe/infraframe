@@ -25,12 +25,11 @@
  * }
  */
 
-'use strict';
+"use strict";
 
-const log = require('./logger').logger.getLogger('Subscription');
+const log = require("./logger").logger.getLogger("Subscription");
 
 class Subscription {
-
   constructor(id, media, data, locality, info) {
     this.id = id;
     this.info = info;
@@ -65,97 +64,112 @@ class Subscription {
        *     } | undefined
        * }
        */
-      log.debug('Upgrade subscription media:', JSON.stringify(media));
+      log.debug("Upgrade subscription media:", JSON.stringify(media));
       const m = { tracks: [] };
       if (media.audio) {
-        const {codec, sampleRate, channelNum} = media.audio;
+        const { codec, sampleRate, channelNum } = media.audio;
         m.tracks.push({
-          type: 'audio',
+          type: "audio",
           from: media.audio.from,
           format: media.audio.format,
-          status: (media.audio.status || 'active'),
+          status: media.audio.status || "active",
         });
       }
       if (media.video) {
         m.tracks.push({
-          type: 'video',
+          type: "video",
           from: media.video.from,
           format: media.video.format,
           parameters: media.video.parameters,
-          status: (media.video.status || 'active'),
+          status: media.video.status || "active",
         });
       }
       return m;
     }
     // Set default status
-    media.tracks.forEach(track => {
-      track.status = 'active';
+    media.tracks.forEach((track) => {
+      track.status = "active";
     });
     return media;
   }
 
   // Array of unique StreamId or TrackId of subscription
   froms() {
-    return this.media.tracks.map(t => t.from)
+    return this.media.tracks
+      .map((t) => t.from)
       .filter((t, i, self) => self.indexOf(t) === i);
   }
 
   // Merge source format and parameters
   setSource(sourceId, stream) {
-    this.origin = (this.origin || stream.info.origin);
-    this.media.tracks.forEach(track => {
+    this.origin = this.origin || stream.info.origin;
+    this.media.tracks.forEach((track) => {
       if (track.from === sourceId) {
         // Extract source track from stream
         delete track.source;
-        const source = stream.id === sourceId ?
-          stream.media.tracks.find(t => t.type === track.type) :
-          stream.media.tracks.find(t => t.id === sourceId);
+        const source =
+          stream.id === sourceId
+            ? stream.media.tracks.find((t) => t.type === track.type)
+            : stream.media.tracks.find((t) => t.id === sourceId);
 
-        log.debug('Subscription source:', JSON.stringify(source));
-        track.format = (track.format || source.format);
+        log.debug("Subscription source:", JSON.stringify(source));
+        track.format = track.format || source.format;
         if (source.id) {
           // Save trackId for subscription
           track.source = source.id;
         }
-        if (track.type === 'video') {
-          if (stream.type === 'mixed') {
+        if (track.type === "video") {
+          if (stream.type === "mixed") {
             if (track.parameters) {
               const sourceBitrate = source.parameters.bitrate;
-              const sourceResolution = source.parameters.resolution; 
+              const sourceResolution = source.parameters.resolution;
               const sourceFramerate = source.parameters.framerate;
               const sourceKFI = source.parameters.keyFrameInterval;
 
-              if (typeof track.parameters.bitrate === 'string') {
-                track.parameters.bitrate = source.parameters.bitrate *
+              if (typeof track.parameters.bitrate === "string") {
+                track.parameters.bitrate =
+                  source.parameters.bitrate *
                   Number(track.parameters.bitrate.substring(1));
               } else {
-                if (!track.parameters.resolution && !track.parameters.framerate) {
-                  track.parameters.bitrate = track.parameters.bitrate || sourceBitrate;
+                if (
+                  !track.parameters.resolution &&
+                  !track.parameters.framerate
+                ) {
+                  track.parameters.bitrate =
+                    track.parameters.bitrate || sourceBitrate;
                 } else if (sourceBitrate) {
                   let resoRatio = 1.0;
                   if (track.parameters.resolution) {
-                    resoRatio = (track.parameters.resolution.width * track.parameters.resolution.height) /
+                    resoRatio =
+                      (track.parameters.resolution.width *
+                        track.parameters.resolution.height) /
                       (sourceResolution.width * sourceResolution.height);
                   }
                   let frRatio = 1.0;
                   if (track.parameters.framerate) {
                     frRatio = track.parameters.framerate / sourceFramerate;
                   }
-                  track.parameters.bitrate = track.parameters.bitrate || sourceBitrate * resoRatio * frRatio;
+                  track.parameters.bitrate =
+                    track.parameters.bitrate ||
+                    sourceBitrate * resoRatio * frRatio;
                 }
               }
               if (source.parameters) {
-                track.parameters.resolution = (track.parameters.resolution || sourceResolution);
-                track.parameters.framerate = (track.parameters.framerate || sourceFramerate);
-                track.parameters.keyFrameInterval = (track.parameters.keyFrameInterval || sourceKFI);
+                track.parameters.resolution =
+                  track.parameters.resolution || sourceResolution;
+                track.parameters.framerate =
+                  track.parameters.framerate || sourceFramerate;
+                track.parameters.keyFrameInterval =
+                  track.parameters.keyFrameInterval || sourceKFI;
               }
             } else {
               track.parameters = source.parameters;
             }
-          } else if (stream.type === 'forward') {
+          } else if (stream.type === "forward") {
             if (track.parameters) {
-              if (typeof track.parameters.bitrate === 'string') {
-                track.parameters.bitrate = source.parameters.bitrate *
+              if (typeof track.parameters.bitrate === "string") {
+                track.parameters.bitrate =
+                  source.parameters.bitrate *
                   Number(track.parameters.bitrate.substring(1));
               }
             }
@@ -166,25 +180,25 @@ class Subscription {
   }
 
   _toCtrlParameters(param) {
-    const srcParam = (param || {});
+    const srcParam = param || {};
     const ctrlParam = {
-      bitrate: (srcParam.bitrate || 'unspecified'),
-      resolution: (srcParam.resolution || 'unspecified'),
-      framerate: (srcParam.framerate || 'unspecified'),
-      keyFrameInterval: (srcParam.keyFrameInterval || 'unspecified'),
+      bitrate: srcParam.bitrate || "unspecified",
+      resolution: srcParam.resolution || "unspecified",
+      framerate: srcParam.framerate || "unspecified",
+      keyFrameInterval: srcParam.keyFrameInterval || "unspecified",
     };
     return ctrlParam;
   }
 
   // To arguments for RoomController.subscribe [{owner, id, locality, media, type}]
   toRoomCtrlSubArgs() {
-    if (this.info.type === 'webrtc') {
-      return this.media.tracks.map(track => {
+    if (this.info.type === "webrtc") {
+      return this.media.tracks.map((track) => {
         const media = { origin: this.origin };
         media[track.type] = {
           format: track.format,
           parameters: this._toCtrlParameters(track.parameters),
-          from: (track.source || track.from),
+          from: track.source || track.from,
         };
 
         var trackId;
@@ -193,35 +207,37 @@ class Subscription {
         } else {
           trackId = track.id;
         }
-        
+
         return {
           owner: this.info.owner,
           id: trackId, // Use track ID for webrtc publication
           locality: this.locality,
           type: this.info.type,
           media,
-          data: this.data
+          data: this.data,
         };
       });
     } else {
       const media = { origin: this.origin };
-      this.media.tracks.forEach(track => {
+      this.media.tracks.forEach((track) => {
         if (!media[track.type]) {
           media[track.type] = {
             format: track.format,
             parameters: this._toCtrlParameters(track.parameters),
-            from: (track.source || track.from),
+            from: track.source || track.from,
           };
         }
       });
-      return [{
-        owner: this.info.owner,
-        id: this.id,
-        locality: this.locality,
-        type: this.info.type,
-        media,
-        data: this.data
-      }];
+      return [
+        {
+          owner: this.info.owner,
+          id: this.id,
+          locality: this.locality,
+          type: this.info.type,
+          media,
+          data: this.data,
+        },
+      ];
     }
   }
 }

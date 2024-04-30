@@ -14,17 +14,17 @@
  * Wrapper class of owt_base::InternalOut
  */
 class InternalOut : public FrameDestination {
- public:
-  static void Init(v8::Local<v8::Object> exports);
-  owt_base::InternalOut* me;
+public:
+    static void Init(v8::Local<v8::Object> exports);
+    owt_base::InternalOut* me;
 
- private:
-  InternalOut();
-  ~InternalOut();
-  static v8::Persistent<v8::Function> constructor;
+private:
+    InternalOut();
+    ~InternalOut();
+    static v8::Persistent<v8::Function> constructor;
 
-  static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void close(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void close(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
 #endif

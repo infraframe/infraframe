@@ -22,10 +22,11 @@ public:
     VCMFrameDecoder(FrameFormat format);
     ~VCMFrameDecoder();
 
-    static bool supportFormat(FrameFormat format) {
+    static bool supportFormat(FrameFormat format)
+    {
         return (format == FRAME_FORMAT_VP8
-                || format == FRAME_FORMAT_VP9
-                || format == FRAME_FORMAT_H264);
+            || format == FRAME_FORMAT_VP9
+            || format == FRAME_FORMAT_H264);
     }
 
     bool init(FrameFormat format);

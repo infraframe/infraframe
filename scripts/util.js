@@ -24,7 +24,7 @@ class OptParser {
    *@example op.addOption('t', 'target', 'list', 'pack target')
    */
   addOption(shortName, longName, valueType, description) {
-    if (!['boolean', 'string', 'list'].includes(valueType)) return false;
+    if (!["boolean", "string", "list"].includes(valueType)) return false;
 
     var newOpt = { type: valueType, desc: description, name: longName };
     this.shortMap[shortName] = newOpt;
@@ -38,7 +38,8 @@ class OptParser {
    */
   printHelp() {
     var name, opt, val;
-    var slen = 0, llen = 0;
+    var slen = 0,
+      llen = 0;
     for (name in this.shortMap) {
       opt = this.shortMap[name];
       if (name.length > slen) slen = name.length;
@@ -46,9 +47,9 @@ class OptParser {
     }
 
     var genStrN = (n) => {
-      var ret = '';
+      var ret = "";
       while (n > 0) {
-        ret += ' ';
+        ret += " ";
         n--;
       }
       return ret;
@@ -57,7 +58,9 @@ class OptParser {
     for (name in this.shortMap) {
       opt = this.shortMap[name];
       padding = slen + llen - name.length - opt.name.length;
-      console.log(`-${name},--${opt.name} ${genStrN(padding)} ${opt.desc || ''}`);
+      console.log(
+        `-${name},--${opt.name} ${genStrN(padding)} ${opt.desc || ""}`
+      );
     }
   }
 
@@ -76,7 +79,7 @@ class OptParser {
       i++;
 
       let k = 0;
-      while (arg[k] === '-') k++;
+      while (arg[k] === "-") k++;
 
       let argName = arg.substr(k);
       if (k === 1) {
@@ -87,16 +90,16 @@ class OptParser {
 
       if (!opt) continue;
 
-      if (opt.type === 'boolean') {
+      if (opt.type === "boolean") {
         ret[opt.name] = true;
-      } else if (opt.type === 'string') {
-        if (i >= args.length || args[i][0] === '-') {
+      } else if (opt.type === "string") {
+        if (i >= args.length || args[i][0] === "-") {
           console.log(`\x1b[33mWarning: [${arg}] Missing argument\x1b[0m`);
           continue;
         }
         ret[opt.name] = args[i];
         i++;
-      } else if (opt.type === 'list' && i < args.length) {
+      } else if (opt.type === "list" && i < args.length) {
         if (!ret[opt.name]) ret[opt.name] = [];
         ret[opt.name].push(args[i]);
         i++;
@@ -107,7 +110,7 @@ class OptParser {
   }
 }
 
-const { exec } = require('child_process');
+const { exec } = require("child_process");
 
 /*
  *@function wrapExec
@@ -120,7 +123,7 @@ function wrapExec(...args) {
       //if (stdout) console.log(stdout);
       if (error) {
         if (stderr.trim()) {
-          console.log('\x1b[31mCommandFailed:', args[0], '\x1b[0m');
+          console.log("\x1b[31mCommandFailed:", args[0], "\x1b[0m");
           console.error(stderr.trim());
         }
         reject(error, stderr);

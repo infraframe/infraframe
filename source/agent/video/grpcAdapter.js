@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
+"use strict";
 
-const unpackOption = require('./grpcTools').unpackOption;
-const packNotification = require('./grpcTools').packNotification;
+const unpackOption = require("./grpcTools").unpackOption;
+const packNotification = require("./grpcTools").packNotification;
 
 // Create GRPC interface for video agent
 function createGrpcInterface(controller, streamingEmitter) {
@@ -17,14 +17,19 @@ function createGrpcInterface(controller, streamingEmitter) {
       const req = call.request;
       const option = unpackOption(req.type, req.option);
       controller.init(
-          option.service, option.init, req.id, option.controller, option.label,
-          (n, code, data) => {
-        if (code === 'error') {
-          callback(new Error(data), null);
-        } else {
-          callback(null, code);
+        option.service,
+        option.init,
+        req.id,
+        option.controller,
+        option.label,
+        (n, code, data) => {
+          if (code === "error") {
+            callback(new Error(data), null);
+          } else {
+            callback(null, code);
+          }
         }
-      });
+      );
     },
     deinit: function (call, callback) {
       controller.deinit();
@@ -34,24 +39,29 @@ function createGrpcInterface(controller, streamingEmitter) {
       const req = call.request;
       const codec = req.media.video.format.codec;
       const pars = req.media.video.parameters;
-      controller.generate(codec, pars.resolution, pars.framerate,
-          pars.bitrate, pars.keyFrameInterval,
-          (n, code, data) => {
-        if (code === 'error') {
-          callback(new Error(data), null);
-        } else {
-          const reply = {};
-          if (code) {
-            reply.id = code.id;
-            reply.media = {
-              video: {
-                parameters: code
-              }
+      controller.generate(
+        codec,
+        pars.resolution,
+        pars.framerate,
+        pars.bitrate,
+        pars.keyFrameInterval,
+        (n, code, data) => {
+          if (code === "error") {
+            callback(new Error(data), null);
+          } else {
+            const reply = {};
+            if (code) {
+              reply.id = code.id;
+              reply.media = {
+                video: {
+                  parameters: code,
+                },
+              };
             }
+            callback(null, reply);
           }
-          callback(null, reply);
         }
-      });
+      );
     },
     degenerate: function (call, callback) {
       controller.degenerate(call.request.id);
@@ -81,7 +91,7 @@ function createGrpcInterface(controller, streamingEmitter) {
     setInputActive: function (call, callback) {
       const req = call.request;
       controller.setInputActive(req.id, req.active, (n, code, data) => {
-        if (code === 'error') {
+        if (code === "error") {
           callback(new Error(data), null);
         } else {
           callback(null, {});
@@ -90,17 +100,17 @@ function createGrpcInterface(controller, streamingEmitter) {
     },
     getRegion: function (call, callback) {
       controller.getRegion(call.request.id, (n, code, data) => {
-        if (code === 'error') {
+        if (code === "error") {
           callback(new Error(data), null);
         } else {
-          callback(null, {message: code});
+          callback(null, { message: code });
         }
       });
     },
     setRegion: function (call, callback) {
       const req = call.request;
       controller.setRegion(req.streamId, req.regionId, (n, code, data) => {
-        if (code === 'error') {
+        if (code === "error") {
           callback(new Error(data), null);
         } else {
           callback(null, {});
@@ -110,16 +120,16 @@ function createGrpcInterface(controller, streamingEmitter) {
     setLayout: function (call, callback) {
       const req = call.request;
       controller.setLayout(req.regions, (n, code, data) => {
-        if (code === 'error') {
+        if (code === "error") {
           callback(new Error(data), null);
         } else {
-          callback(null, {regions: code});
+          callback(null, { regions: code });
         }
       });
     },
     setPrimary: function (call, callback) {
       controller.setPrimary(call.request.id, (n, code, data) => {
-        if (code === 'error') {
+        if (code === "error") {
           callback(new Error(data), null);
         } else {
           callback(null, {});
@@ -134,10 +144,10 @@ function createGrpcInterface(controller, streamingEmitter) {
       const req = call.request;
       const option = unpackOption(req.type, req.option);
       controller.publish(req.id, req.type, option, (n, code, data) => {
-        if (code === 'error') {
+        if (code === "error") {
           callback(new Error(data), null);
         } else {
-          callback(null, {id: req.id});
+          callback(null, { id: req.id });
         }
       });
     },
@@ -149,10 +159,10 @@ function createGrpcInterface(controller, streamingEmitter) {
       const req = call.request;
       const option = unpackOption(req.type, req.option);
       controller.subscribe(req.id, req.type, option, (n, code, data) => {
-        if (code === 'error') {
+        if (code === "error") {
           callback(new Error(data), null);
         } else {
-          callback(null, {id: req.id});
+          callback(null, { id: req.id });
         }
       });
     },
@@ -162,15 +172,13 @@ function createGrpcInterface(controller, streamingEmitter) {
     },
     linkup: function (call, callback) {
       const req = call.request;
-      controller.linkup(
-        req.id, req.from,
-        (n, code, data) => {
-          if (code === 'error') {
-            callback(new Error(data), null);
-          } else {
-            callback(null, {message: data});
-          }
-        });
+      controller.linkup(req.id, req.from, (n, code, data) => {
+        if (code === "error") {
+          callback(new Error(data), null);
+        } else {
+          callback(null, { message: data });
+        }
+      });
     },
     cutoff: function (call, callback) {
       controller.cutoff(call.request.id);
@@ -179,7 +187,7 @@ function createGrpcInterface(controller, streamingEmitter) {
     listenToNotifications: function (call, callback) {
       const writeNotification = (notification) => {
         const progress = packNotification({
-          type: 'video',
+          type: "video",
           name: notification.name,
           data: notification.data,
         });
@@ -188,24 +196,24 @@ function createGrpcInterface(controller, streamingEmitter) {
       const endCall = () => {
         call.end();
       };
-      streamingEmitter.on('notification', writeNotification);
-      streamingEmitter.on('close', endCall);
-      call.on('cancelled', () => {
+      streamingEmitter.on("notification", writeNotification);
+      streamingEmitter.on("close", endCall);
+      call.on("cancelled", () => {
         call.end();
       });
-      call.on('close', () => {
-        streamingEmitter.off('notification', writeNotification);
-        streamingEmitter.off('close', endCall);
+      call.on("close", () => {
+        streamingEmitter.off("notification", writeNotification);
+        streamingEmitter.off("close", endCall);
       });
     },
     getInternalAddress: function (call, callback) {
       controller.getInternalAddress((n, code, data) => {
-          if (code === 'error') {
-            callback(new Error(data), null);
-          } else {
-            callback(null, code);
-          }
-        });
+        if (code === "error") {
+          callback(new Error(data), null);
+        } else {
+          callback(null, code);
+        }
+      });
     },
   };
 

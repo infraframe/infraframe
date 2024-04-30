@@ -161,8 +161,8 @@ void InternalServer::InternalSession::onFrame(const Frame& frame)
     uint8_t sendBuffer[1 + sizeof(Frame) + frame.length];
     sendBuffer[0] = TDT_MEDIA_FRAME;
     memcpy(&sendBuffer[1],
-           reinterpret_cast<uint8_t*>(const_cast<Frame*>(&frame)),
-           sizeof(Frame));
+        reinterpret_cast<uint8_t*>(const_cast<Frame*>(&frame)),
+        sizeof(Frame));
     memcpy(&sendBuffer[1 + sizeof(Frame)], frame.payload, frame.length);
 
     m_parent->m_server->sendSessionData(m_id, sendBuffer, sizeof(sendBuffer));
@@ -173,12 +173,11 @@ void InternalServer::InternalSession::onMetaData(const MetaData& metadata)
     uint8_t sendBuffer[1 + sizeof(MetaData) + metadata.length];
     sendBuffer[0] = TDT_MEDIA_METADATA;
     memcpy(&sendBuffer[1],
-           reinterpret_cast<uint8_t*>(const_cast<MetaData*>(&metadata)),
-           sizeof(MetaData));
+        reinterpret_cast<uint8_t*>(const_cast<MetaData*>(&metadata)),
+        sizeof(MetaData));
     memcpy(&sendBuffer[1 + sizeof(MetaData)], metadata.payload, metadata.length);
 
     m_parent->m_server->sendSessionData(m_id, sendBuffer, sizeof(sendBuffer));
 }
 
 } /* namespace owt_base */
-

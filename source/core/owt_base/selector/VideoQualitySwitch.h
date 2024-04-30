@@ -17,6 +17,7 @@ namespace owt_base {
 class VideoQualitySwitch : public FrameSource,
                            public FrameDestination {
     DECLARE_LOGGER();
+
 public:
     VideoQualitySwitch(std::vector<FrameSource*> sources);
     ~VideoQualitySwitch();
@@ -32,19 +33,29 @@ public:
 
     class BitrateCounter : public FrameDestination {
     public:
-        BitrateCounter(): m_totalBits  (0) {}
+        BitrateCounter()
+            : m_totalBits(0)
+        {
+        }
         BitrateCounter(VideoQualitySwitch* parent)
             : m_totalBits(0)
-            , m_parent(parent) {}
+            , m_parent(parent)
+        {
+        }
         ~BitrateCounter() = default;
 
         // Implements FrameDestination
         void onFrame(const Frame&) override;
 
         uint32_t bitrate();
+
     private:
         struct Bucket {
-            Bucket(uint64_t ts) : timeStamp(ts), total(0) {}
+            Bucket(uint64_t ts)
+                : timeStamp(ts)
+                , total(0)
+            {
+            }
             uint64_t timeStamp;
             uint32_t total;
         };

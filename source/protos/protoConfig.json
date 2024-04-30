@@ -39,12 +39,12 @@
     "package": "owt",
     "service": "ConferenceAgent"
   },
-  "nodeManager" : {
+  "nodeManager": {
     "file": "node_manager.proto",
     "package": "owt",
     "service": "NodeManager"
   },
-  "clusterManager" : {
+  "clusterManager": {
     "file": "cluster_manager.proto",
     "package": "owt",
     "service": "ClusterManager"

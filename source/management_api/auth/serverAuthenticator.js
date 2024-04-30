@@ -26,58 +26,58 @@
 
 // This file is borrowed from lynckia/licode with some modifications.
 
-'use strict';
-var dataAccess = require('../data_access');
-var mauthParser = require('./mauthParser');
-var cipher = require('../cipher');
-var log = require('./../logger').logger.getLogger('ServerAuthenticator');
-var e = require('../errors');
+"use strict";
+var dataAccess = require("../data_access");
+var mauthParser = require("./mauthParser");
+var cipher = require("../cipher");
+var log = require("./../logger").logger.getLogger("ServerAuthenticator");
+var e = require("../errors");
 
 var cache = {};
 
 var checkTimestamp = function (ser, params) {
-    if ((global.config||{}).timestampCheck !== true) {
-        return true;
-    }
-    var serviceId = ser._id + '';
-    var lastParams = cache[serviceId],
-        lastTS,
-        newTS = (new Date(parseInt(params.timestamp, 10))).getTime(),
-        lastC,
-        newC = params.cnonce;
-
-    if (isNaN(newTS)) {
-        log.debug('Invalid timestamp:', params.timestamp);
-        return false;
-    }
-
-    if (lastParams === undefined) {
-        return true;
-    }
-
-    lastTS = (new Date(parseInt(lastParams.timestamp, 10))).getTime();
-    lastC = lastParams.cnonce;
-
-    if (newTS < lastTS || (lastTS === newTS && lastC === newC)) {
-        log.info('Last timestamp: ', lastTS, ' and new: ', newTS);
-        log.info('Last cnonce: ', lastC, ' and new: ', newC);
-        return false;
-    }
+  if ((global.config || {}).timestampCheck !== true) {
     return true;
+  }
+  var serviceId = ser._id + "";
+  var lastParams = cache[serviceId],
+    lastTS,
+    newTS = new Date(parseInt(params.timestamp, 10)).getTime(),
+    lastC,
+    newC = params.cnonce;
+
+  if (isNaN(newTS)) {
+    log.debug("Invalid timestamp:", params.timestamp);
+    return false;
+  }
+
+  if (lastParams === undefined) {
+    return true;
+  }
+
+  lastTS = new Date(parseInt(lastParams.timestamp, 10)).getTime();
+  lastC = lastParams.cnonce;
+
+  if (newTS < lastTS || (lastTS === newTS && lastC === newC)) {
+    log.info("Last timestamp: ", lastTS, " and new: ", newTS);
+    log.info("Last cnonce: ", lastC, " and new: ", newC);
+    return false;
+  }
+  return true;
 };
 
 var checkSignature = function (params, key) {
-    if (params.signature_method !== 'HMAC_SHA256') {
-        return false;
-    }
+  if (params.signature_method !== "HMAC_SHA256") {
+    return false;
+  }
 
-    var calculatedSignature = mauthParser.calculateClientSignature(params, key);
+  var calculatedSignature = mauthParser.calculateClientSignature(params, key);
 
-    if (calculatedSignature !== params.signature) {
-        return false;
-    } else {
-        return true;
-    }
+  if (calculatedSignature !== params.signature) {
+    return false;
+  } else {
+    return true;
+  }
 };
 
 /*
@@ -86,35 +86,35 @@ var checkSignature = function (params, key) {
  * a response with an authentication request to the client.
  */
 exports.authenticate = function (req, res, next) {
-    var authHeader = req.header('Authorization'),
-        challengeReq = 'MAuth realm="http://marte3.dit.upm.es"',
-        params;
+  var authHeader = req.header("Authorization"),
+    challengeReq = 'MAuth realm="http://marte3.dit.upm.es"',
+    params;
 
-    var authErr = new e.AuthError('WWW-Authenticate: ' + challengeReq);
-    var randomDelay = Math.round(Math.random() * 1000);
-    var sendErrorResponse = function () {
-        next(authErr);
-    };
+  var authErr = new e.AuthError("WWW-Authenticate: " + challengeReq);
+  var randomDelay = Math.round(Math.random() * 1000);
+  var sendErrorResponse = function () {
+    next(authErr);
+  };
 
-    if (authHeader !== undefined) {
-        params = mauthParser.parseHeader(authHeader);
+  if (authHeader !== undefined) {
+    params = mauthParser.parseHeader(authHeader);
 
-        // Get the service from the data base.
-        dataAccess.service.get(params.serviceid, function (err, serv) {
-            if (err) return next(err);
-            if (!serv) {
-                log.info('[Auth] Unknow service:', params.serviceid, req.ip);
-                setTimeout(sendErrorResponse, randomDelay);
-                return;
-            }
+    // Get the service from the data base.
+    dataAccess.service.get(params.serviceid, function (err, serv) {
+      if (err) return next(err);
+      if (!serv) {
+        log.info("[Auth] Unknow service:", params.serviceid, req.ip);
+        setTimeout(sendErrorResponse, randomDelay);
+        return;
+      }
 
-            var key = serv.key;
-            if (serv.encrypted === true) {
-                key = cipher.decrypt(global.config.spk, key);
-            }
+      var key = serv.key;
+      if (serv.encrypted === true) {
+        key = cipher.decrypt(global.config.spk, key);
+      }
 
-            // Check if timestamp and cnonce are valids in order to avoid duplicate requests.
-            /* This will affact concurrent performance under same service.
+      // Check if timestamp and cnonce are valids in order to avoid duplicate requests.
+      /* This will affact concurrent performance under same service.
             if (!checkTimestamp(serv, params)) {
                 log.info('[Auth] Invalid timestamp or cnonce');
                 res.status(401).send({'WWW-Authenticate': challengeReq});
@@ -122,27 +122,29 @@ exports.authenticate = function (req, res, next) {
             }
             */
 
-            // Check if the signature is valid.
-            if (checkSignature(params, key)) {
-                var authData = {};
+      // Check if the signature is valid.
+      if (checkSignature(params, key)) {
+        var authData = {};
 
-                if (params.username !== undefined && params.role !== undefined) {
-                    authData.user = Buffer.from(params.username, 'base64').toString('utf8');
-                    authData.role = params.role;
-                }
-                cache[serv._id+''] =  params;
-                authData.service = serv;
-                // Put auth data into request for further use
-                req.authData = authData;
-                // If everything in the authentication is valid continue with the request.
-                next();
-            } else {
-                log.info('[Auth] Wrong credentials', req.ip);
-                setTimeout(sendErrorResponse, randomDelay);
-            }
-        });
-    } else {
-        log.info('[Auth] MAuth header not presented', req.ip);
+        if (params.username !== undefined && params.role !== undefined) {
+          authData.user = Buffer.from(params.username, "base64").toString(
+            "utf8"
+          );
+          authData.role = params.role;
+        }
+        cache[serv._id + ""] = params;
+        authData.service = serv;
+        // Put auth data into request for further use
+        req.authData = authData;
+        // If everything in the authentication is valid continue with the request.
+        next();
+      } else {
+        log.info("[Auth] Wrong credentials", req.ip);
         setTimeout(sendErrorResponse, randomDelay);
-    }
+      }
+    });
+  } else {
+    log.info("[Auth] MAuth header not presented", req.ip);
+    setTimeout(sendErrorResponse, randomDelay);
+  }
 };

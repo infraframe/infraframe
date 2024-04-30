@@ -34,26 +34,26 @@ namespace mcu {
  */
 
 struct Rational {
-  uint32_t numerator;
-  uint32_t denominator;
+    uint32_t numerator;
+    uint32_t denominator;
 };
 
 struct Rectangle {
-  Rational left; // percentage
-  Rational top; // percentage
-  Rational width; // percentage
-  Rational height; // percentage
+    Rational left; // percentage
+    Rational top; // percentage
+    Rational width; // percentage
+    Rational height; // percentage
 };
 
 struct Circle {
-  Rational centerW; // percentage
-  Rational centerH; // percentage
-  Rational radius; // percentage
+    Rational centerW; // percentage
+    Rational centerH; // percentage
+    Rational radius; // percentage
 };
 
 union Shape {
-  Rectangle rect;
-  Circle circle;
+    Rectangle rect;
+    Circle circle;
 };
 
 struct Region {
@@ -70,8 +70,8 @@ struct InputRegion {
 typedef std::list<InputRegion> LayoutSolution;
 
 // Default video layout configuration
-const owt_base::VideoSize DEFAULT_VIDEO_SIZE = {640, 480};
-const owt_base::YUVColor DEFAULT_VIDEO_BG_COLOR = {0x00, 0x80, 0x80};
+const owt_base::VideoSize DEFAULT_VIDEO_SIZE = { 640, 480 };
+const owt_base::YUVColor DEFAULT_VIDEO_BG_COLOR = { 0x00, 0x80, 0x80 };
 
 }
 #endif

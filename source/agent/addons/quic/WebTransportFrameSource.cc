@@ -24,7 +24,7 @@ WebTransportFrameSource::WebTransportFrameSource()
 {
 }
 
-WebTransportFrameSource::~WebTransportFrameSource(){}
+WebTransportFrameSource::~WebTransportFrameSource() { }
 
 NAN_MODULE_INIT(WebTransportFrameSource::init)
 {

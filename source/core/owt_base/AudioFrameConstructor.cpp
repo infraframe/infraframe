@@ -5,9 +5,8 @@
 #include "AudioFrameConstructor.h"
 #include "AudioUtilitiesNew.h"
 
-#include <rtputils.h>
 #include <rtp/RtpHeaders.h>
-
+#include <rtputils.h>
 
 namespace owt_base {
 
@@ -53,36 +52,42 @@ int AudioFrameConstructor::deliverVideoData_(std::shared_ptr<erizo::DataPacket> 
 }
 
 class AudioLevel {
- public:
-  inline uint8_t getId() {
-    return ext_info >> 4;
-  }
-  inline uint8_t getLength() {
-    return (ext_info & 0x0F);
-  }
-  inline bool getVoice() {
-    return (al_data & 0x80) != 0;
-  }
-  inline uint8_t getLevel() {
-    return al_data & 0x7F;
-  }
- private:
-  uint32_t ext_info:8;
-  uint8_t al_data:8;
+public:
+    inline uint8_t getId()
+    {
+        return ext_info >> 4;
+    }
+    inline uint8_t getLength()
+    {
+        return (ext_info & 0x0F);
+    }
+    inline bool getVoice()
+    {
+        return (al_data & 0x80) != 0;
+    }
+    inline uint8_t getLevel()
+    {
+        return al_data & 0x7F;
+    }
+
+private:
+    uint32_t ext_info : 8;
+    uint8_t al_data : 8;
 };
 
-std::unique_ptr<AudioLevel> parseAudioLevel(std::shared_ptr<erizo::DataPacket> p) {
+std::unique_ptr<AudioLevel> parseAudioLevel(std::shared_ptr<erizo::DataPacket> p)
+{
     const erizo::RtpHeader* head = reinterpret_cast<const erizo::RtpHeader*>(p->data);
     std::unique_ptr<AudioLevel> ret;
     if (head->getExtension()) {
         uint16_t totalExtLength = head->getExtLength();
         if (head->getExtId() == 0xBEDE) {
-            char* extBuffer = (char*)&head->extensions;  // NOLINT
+            char* extBuffer = (char*)&head->extensions; // NOLINT
             uint8_t extByte = 0;
             uint16_t currentPlace = 1;
             uint8_t extId = 0;
             uint8_t extLength = 0;
-            while (currentPlace < (totalExtLength*4)) {
+            while (currentPlace < (totalExtLength * 4)) {
                 extByte = (uint8_t)(*extBuffer);
                 extId = extByte >> 4;
                 extLength = extByte & 0x0F;

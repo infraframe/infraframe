@@ -87,7 +87,7 @@ void AudioFramePacketizer::onFrame(const Frame& frame)
 
     if (!m_firstFrame) {
         m_firstFrame = true;
-        FeedbackMsg feedback = {.type = AUDIO_FEEDBACK, .cmd = REQUEST_OWNER_ID };
+        FeedbackMsg feedback = { .type = AUDIO_FEEDBACK, .cmd = REQUEST_OWNER_ID };
         deliverFeedbackMsg(feedback);
     }
 
@@ -121,7 +121,6 @@ void AudioFramePacketizer::onMetaData(const MetaData& metadata)
     if (metadata.type == META_DATA_OWNER_ID) {
         m_sourceOwner = std::string((char*)metadata.payload, metadata.length);
     }
-
 }
 
 bool AudioFramePacketizer::init(AudioFramePacketizer::Config& config)
@@ -143,7 +142,7 @@ bool AudioFramePacketizer::init(AudioFramePacketizer::Config& config)
     return false;
 }
 
-void AudioFramePacketizer::onAdapterStats(const AdapterStats& stats) {}
+void AudioFramePacketizer::onAdapterStats(const AdapterStats& stats) { }
 
 void AudioFramePacketizer::onAdapterData(char* data, int len)
 {

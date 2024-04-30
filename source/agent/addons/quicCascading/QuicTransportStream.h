@@ -5,15 +5,15 @@
 #ifndef QUIC_TRANSPORT_STREAM_H_
 #define QUIC_TRANSPORT_STREAM_H_
 
-#include <string>
-#include <mutex>
-#include <nan.h>
-#include <unordered_map>
-#include <queue>
-#include <logger.h>
 #include <boost/asio.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/thread/mutex.hpp>
+#include <logger.h>
+#include <mutex>
+#include <nan.h>
+#include <queue>
+#include <string>
+#include <unordered_map>
 
 #include "../../core/owt_base/MediaFramePipeline.h"
 #include "../common/MediaFramePipelineWrapper.h"
@@ -26,6 +26,7 @@
  */
 class QuicTransportStream : public owt_base::FrameSource, public owt_base::FrameDestination, public owt::quic::QuicTransportStreamInterface::Visitor, public NanFrameNode {
     DECLARE_LOGGER();
+
 public:
     explicit QuicTransportStream();
     explicit QuicTransportStream(owt::quic::QuicTransportStreamInterface* stream);
@@ -48,7 +49,6 @@ public:
 
     static NAUV_WORK_CB(onStreamDataCallback);
 
-
     // Overrides owt_base::FrameSource.
     void onFeedback(const owt_base::FeedbackMsg&) override;
 
@@ -65,6 +65,7 @@ public:
     void sendData(const std::string& data);
 
     uint32_t id;
+
 private:
     void sendFeedback(const owt_base::FeedbackMsg& msg);
     typedef struct {
@@ -79,8 +80,8 @@ private:
     uv_async_t m_asyncOnData;
     bool has_data_callback_;
     std::queue<std::string> data_messages;
-    Nan::Callback *data_callback_;
-    Nan::AsyncResource *asyncResource_;
+    Nan::Callback* data_callback_;
+    Nan::AsyncResource* asyncResource_;
     boost::mutex mutex;
     owt::quic::QuicTransportStreamInterface* m_stream;
     static Nan::Persistent<v8::Function> s_constructor;
@@ -88,4 +89,4 @@ private:
     std::string m_trackKind;
 };
 
-#endif  // QUIC_TRANSPORT_SERVER_H_
+#endif // QUIC_TRANSPORT_SERVER_H_

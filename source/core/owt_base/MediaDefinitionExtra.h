@@ -22,10 +22,10 @@ namespace erizoExtra {
  */
 static const int MAX_DATA_PACKET_SIZE = 1472;
 
-struct dataPacket{
-  int comp;
-  int length;
-  erizo::packetType type;
+struct dataPacket {
+    int comp;
+    int length;
+    erizo::packetType type;
 };
 
 /**
@@ -38,32 +38,27 @@ public:
 };
 */
 enum DataType {
-  VIDEO, AUDIO
+    VIDEO,
+    AUDIO
 };
 
 struct RawDataPacket {
-  unsigned char* data;
-  int length;
-  DataType type;
+    unsigned char* data;
+    int length;
+    DataType type;
 };
 
 class RawDataReceiver {
 public:
-  virtual void receiveRawData(RawDataPacket& packet) = 0;
-  virtual ~RawDataReceiver() {
-  }
-  ;
+    virtual void receiveRawData(RawDataPacket& packet) = 0;
+    virtual ~RawDataReceiver() {};
 };
 
 class RTPDataReceiver {
 public:
-  virtual void receiveRtpData(char* rtpdata, int len, DataType type = VIDEO, uint32_t streamId = 0) = 0;
-  virtual ~RTPDataReceiver() {
-  }
-  ;
+    virtual void receiveRtpData(char* rtpdata, int len, DataType type = VIDEO, uint32_t streamId = 0) = 0;
+    virtual ~RTPDataReceiver() {};
 };
-
-
 
 } /* namespace erizo */
 

@@ -5,8 +5,8 @@
 #ifndef MYPIPELINE_H
 #define MYPIPELINE_H
 
-#include <gst/gst.h>
 #include "pipeline.h"
+#include <gst/gst.h>
 
 // Class definition for the pipeline invoked by the sample service.
 class MyPipeline : public rvaPipeline {
@@ -17,23 +17,25 @@ public:
 
     virtual rvaStatus PipelineClose();
 
-    virtual rvaStatus GetPipelineParams(std::unordered_map<std::string, std::string>& params) {
+    virtual rvaStatus GetPipelineParams(std::unordered_map<std::string, std::string>& params)
+    {
         return RVA_ERR_OK;
     }
 
-    virtual rvaStatus SetPipelineParams(std::unordered_map<std::string, std::string> params) {
+    virtual rvaStatus SetPipelineParams(std::unordered_map<std::string, std::string> params)
+    {
         return RVA_ERR_OK;
     }
 
-    virtual GstElement * InitializePipeline();
+    virtual GstElement* InitializePipeline();
 
     virtual rvaStatus LinkElements();
 
 private:
-    GstElement *pipeline, *source, *parse, *detect, *decodebin,*postproc, *watermark, *converter, *encoder, *outsink;
+    GstElement *pipeline, *source, *parse, *detect, *decodebin, *postproc, *watermark, *converter, *encoder, *outsink;
     int inputwidth, inputheight, inputframerate;
     std::string inputcodec;
     std::string pipelinename;
 };
 
-#endif  //MYPIPELINE_H
+#endif //MYPIPELINE_H

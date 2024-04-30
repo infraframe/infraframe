@@ -1,6 +1,7 @@
 #!/bin/bash -e
 
-GNI_APPEND=$(cat <<-END
+GNI_APPEND=$(
+  cat <<-END
 declare_args() {
   build_with_owt = false
   owt_use_openssl = false
@@ -12,7 +13,8 @@ declare_args() {
 END
 )
 
-GCLIENT_CONFIG=$(cat <<-END
+GCLIENT_CONFIG=$(
+  cat <<-END
 solutions = [
   {
     "url": "https://github.com/open-webrtc-toolkit/owt-deps-webrtc.git",
@@ -27,7 +29,8 @@ END
 )
 
 # comment is_debug=false for debugging
-GN_ARGS=$(cat <<-END
+GN_ARGS=$(
+  cat <<-END
 rtc_use_h264=true
 rtc_use_h265=true
 ffmpeg_branding="Chrome"
@@ -51,8 +54,8 @@ END
 OWT_DIR="tools-owt"
 DEPOT_TOOLS=
 
-install_depot_tools(){
-  DEPOT_TOOLS=`pwd`"/${OWT_DIR}/depot_tools"
+install_depot_tools() {
+  DEPOT_TOOLS=$(pwd)"/${OWT_DIR}/depot_tools"
   if [ -d $OWT_DIR/depot_tools ]; then
     echo "depot_tools already installed."
     return 0
@@ -63,13 +66,13 @@ install_depot_tools(){
 
   pushd $OWT_DIR >/dev/null
   git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-  pushd depot_tools > /dev/null
-  git checkout 53075227f31e38bf875dad98ec57d53076316d6f && \
-  popd >/dev/null
+  pushd depot_tools >/dev/null
+  git checkout 53075227f31e38bf875dad98ec57d53076316d6f &&
+    popd >/dev/null
   popd >/dev/null
 }
 
-download_and_build(){
+download_and_build() {
   if [ -d src ]; then
     echo "src already exists."
   else
@@ -78,25 +81,23 @@ download_and_build(){
     git reset --hard 0d230afe9c7a968c0f2d966ef9d4d396fee489bf
     popd >/dev/null
     mkdir -p src/build_overrides/ssl
-    echo "" > src/build_overrides/ssl/ssl.gni
-    echo $GNI_APPEND >> src/build_overrides/build.gni
-    echo $GCLIENT_CONFIG > .gclient
+    echo "" >src/build_overrides/ssl/ssl.gni
+    echo $GNI_APPEND >>src/build_overrides/build.gni
+    echo $GCLIENT_CONFIG >.gclient
   fi
 
-  if [[ "$OS" =~ .*centos.* ]]
-  then
+  if [[ "$OS" =~ .*centos.* ]]; then
     source /opt/rh/devtoolset-7/enable
   fi
 
   export PATH="$DEPOT_TOOLS:$PATH"
   export DEPOT_TOOLS_UPDATE=0
-  gclient sync  --no-history
+  gclient sync --no-history
   pushd src >/dev/null
   gn gen out --args="$GN_ARGS"
   ninja -C out call default_task_queue_factory
-  all=`find ./out/obj/ -name "*.o"`
-  if [[ -n $all ]];
-  then
+  all=$(find ./out/obj/ -name "*.o")
+  if [[ -n $all ]]; then
     rm -f ../libwebrtc.a
     ar cq ../libwebrtc.a $all
     echo "Generate libwebrtc.a OK"

@@ -5,16 +5,16 @@
 #ifndef FrameAnalyzer_h
 #define FrameAnalyzer_h
 
-#include <vector>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <logger.h>
+#include <vector>
 
 #include <webrtc/api/video/video_frame.h>
 #include <webrtc/system_wrappers/include/clock.h>
 
-#include <JobTimer.h>
 #include "MediaFramePipeline.h"
+#include <JobTimer.h>
 
 // TODO: enable MSDK for analyzer
 
@@ -58,7 +58,7 @@ private:
 
     boost::shared_mutex m_mutex;
 
-    const webrtc::Clock *m_clock;
+    const webrtc::Clock* m_clock;
     //boost::scoped_ptr<rvaPlugin> m_plugin;
     std::string plugin_guid_;
     std::string plugin_name_;
@@ -72,4 +72,3 @@ private:
 } /* namespace owt_base */
 
 #endif /* FrameAnalyzer_h */
-

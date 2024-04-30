@@ -7,23 +7,23 @@
 
 #include <vector>
 
+#include <boost/asio.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/asio.hpp>
 #include <boost/thread.hpp>
 
-#include <webrtc/system_wrappers/include/clock.h>
-#include <webrtc/api/video/video_frame.h>
 #include <webrtc/api/video/i420_buffer.h>
+#include <webrtc/api/video/video_frame.h>
+#include <webrtc/system_wrappers/include/clock.h>
 
-#include "logger.h"
+#include "FFmpegDrawText.h"
+#include "FrameConverter.h"
+#include "I420BufferManager.h"
 #include "JobTimer.h"
 #include "MediaFramePipeline.h"
-#include "FrameConverter.h"
 #include "VideoFrameMixer.h"
 #include "VideoLayout.h"
-#include "I420BufferManager.h"
-#include "FFmpegDrawText.h"
+#include "logger.h"
 
 namespace mcu {
 class SoftVideoCompositor;
@@ -35,14 +35,14 @@ public:
     AvatarManager(uint8_t size);
     ~AvatarManager();
 
-    bool setAvatar(uint8_t index, const std::string &url);
+    bool setAvatar(uint8_t index, const std::string& url);
     bool unsetAvatar(uint8_t index);
 
     boost::shared_ptr<webrtc::VideoFrame> getAvatarFrame(uint8_t index);
 
 protected:
-    bool getImageSize(const std::string &url, uint32_t *pWidth, uint32_t *pHeight);
-    boost::shared_ptr<webrtc::VideoFrame> loadImage(const std::string &url);
+    bool getImageSize(const std::string& url, uint32_t* pWidth, uint32_t* pHeight);
+    boost::shared_ptr<webrtc::VideoFrame> loadImage(const std::string& url);
 
 private:
     uint8_t m_size;
@@ -63,7 +63,7 @@ public:
     void setActive(bool active);
     bool isActive(void);
 
-    void pushInput(webrtc::VideoFrame *videoFrame);
+    void pushInput(webrtc::VideoFrame* videoFrame);
     boost::shared_ptr<webrtc::VideoFrame> popInput();
 
 private:
@@ -76,8 +76,7 @@ private:
     boost::scoped_ptr<owt_base::FrameConverter> m_converter;
 };
 
-class SoftFrameGenerator : public JobTimerListener
-{
+class SoftFrameGenerator : public JobTimerListener {
     DECLARE_LOGGER();
 
     const uint32_t kMsToRtpTimestamp = 90;
@@ -86,17 +85,17 @@ class SoftFrameGenerator : public JobTimerListener
         uint32_t width;
         uint32_t height;
         uint32_t fps;
-        owt_base::FrameDestination *dest;
+        owt_base::FrameDestination* dest;
     };
 
 public:
     SoftFrameGenerator(
-            SoftVideoCompositor *owner,
-            owt_base::VideoSize &size,
-            owt_base::YUVColor &bgColor,
-            const bool crop,
-            const uint32_t maxFps,
-            const uint32_t minFps);
+        SoftVideoCompositor* owner,
+        owt_base::VideoSize& size,
+        owt_base::YUVColor& bgColor,
+        const bool crop,
+        const uint32_t maxFps,
+        const uint32_t minFps);
 
     ~SoftFrameGenerator();
 
@@ -104,8 +103,8 @@ public:
 
     bool isSupported(uint32_t width, uint32_t height, uint32_t fps);
 
-    bool addOutput(const uint32_t width, const uint32_t height, const uint32_t fps, owt_base::FrameDestination *dst);
-    bool removeOutput(owt_base::FrameDestination *dst);
+    bool addOutput(const uint32_t width, const uint32_t height, const uint32_t fps, owt_base::FrameDestination* dst);
+    bool removeOutput(owt_base::FrameDestination* dst);
 
     void drawText(const std::string& textSpec);
     void clearText();
@@ -115,33 +114,33 @@ public:
 protected:
     rtc::scoped_refptr<webrtc::VideoFrameBuffer> generateFrame();
     rtc::scoped_refptr<webrtc::VideoFrameBuffer> layout();
-    static void layout_regions(SoftFrameGenerator *t, rtc::scoped_refptr<webrtc::I420Buffer> compositeBuffer, const LayoutSolution &regions);
+    static void layout_regions(SoftFrameGenerator* t, rtc::scoped_refptr<webrtc::I420Buffer> compositeBuffer, const LayoutSolution& regions);
 
     void reconfigureIfNeeded();
 
 private:
-    const webrtc::Clock *m_clock;
+    const webrtc::Clock* m_clock;
 
-    SoftVideoCompositor *m_owner;
+    SoftVideoCompositor* m_owner;
     uint32_t m_maxSupportedFps;
     uint32_t m_minSupportedFps;
 
     uint32_t m_counter;
     uint32_t m_counterMax;
 
-    std::vector<std::list<Output_t>>    m_outputs;
-    boost::shared_mutex                 m_outputMutex;
+    std::vector<std::list<Output_t>> m_outputs;
+    boost::shared_mutex m_outputMutex;
 
     // configure
-    owt_base::VideoSize     m_size;
-    owt_base::YUVColor      m_bgColor;
-    bool                        m_crop;
+    owt_base::VideoSize m_size;
+    owt_base::YUVColor m_bgColor;
+    bool m_crop;
 
     // reconfifure
-    LayoutSolution              m_layout;
-    LayoutSolution              m_newLayout;
-    bool                        m_configureChanged;
-    boost::shared_mutex         m_configMutex;
+    LayoutSolution m_layout;
+    LayoutSolution m_newLayout;
+    bool m_configureChanged;
+    boost::shared_mutex m_configMutex;
 
     boost::scoped_ptr<owt_base::I420BufferManager> m_bufferManager;
 
@@ -179,8 +178,8 @@ public:
     void updateBackgroundColor(owt_base::YUVColor& bgColor);
     void updateLayoutSolution(LayoutSolution& solution);
 
-    bool addOutput(const uint32_t width, const uint32_t height, const uint32_t framerateFPS, owt_base::FrameDestination *dst) override;
-    bool removeOutput(owt_base::FrameDestination *dst) override;
+    bool addOutput(const uint32_t width, const uint32_t height, const uint32_t framerateFPS, owt_base::FrameDestination* dst) override;
+    bool removeOutput(owt_base::FrameDestination* dst) override;
 
     void drawText(const std::string& textSpec);
     void clearText();

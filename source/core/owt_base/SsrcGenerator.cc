@@ -3,44 +3,50 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "SsrcGenerator.h"
-#include "rtc_base/time_utils.h"
 #include "rtc_base/checks.h"
+#include "rtc_base/time_utils.h"
 
 namespace owt_base {
 
-SsrcGenerator* SsrcGenerator::GetSsrcGenerator() {
-  static SsrcGenerator inst;
-  return &inst;
+SsrcGenerator* SsrcGenerator::GetSsrcGenerator()
+{
+    static SsrcGenerator inst;
+    return &inst;
 }
 
-uint32_t SsrcGenerator::CreateSsrc() {
-  mutex_.Lock();
+uint32_t SsrcGenerator::CreateSsrc()
+{
+    mutex_.Lock();
 
-  while (true) {  // Try until get a new ssrc.
-    uint32_t ssrc = random_.Rand(1u, 0xfffffffe);
-    if (ssrcs_.insert(ssrc).second) {
-      mutex_.Unlock();
-      return ssrc;
+    while (true) { // Try until get a new ssrc.
+        uint32_t ssrc = random_.Rand(1u, 0xfffffffe);
+        if (ssrcs_.insert(ssrc).second) {
+            mutex_.Unlock();
+            return ssrc;
+        }
     }
-  }
-  mutex_.Unlock();
+    mutex_.Unlock();
 }
 
-void SsrcGenerator::RegisterSsrc(uint32_t ssrc) {
-  mutex_.Lock();
-  ssrcs_.insert(ssrc);
-  mutex_.Unlock();
-
+void SsrcGenerator::RegisterSsrc(uint32_t ssrc)
+{
+    mutex_.Lock();
+    ssrcs_.insert(ssrc);
+    mutex_.Unlock();
 }
 
-void SsrcGenerator::ReturnSsrc(uint32_t ssrc) {
-  mutex_.Lock();
-  ssrcs_.erase(ssrc);
-  mutex_.Unlock();
+void SsrcGenerator::ReturnSsrc(uint32_t ssrc)
+{
+    mutex_.Lock();
+    ssrcs_.erase(ssrc);
+    mutex_.Unlock();
 }
 
-SsrcGenerator::SsrcGenerator() : random_(rtc::TimeMicros()) {}
+SsrcGenerator::SsrcGenerator()
+    : random_(rtc::TimeMicros())
+{
+}
 
-SsrcGenerator::~SsrcGenerator() {}
+SsrcGenerator::~SsrcGenerator() { }
 
-}  // namespace owt_base
+} // namespace owt_base

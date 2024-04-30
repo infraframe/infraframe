@@ -35,12 +35,13 @@ public:
     class SendBitrateObserver {
     public:
         virtual void notifyBitrate(uint32_t total_bitrate_bps,
-                                   uint32_t retransmit_bitrate_bps,
-                                   bool adjustable,
-                                   uint32_t ssrc) = 0;
+            uint32_t retransmit_bitrate_bps,
+            bool adjustable,
+            uint32_t ssrc)
+            = 0;
     };
     VideoSendAdapterImpl(CallOwner* owner, const RtcAdapter::Config& config,
-                         SendBitrateObserver* bitrateObserver);
+        SendBitrateObserver* bitrateObserver);
     ~VideoSendAdapterImpl();
 
     // Implement VideoSendAdapter
@@ -58,14 +59,14 @@ public:
 
     // Implements webrtc::RtcpIntraFrameObserver.
     void OnReceivedIntraFrameRequest(uint32_t ssrc) override;
-    void OnReceivedSLI(uint32_t ssrc, uint8_t picture_id) {}
-    void OnReceivedRPSI(uint32_t ssrc, uint64_t picture_id) {}
-    void OnLocalSsrcChanged(uint32_t old_ssrc, uint32_t new_ssrc) {}
+    void OnReceivedSLI(uint32_t ssrc, uint8_t picture_id) { }
+    void OnReceivedRPSI(uint32_t ssrc, uint64_t picture_id) { }
+    void OnLocalSsrcChanged(uint32_t old_ssrc, uint32_t new_ssrc) { }
 
     //Implements webrtc::BitrateStatisticsObserver
     void Notify(uint32_t total_bitrate_bps,
-                uint32_t retransmit_bitrate_bps,
-                uint32_t ssrc) override;
+        uint32_t retransmit_bitrate_bps,
+        uint32_t ssrc) override;
 
 private:
     bool init();

@@ -97,8 +97,8 @@ int32_t VCMFrameDecoder::Decoded(VideoFrame& decodedImage)
     frame.additionalInfo.video.height = decodedImage.height();
 
     ELOG_TRACE_T("deliverFrame, %dx%d",
-            frame.additionalInfo.video.width,
-            frame.additionalInfo.video.height);
+        frame.additionalInfo.video.width,
+        frame.additionalInfo.video.height);
     deliverFrame(frame);
     return 0;
 }
@@ -109,16 +109,15 @@ void VCMFrameDecoder::onFrame(const Frame& frame)
         return;
 
     ELOG_TRACE_T("onFrame(%s), %s, %dx%d, length(%d)",
-            getFormatStr(frame.format),
-            frame.additionalInfo.video.isKeyFrame ? "key" : "delta",
-            frame.additionalInfo.video.width,
-            frame.additionalInfo.video.height,
-            frame.length
-            );
+        getFormatStr(frame.format),
+        frame.additionalInfo.video.isKeyFrame ? "key" : "delta",
+        frame.additionalInfo.video.width,
+        frame.additionalInfo.video.height,
+        frame.length);
 
     if (frame.payload == 0 || frame.length == 0) {
         ELOG_DEBUG_T("Null frame, request key frame");
-        FeedbackMsg msg {.type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME};
+        FeedbackMsg msg { .type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME };
         deliverFeedbackMsg(msg);
         return;
     }
@@ -128,16 +127,16 @@ void VCMFrameDecoder::onFrame(const Frame& frame)
             m_needKeyFrame = false;
         } else {
             ELOG_DEBUG_T("Request key frame");
-            FeedbackMsg msg {.type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME};
+            FeedbackMsg msg { .type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME };
             deliverFeedbackMsg(msg);
             return;
         }
     }
 
-    uint8_t *payload    = NULL;
-    size_t length       = frame.length;
-    size_t padding      = EncodedImage::GetBufferPaddingBytes(m_codecInfo.codecType);
-    size_t size         = length + padding;
+    uint8_t* payload = NULL;
+    size_t length = frame.length;
+    size_t padding = EncodedImage::GetBufferPaddingBytes(m_codecInfo.codecType);
+    size_t size = length + padding;
     boost::shared_array<uint8_t> buffer;
 
     if (padding > 0) {
@@ -160,7 +159,7 @@ void VCMFrameDecoder::onFrame(const Frame& frame)
         ELOG_ERROR_T("Decode frame error: %d", ret);
 
         m_needKeyFrame = true;
-        FeedbackMsg msg {.type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME};
+        FeedbackMsg msg { .type = VIDEO_FEEDBACK, .cmd = REQUEST_KEY_FRAME };
         deliverFeedbackMsg(msg);
     }
 }

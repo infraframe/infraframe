@@ -23,25 +23,25 @@ using namespace webrtc;
 class AcmmGroup {
     DECLARE_LOGGER();
 
-    static const int32_t _MAX_INPUT_STREAMS_            = 128;
-    static const int32_t _MAX_OUTPUT_STREAMS_           = 32;
+    static const int32_t _MAX_INPUT_STREAMS_ = 128;
+    static const int32_t _MAX_OUTPUT_STREAMS_ = 32;
 
 public:
     AcmmGroup(uint16_t id);
     ~AcmmGroup();
 
-    uint16_t id() {return m_groupId;}
+    uint16_t id() { return m_groupId; }
 
     boost::shared_ptr<AcmmInput> getInput(const std::string& inStream);
     boost::shared_ptr<AcmmOutput> getOutput(const std::string& outStream);
 
     boost::shared_ptr<AcmmInput> getInput(uint16_t streamId);
 
-    void getInputs(std::vector<boost::shared_ptr<AcmmInput>> &inputs);
-    void getOutputs(std::vector<boost::shared_ptr<AcmmOutput>> &outputs);
+    void getInputs(std::vector<boost::shared_ptr<AcmmInput>>& inputs);
+    void getOutputs(std::vector<boost::shared_ptr<AcmmOutput>>& outputs);
 
-    uint32_t numOfInputs() {return m_inputs.size();}
-    uint32_t numOfOutputs() {return m_outputs.size();}
+    uint32_t numOfInputs() { return m_inputs.size(); }
+    uint32_t numOfOutputs() { return m_outputs.size(); }
 
     boost::shared_ptr<AcmmInput> addInput(const std::string& inStream);
     void removeInput(const std::string& inStream);
@@ -56,8 +56,8 @@ public:
     void NewMixedAudio(const AudioFrame* audioFrame);
 
 protected:
-    bool getFreeInputId(uint16_t *id);
-    bool getFreeOutputId(uint16_t *id);
+    bool getFreeInputId(uint16_t* id);
+    bool getFreeOutputId(uint16_t* id);
 
 private:
     uint16_t m_groupId;

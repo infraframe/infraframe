@@ -21,8 +21,7 @@ namespace rtc_adapter {
 
 static rtc::scoped_refptr<webrtc::SharedModuleThread> g_moduleThread;
 
-static std::unique_ptr<webrtc::FieldTrialBasedConfig> g_fieldTrial= []()
-{
+static std::unique_ptr<webrtc::FieldTrialBasedConfig> g_fieldTrial = []() {
     auto config = std::make_unique<webrtc::FieldTrialBasedConfig>();
     /**/
     webrtc::field_trial::InitFieldTrialsFromString(
@@ -33,15 +32,12 @@ static std::unique_ptr<webrtc::FieldTrialBasedConfig> g_fieldTrial= []()
     return config;
 }();
 
-static std::shared_ptr<webrtc::RtcEventLog> g_eventLog =
-    std::make_shared<webrtc::RtcEventLogNull>();
+static std::shared_ptr<webrtc::RtcEventLog> g_eventLog = std::make_shared<webrtc::RtcEventLogNull>();
 
-static std::shared_ptr<webrtc::TaskQueueFactory> g_taskQueueFactory =
-    createStaticTaskQueueFactory();
-static std::shared_ptr<rtc::TaskQueue> g_taskQueue =
-    std::make_shared<rtc::TaskQueue>(g_taskQueueFactory->CreateTaskQueue(
-        "CallTaskQueue",
-        webrtc::TaskQueueFactory::Priority::NORMAL));
+static std::shared_ptr<webrtc::TaskQueueFactory> g_taskQueueFactory = createStaticTaskQueueFactory();
+static std::shared_ptr<rtc::TaskQueue> g_taskQueue = std::make_shared<rtc::TaskQueue>(g_taskQueueFactory->CreateTaskQueue(
+    "CallTaskQueue",
+    webrtc::TaskQueueFactory::Priority::NORMAL));
 
 static constexpr int kStartBitrateBps = 800000;
 
@@ -62,7 +58,6 @@ public:
     void destoryAudioReceiver(AudioReceiveAdapter*) override;
     AudioSendAdapter* createAudioSender(const Config&) override;
     void destoryAudioSender(AudioSendAdapter*) override;
-
 
     typedef std::shared_ptr<webrtc::Call> CallPtr;
     typedef std::shared_ptr<webrtc::RtpTransportControllerSendInterface> ControllerSendPtr;
@@ -91,9 +86,9 @@ public:
     void OnTargetTransferRate(webrtc::TargetTransferRate) override;
     //Implements VideoSendAdapterImpl::SendBitrateObserver
     void notifyBitrate(uint32_t total_bitrate_bps,
-                       uint32_t retransmit_bitrate_bps,
-                       bool adjustable,
-                       uint32_t ssrc) override;
+        uint32_t retransmit_bitrate_bps,
+        bool adjustable,
+        uint32_t ssrc) override;
 
 private:
     void initCall();
@@ -147,8 +142,7 @@ void RtcAdapterImpl::initCall()
             }
 
             // Empty thread for pacer
-            std::unique_ptr<webrtc::ProcessThread> pacerThreadProxy =
-                std::make_unique<ProcessThreadProxy>(nullptr);
+            std::unique_ptr<webrtc::ProcessThread> pacerThreadProxy = std::make_unique<ProcessThreadProxy>(nullptr);
 
             (*pCallPtr).reset(webrtc::Call::Create(
                 call_config, webrtc::Clock::GetRealTimeClock(),
@@ -163,17 +157,16 @@ void RtcAdapterImpl::initRtpTransportController()
     if (!m_transportControllerSend) {
         RTC_LOG(LS_INFO) << "Init RtptransportcontrollerSend";
         // Empty thread for pacer
-        std::unique_ptr<webrtc::ProcessThread> pacerThreadProxy =
-            std::make_unique<ProcessThreadProxy>(nullptr);
+        std::unique_ptr<webrtc::ProcessThread> pacerThreadProxy = std::make_unique<ProcessThreadProxy>(nullptr);
 
         webrtc::BitrateConstraints bitrateConstraints;
         bitrateConstraints.start_bitrate_bps = kStartBitrateBps;
 
         m_transportControllerSend = std::make_shared<webrtc::RtpTransportControllerSend>(
             webrtc::Clock::GetRealTimeClock(), g_eventLog.get(),
-            nullptr/*network_state_predicator_factory*/,
-            nullptr/*network_controller_factory*/, bitrateConstraints,
-            std::move(pacerThreadProxy)/*pacer_thread*/, g_taskQueueFactory.get(), g_fieldTrial.get());
+            nullptr /*network_state_predicator_factory*/,
+            nullptr /*network_controller_factory*/, bitrateConstraints,
+            std::move(pacerThreadProxy) /*pacer_thread*/, g_taskQueueFactory.get(), g_fieldTrial.get());
         m_transportControllerSend->RegisterTargetTransferRateObserver(this);
     }
 }
@@ -202,9 +195,9 @@ void RtcAdapterImpl::deregisterVideoSender(uint32_t ssrc)
 }
 
 void RtcAdapterImpl::notifyBitrate(uint32_t total_bitrate_bps,
-                                   uint32_t retransmit_bitrate_bps,
-                                   bool adjustable,
-                                   uint32_t ssrc)
+    uint32_t retransmit_bitrate_bps,
+    bool adjustable,
+    uint32_t ssrc)
 {
     std::lock_guard<std::mutex> guard(m_bitrateMutex);
     if (m_sendBitrate.count(ssrc) > 0) {
@@ -236,7 +229,7 @@ void RtcAdapterImpl::notifyBitrate(uint32_t total_bitrate_bps,
                 adjustNum++;
             }
         }
-        uint32_t adjustBitrate = (double) remaining / adjustNum;
+        uint32_t adjustBitrate = (double)remaining / adjustNum;
         for (auto const& p : m_sendBitrate) {
             if (m_adjustBitrate[p.first]) {
                 m_allocBitrate[p.first] = adjustBitrate;
@@ -281,7 +274,7 @@ AudioReceiveAdapter* RtcAdapterImpl::createAudioReceiver(const Config& config)
 {
     return nullptr;
 }
-void RtcAdapterImpl::destoryAudioReceiver(AudioReceiveAdapter* audio_recv_adapter) {}
+void RtcAdapterImpl::destoryAudioReceiver(AudioReceiveAdapter* audio_recv_adapter) { }
 
 AudioSendAdapter* RtcAdapterImpl::createAudioSender(const Config& config)
 {
@@ -299,6 +292,6 @@ RtcAdapter* RtcAdapterFactory::CreateRtcAdapter()
     return new RtcAdapterImpl();
 }
 
-void RtcAdapterFactory::DestroyRtcAdapter(RtcAdapter* adapter) {}
+void RtcAdapterFactory::DestroyRtcAdapter(RtcAdapter* adapter) { }
 
 } // namespace rtc_adapter

@@ -12,8 +12,8 @@
 
 #include <logger.h>
 
-#include "MediaFramePipeline.h"
 #include "AudioDecoder.h"
+#include "MediaFramePipeline.h"
 
 #include "AcmDecoder.h"
 #include "AcmEncoder.h"
@@ -22,8 +22,8 @@
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
-#include <libavutil/mathematics.h>
 #include <libavutil/audio_fifo.h>
+#include <libavutil/mathematics.h>
 #include <libavutil/opt.h>
 #include <libswresample/swresample.h>
 }
@@ -40,19 +40,19 @@ public:
     ~FfDecoder();
 
     bool init() override;
-    bool getAudioFrame(AudioFrame *audioFrame) override;
+    bool getAudioFrame(AudioFrame* audioFrame) override;
 
     // Implements owt_base::FrameDestination
     void onFrame(const Frame& frame) override;
 
 protected:
-    bool initDecoder(FrameFormat format,uint32_t sampleRate, uint32_t channels);
+    bool initDecoder(FrameFormat format, uint32_t sampleRate, uint32_t channels);
     bool initResampler(enum AVSampleFormat inFormat, int inSampleRate, int inChannels,
         enum AVSampleFormat outSampleFormat, int outSampleRate, int outChannels);
     bool initFifo(enum AVSampleFormat sampleFmt, uint32_t sampleRate, uint32_t channels);
 
-    bool resampleFrame(AVFrame *frame, uint8_t **pOutData, int *pOutNbSamples);
-    bool addFrameToFifo(AVFrame *frame);
+    bool resampleFrame(AVFrame* frame, uint8_t** pOutData, int* pOutNbSamples);
+    bool addFrameToFifo(AVFrame* frame);
 
 private:
     FrameFormat m_format;
@@ -60,13 +60,13 @@ private:
 
     bool m_valid;
 
-    AVCodecContext *m_decCtx;
-    AVFrame *m_decFrame;
+    AVCodecContext* m_decCtx;
+    AVFrame* m_decFrame;
     AVPacket m_packet;
 
     bool m_needResample;
-    struct SwrContext *m_swrCtx;
-    uint8_t **m_swrSamplesData;
+    struct SwrContext* m_swrCtx;
+    uint8_t** m_swrSamplesData;
     int m_swrSamplesLinesize;
     int m_swrSamplesCount;
     bool m_swrInitialised;
@@ -89,7 +89,7 @@ private:
     boost::shared_ptr<AudioDecoder> m_input;
 
     char m_errbuff[500];
-    char *ff_err2str(int errRet);
+    char* ff_err2str(int errRet);
 };
 
 } /* namespace mcu */

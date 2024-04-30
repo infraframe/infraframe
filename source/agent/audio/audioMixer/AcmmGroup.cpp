@@ -30,7 +30,7 @@ AcmmGroup::~AcmmGroup()
     ELOG_DEBUG_T("~AcmmGroup");
 }
 
-bool AcmmGroup::getFreeInputId(uint16_t *id)
+bool AcmmGroup::getFreeInputId(uint16_t* id)
 {
     for (size_t i = 0; i < m_inputIds.size(); ++i) {
         if (m_inputIds[i]) {
@@ -45,7 +45,7 @@ bool AcmmGroup::getFreeInputId(uint16_t *id)
     return false;
 }
 
-bool AcmmGroup::getFreeOutputId(uint16_t *id)
+bool AcmmGroup::getFreeOutputId(uint16_t* id)
 {
     for (size_t i = 0; i < m_outputIds.size(); ++i) {
         if (m_outputIds[i]) {
@@ -90,25 +90,25 @@ boost::shared_ptr<AcmmInput> AcmmGroup::getInput(uint16_t streamId)
     return m_inputs[streamId];
 }
 
-void AcmmGroup::getInputs(std::vector<boost::shared_ptr<AcmmInput>> &inputs)
+void AcmmGroup::getInputs(std::vector<boost::shared_ptr<AcmmInput>>& inputs)
 {
     uint32_t size = m_inputs.size();
     int i = 0;
 
     inputs.resize(size);
     for (auto& it : m_inputs) {
-         inputs[i++] = it.second;
+        inputs[i++] = it.second;
     }
 }
 
-void AcmmGroup::getOutputs(std::vector<boost::shared_ptr<AcmmOutput>> &outputs)
+void AcmmGroup::getOutputs(std::vector<boost::shared_ptr<AcmmOutput>>& outputs)
 {
     uint32_t size = m_outputs.size();
     int i = 0;
 
     outputs.resize(size);
     for (auto& it : m_outputs) {
-         outputs[i++] = it.second;
+        outputs[i++] = it.second;
     }
 }
 
@@ -122,7 +122,7 @@ boost::shared_ptr<AcmmInput> AcmmGroup::addInput(const std::string& inStream)
     }
 
     uint16_t inputId;
-    if(!getFreeInputId(&inputId)) {
+    if (!getFreeInputId(&inputId)) {
         return NULL;
     }
 
@@ -152,7 +152,7 @@ boost::shared_ptr<AcmmOutput> AcmmGroup::addOutput(const std::string& outStream)
     }
 
     uint16_t outputId;
-    if(!getFreeOutputId(&outputId)) {
+    if (!getFreeOutputId(&outputId)) {
         return NULL;
     }
 
@@ -210,12 +210,11 @@ int32_t AcmmGroup::NeededFrequency()
 void AcmmGroup::NewMixedAudio(const AudioFrame* audioFrame)
 {
     ELOG_TRACE_T("NewMixedAudio, frame id(0x%x), groupId(%u), sample_rate(%d), channels(%ld), samples_per_channel(%ld), timestamp(%d)",
-            audioFrame->id_, m_groupId,
-            audioFrame->sample_rate_hz_,
-            audioFrame->num_channels_,
-            audioFrame->samples_per_channel_,
-            audioFrame->timestamp_
-            );
+        audioFrame->id_, m_groupId,
+        audioFrame->sample_rate_hz_,
+        audioFrame->num_channels_,
+        audioFrame->samples_per_channel_,
+        audioFrame->timestamp_);
 
     for (auto& it : m_outputs) {
         boost::shared_ptr<AcmmOutput> output = it.second;

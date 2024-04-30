@@ -29,26 +29,26 @@
 #ifndef MEDIASTREAMWRAPPER_H_
 #define MEDIASTREAMWRAPPER_H_
 
-#include <nan.h>
 #include <MediaStream.h>
+#include <future> // NOLINT
 #include <logger.h>
+#include <nan.h>
 #include <queue>
 #include <string>
-#include <future>  // NOLINT
 
 #include "MediaWrapper.h"
 
 class StatCallWorker : public Nan::AsyncWorker {
- public:
-  StatCallWorker(Nan::Callback *callback, std::weak_ptr<erizo::MediaStream> weak_stream);
+public:
+    StatCallWorker(Nan::Callback* callback, std::weak_ptr<erizo::MediaStream> weak_stream);
 
-  void Execute();
+    void Execute();
 
-  void HandleOKCallback();
+    void HandleOKCallback();
 
- private:
-  std::weak_ptr<erizo::MediaStream> weak_stream_;
-  std::string stat_;
+private:
+    std::weak_ptr<erizo::MediaStream> weak_stream_;
+    std::string stat_;
 };
 
 /*
@@ -58,7 +58,7 @@ class StatCallWorker : public Nan::AsyncWorker {
  * it comprises all the necessary ICE and SRTP components.
  */
 class MediaStream : public MediaFilter, public erizo::MediaStreamStatsListener, public erizo::MediaStreamEventListener {
- public:
+public:
     DECLARE_LOGGER();
     static NAN_MODULE_INIT(Init);
 
@@ -68,24 +68,24 @@ class MediaStream : public MediaFilter, public erizo::MediaStreamStatsListener, 
 
     boost::mutex mutex;
 
- private:
+private:
     MediaStream();
     ~MediaStream();
 
     void close();
     std::string toLog();
 
-    Nan::Callback *event_callback_;
-    uv_async_t *async_event_;
+    Nan::Callback* event_callback_;
+    uv_async_t* async_event_;
     bool has_event_callback_;
 
-    Nan::Callback *stats_callback_;
-    uv_async_t *async_stats_;
+    Nan::Callback* stats_callback_;
+    uv_async_t* async_stats_;
     bool has_stats_callback_;
     bool closed_;
     std::string id_;
     std::string label_;
-    Nan::AsyncResource *asyncResource_;
+    Nan::AsyncResource* asyncResource_;
     /*
      * Constructor.
      * Constructs an empty MediaStream without any configuration.
@@ -194,4 +194,4 @@ class MediaStream : public MediaFilter, public erizo::MediaStreamStatsListener, 
         const std::string& message = "");
 };
 
-#endif  // MEDIASTREAMWRAPPER_H_
+#endif // MEDIASTREAMWRAPPER_H_

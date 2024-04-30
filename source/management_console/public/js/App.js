@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
+"use strict";
 
 const e = React.createElement;
 const ReactTable = window.ReactTable.default;
@@ -19,9 +19,9 @@ class ServiceApp extends React.Component {
       pages: null,
       loading: true,
       pageSize: 10,
-      createName: '',
-      createKey: '',
-      createEncrypted: true
+      createName: "",
+      createKey: "",
+      createEncrypted: true,
     };
     this.fetchData = this.fetchData.bind(this);
     this.renderOperation = this.renderOperation.bind(this);
@@ -32,17 +32,17 @@ class ServiceApp extends React.Component {
     this.setState({ loading: true });
     restApi.getServices((err, resp) => {
       if (err) {
-        return notify('error', 'Failed to get services', err);
+        return notify("error", "Failed to get services", err);
       }
       const ret = JSON.parse(resp);
       const sortedData = _.orderBy(
         ret,
-        state.sorted.map(sort => {
-          return row => {
+        state.sorted.map((sort) => {
+          return (row) => {
             if (row[sort.id] === null || row[sort.id] === undefined) {
               return -Infinity;
             }
-            if (typeof row[sort.id].length === 'number') {
+            if (typeof row[sort.id].length === "number") {
               return row[sort.id].length;
             }
             return typeof row[sort.id] === "string"
@@ -50,7 +50,7 @@ class ServiceApp extends React.Component {
               : row[sort.id];
           };
         }),
-        state.sorted.map(d => (d.desc ? "desc" : "asc"))
+        state.sorted.map((d) => (d.desc ? "desc" : "asc"))
       );
 
       this.pagination = state;
@@ -59,73 +59,60 @@ class ServiceApp extends React.Component {
         data: sortedData.slice(offset, offset + state.pageSize),
         pageSize: state.pageSize,
         pages: Math.ceil(ret.length / state.pageSize),
-        loading: false
+        loading: false,
       });
     });
   }
 
   renderCreator() {
     return e(
-      'div',
-      {className: 'input-group form-group', style:{width: '50%'}},
+      "div",
+      { className: "input-group form-group", style: { width: "50%" } },
+      e("span", { className: "input-group-addon" }, "Name"),
+      e("input", {
+        type: "text",
+        className: "form-control",
+        value: this.state.createName,
+        onChange: (e) => {
+          this.setState({ createName: e.target.value });
+        },
+      }),
+      e("span", { className: "input-group-addon" }, "Key"),
+      e("input", {
+        type: "text",
+        className: "form-control",
+        value: this.state.createKey,
+        onChange: (e) => {
+          this.setState({ createKey: e.target.value });
+        },
+      }),
       e(
-        'span',
-        {className: 'input-group-addon'},
-        'Name'
-      ),
-      e(
-        'input',
-        {
-          type: 'text',
-          className: 'form-control',
-          value: this.state.createName,
+        "span",
+        { className: "input-group-addon" },
+        e("input", {
+          type: "checkbox",
+          checked: this.state.createEncrypted,
           onChange: (e) => {
-            this.setState({createName: e.target.value});
-          }
-        }
+            this.setState({ createEncrypted: e.target.checked });
+          },
+        }),
+        "Encrypted"
       ),
       e(
-        'span',
-        {className: 'input-group-addon'},
-        'Key'
-      ),
-      e(
-        'input',
-        {
-          type: 'text',
-          className: 'form-control',
-          value: this.state.createKey,
-          onChange: (e) => {
-            this.setState({createKey: e.target.value});
-          }
-        }
-      ),
-      e(
-        'span',
-        {className: 'input-group-addon'},
+        "span",
+        { className: "input-group-btn" },
         e(
-          'input',
+          "button",
           {
-            type: 'checkbox',
-            checked: this.state.createEncrypted,
-            onChange: (e) => {
-              this.setState({createEncrypted: e.target.checked});
-            }
-          }
-        ),
-        'Encrypted'
-      ),
-      e(
-        'span',
-        {className: 'input-group-btn'},
-        e(
-          'button',
-          {
-            type: 'button',
-            className: 'btn btn-default',
+            type: "button",
+            className: "btn btn-default",
             onClick: (e) => {
-              if (this.state.createName === '' || this.state.createKey === '') {
-                notify('Warning', 'Create Service', 'Empty service name or key');
+              if (this.state.createName === "" || this.state.createKey === "") {
+                notify(
+                  "Warning",
+                  "Create Service",
+                  "Empty service name or key"
+                );
                 return;
               }
               restApi.createService(
@@ -133,16 +120,16 @@ class ServiceApp extends React.Component {
                 this.state.createKey,
                 (err, resp) => {
                   if (err) {
-                    return notify('error', 'Create Service Failed', err);
+                    return notify("error", "Create Service Failed", err);
                   }
                   const ret = JSON.parse(resp);
-                  notify('info', 'Create Service Success', ret._id);
+                  notify("info", "Create Service Success", ret._id);
                   this.fetchData(this.pagination);
                 }
               );
-            }
+            },
           },
-          'Create'
+          "Create"
         )
       )
     );
@@ -151,24 +138,28 @@ class ServiceApp extends React.Component {
   renderOperation(cellInfo) {
     const opService = this.state.data[cellInfo.index];
     return e(
-      'div',
-      {style: {textAlign: 'center'}},
+      "div",
+      { style: { textAlign: "center" } },
       e(
-        'button',
+        "button",
         {
-          className: 'btn btn-sm btn-warning',
-          onClick: ()=>{
-            notifyConfirm('Delete', 'Are you sure want to delete Service ' + opService._id, ()=>{
-              restApi.deleteService(opService._id, (err, resp) => {
-                if (err) {
-                  return notify('error', 'Delete Service', resp);
-                }
-                this.fetchData(this.pagination);
-              });
-            });
-          }
+          className: "btn btn-sm btn-warning",
+          onClick: () => {
+            notifyConfirm(
+              "Delete",
+              "Are you sure want to delete Service " + opService._id,
+              () => {
+                restApi.deleteService(opService._id, (err, resp) => {
+                  if (err) {
+                    return notify("error", "Delete Service", resp);
+                  }
+                  this.fetchData(this.pagination);
+                });
+              }
+            );
+          },
         },
-        'Remove'
+        "Remove"
       )
     );
   }
@@ -177,51 +168,50 @@ class ServiceApp extends React.Component {
     const { data, pages, loading } = this.state;
     const columns = [
       {
-        Header: 'ID',
-        accessor: '_id'
+        Header: "ID",
+        accessor: "_id",
       },
       {
-        Header: 'Name',
-        accessor: 'name',
+        Header: "Name",
+        accessor: "name",
       },
       {
-        Header: 'key',
-        accessor: 'key',
+        Header: "key",
+        accessor: "key",
       },
       {
-        id: 'encrypted',
-        Header: 'encrypted',
-        accessor: d => (!!d.encrypted).toString()
+        id: "encrypted",
+        Header: "encrypted",
+        accessor: (d) => (!!d.encrypted).toString(),
       },
       {
-        id: 'rooms',
-        Header: 'Room Count',
-        accessor: d => d.rooms ? d.rooms.length : 0
+        id: "rooms",
+        Header: "Room Count",
+        accessor: (d) => (d.rooms ? d.rooms.length : 0),
       },
       {
-        Header: '',
-        Cell: this.renderOperation
-      }
+        Header: "",
+        Cell: this.renderOperation,
+      },
     ];
 
     const manual = true;
     const onFetchData = this.fetchData;
 
-    return e('div', {},
-      e('h1', {className: 'page-header'}, 'Services'),
+    return e(
+      "div",
+      {},
+      e("h1", { className: "page-header" }, "Services"),
       this.renderCreator(),
-      e(
-        ReactTable,
-        {
-          data,
-          pages,
-          loading,
-          columns,
-          manual: true,
-          onFetchData: this.fetchData,
-          defaultPageSize: 20
-        }
-      )
+      e(ReactTable, {
+        data,
+        pages,
+        loading,
+        columns,
+        manual: true,
+        onFetchData: this.fetchData,
+        defaultPageSize: 20,
+      })
     );
   }
 }
@@ -231,8 +221,8 @@ class RoomView extends React.Component {
     super(props);
     this.state = {
       index: 0,
-      create: '',
-      layoutArea: null
+      create: "",
+      layoutArea: null,
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -251,17 +241,14 @@ class RoomView extends React.Component {
     };
 
     return e(
-      'label',
-      {className: 'checkbox-inline'},
-      e(
-        'input',
-        {
-          type: 'checkbox',
-          value: name,
-          onChange: onCheckChange(),
-          checked: value
-        }
-      ),
+      "label",
+      { className: "checkbox-inline" },
+      e("input", {
+        type: "checkbox",
+        value: name,
+        onChange: onCheckChange(),
+        checked: value,
+      }),
       name
     );
   }
@@ -270,54 +257,54 @@ class RoomView extends React.Component {
     const view = this.props.views[this.state.index];
     const getAudioName = (fmt) => {
       let name = fmt.codec;
-      name = fmt.sampleRate ? name + '-' + fmt.sampleRate : name;
-      name = fmt.channelNum ? name + '-' + fmt.channelNum : name;
+      name = fmt.sampleRate ? name + "-" + fmt.sampleRate : name;
+      name = fmt.channelNum ? name + "-" + fmt.channelNum : name;
       return name;
     };
     const selectOptions = this.props.audioOut.map((v, i) => {
-      return e('option', {key: i, value: i}, getAudioName(v));
+      return e("option", { key: i, value: i }, getAudioName(v));
     });
     const audioIndex = this.props.audioOut.findIndex((o) => {
-      return _.isEqual(o, _.get(view, 'audio.format'));
+      return _.isEqual(o, _.get(view, "audio.format"));
     });
     const audioSelect = e(
-      'select',
+      "select",
       {
         value: audioIndex || 0,
         onChange: (e) => {
           const index = parseInt(e.target.value);
           const format = _.cloneDeep(this.props.audioOut[index]);
-          this.handleChange('audio.format', format);
+          this.handleChange("audio.format", format);
         },
-        className: 'form-control col-sm-3',
+        className: "form-control col-sm-3",
         //style: {display: 'inline-block'}
       },
       selectOptions
     );
 
     return e(
-      'div',
-      {className: 'panel panel-default'},
-      e('div', {className: 'panel-heading'}, 'Audio of View'),
+      "div",
+      { className: "panel panel-default" },
+      e("div", { className: "panel-heading" }, "Audio of View"),
       e(
-        'div',
-        {className: 'panel-body'},
+        "div",
+        { className: "panel-body" },
         e(
-          'div',
-          {className: 'container-fluid'},
+          "div",
+          { className: "container-fluid" },
           e(
-            'div',
-            {className: 'row form-group'},
-            e('div', {className: 'col-sm-3'}, e('label', {}, 'Format')),
-            e('div', {className: 'col-sm-3'}, audioSelect),
+            "div",
+            { className: "row form-group" },
+            e("div", { className: "col-sm-3" }, e("label", {}, "Format")),
+            e("div", { className: "col-sm-3" }, audioSelect)
           ),
           e(
-            'div',
-            {className: 'row form-group'},
+            "div",
+            { className: "row form-group" },
             e(
-              'div',
-              {className: 'col-sm-3'},
-              this.renderCheckBox('VAD Enabled', 'audio.vad'),
+              "div",
+              { className: "col-sm-3" },
+              this.renderCheckBox("VAD Enabled", "audio.vad")
             )
           )
         )
@@ -329,166 +316,182 @@ class RoomView extends React.Component {
     const view = this.props.views[this.state.index];
     const getVideoName = (fmt) => {
       let name = fmt.codec;
-      name = fmt.profile ? name + '-' + fmt.profile : name;
+      name = fmt.profile ? name + "-" + fmt.profile : name;
       return name;
     };
     const selectOptions = this.props.videoOut.map((v, i) => {
-      return e('option', {key: i, value: i}, getVideoName(v));
+      return e("option", { key: i, value: i }, getVideoName(v));
     });
     const videoIndex = this.props.videoOut.findIndex((o) => {
-      return _.isEqual(o, _.get(view, 'video.format'));
+      return _.isEqual(o, _.get(view, "video.format"));
     });
     const videoSelect = e(
-      'select',
+      "select",
       {
         value: videoIndex || 0,
         onChange: (e) => {
           const index = parseInt(e.target.value);
           const format = _.cloneDeep(this.props.videoOut[index]);
-          this.handleChange('video.format', format);
+          this.handleChange("video.format", format);
         },
-        className: 'form-control col-sm-3',
+        className: "form-control col-sm-3",
         //style: {display: 'inline-block'}
       },
       selectOptions
     );
-    const formRow = (label, child) => e(
-      'div',
-      {className: 'row form-group'},
-      e('div', {className: 'col-sm-3'}, e('label', {}, label)),
-      e('div', {className: 'col-sm-3'}, child),
-    );
+    const formRow = (label, child) =>
+      e(
+        "div",
+        { className: "row form-group" },
+        e("div", { className: "col-sm-3" }, e("label", {}, label)),
+        e("div", { className: "col-sm-3" }, child)
+      );
     const formInput = (type, path, dValue) => {
       const value = _.get(this.props.views[this.state.index], path, dValue);
-      return e('input',
-        {
-          type,
-          value,
-          className: 'form-control',
-          onChange: (e) => {
-            this.handleChange(path, e.target.value);
-          },
+      return e("input", {
+        type,
+        value,
+        className: "form-control",
+        onChange: (e) => {
+          this.handleChange(path, e.target.value);
         },
-      );
+      });
     };
     const formColor = (path) => {
       let rgb = _.get(this.props.views[this.state.index], path);
-      rgb = rgb || {r: 0, g: 0, b: 0};
+      rgb = rgb || { r: 0, g: 0, b: 0 };
       const hexVal = (rgb.r << 16) + (rgb.g << 8) + rgb.b;
-      const value = '#' + _.padStart(hexVal.toString(16), 6, '0');
-      return e('input',
-        {
-          type: 'color',
-          value,
-          className: 'form-control',
-          onChange: (e) => {
-            const colorHex = parseInt(e.target.value.substr(1), 16);
-            const r = (colorHex >> 16);
-            const g = (colorHex - (r << 16) >> 8);
-            const b = (colorHex - (r << 16) - (g << 8));
-            const newColor = {r, g, b};
-            this.handleChange(path, newColor);
-          }
-        }
-      );
-    };
-    const formSelect = (options, path) => e(
-      'select',
-      {
-        value: _.get(this.props.views[this.state.index], path, options[0]),
+      const value = "#" + _.padStart(hexVal.toString(16), 6, "0");
+      return e("input", {
+        type: "color",
+        value,
+        className: "form-control",
         onChange: (e) => {
-          const val = e.target.value;
-          this.handleChange(path, val);
+          const colorHex = parseInt(e.target.value.substr(1), 16);
+          const r = colorHex >> 16;
+          const g = (colorHex - (r << 16)) >> 8;
+          const b = colorHex - (r << 16) - (g << 8);
+          const newColor = { r, g, b };
+          this.handleChange(path, newColor);
         },
-        className: 'form-control col-sm-3'
-      },
-      options.map((v, i) => {
-        return e('option', {key: i, value: v}, v);
-      })
-    );
+      });
+    };
+    const formSelect = (options, path) =>
+      e(
+        "select",
+        {
+          value: _.get(this.props.views[this.state.index], path, options[0]),
+          onChange: (e) => {
+            const val = e.target.value;
+            this.handleChange(path, val);
+          },
+          className: "form-control col-sm-3",
+        },
+        options.map((v, i) => {
+          return e("option", { key: i, value: v }, v);
+        })
+      );
 
     const formArea = (path) => {
       const layoutString = JSON.stringify(
-        _.get(this.props.views[this.state.index], path, []));
+        _.get(this.props.views[this.state.index], path, [])
+      );
       return e(
-        'div',
-        {className: 'row form-group'},
+        "div",
+        { className: "row form-group" },
         e(
-          'div',
-          {className: 'col-sm-6'},
-          e('label', {}, 'Layout-Custom'),
+          "div",
+          { className: "col-sm-6" },
+          e("label", {}, "Layout-Custom"),
+          e("textarea", {
+            className: "form-control",
+            resize: "vertical",
+            rows: 10,
+            value:
+              this.state.layoutArea === null
+                ? layoutString
+                : this.state.layoutArea,
+            onChange: (e) => {
+              this.setState({ layoutArea: e.target.value });
+            },
+          }),
           e(
-            'textarea',
+            "button",
             {
-              className: 'form-control',
-              resize: 'vertical',
-              rows: 10,
-              value: (this.state.layoutArea === null ?
-                layoutString : this.state.layoutArea),
-              onChange: (e) => {
-                this.setState({layoutArea: e.target.value});
-              }
-            }
-          ),
-          e('button',
-            {
-              className: 'btn',
+              className: "btn",
               onClick: (e) => {
                 try {
                   const layouts = JSON.parse(this.state.layoutArea);
                   this.handleChange(path, layouts);
                 } catch (err) {
-                  notify('warning', 'Save Layout', 'Invalid Format');
+                  notify("warning", "Save Layout", "Invalid Format");
                 }
-              }
+              },
             },
-            'Save Layout'
+            "Save Layout"
           )
         )
       );
     };
 
     return e(
-      'div',
-      {className: 'panel panel-default'},
-      e('div', {className: 'panel-heading'}, 'Video of View'),
+      "div",
+      { className: "panel panel-default" },
+      e("div", { className: "panel-heading" }, "Video of View"),
       e(
-        'div',
-        {className: 'panel-body'},
+        "div",
+        { className: "panel-body" },
         e(
-          'div',
-          {className: 'container-fluid'},
-          formRow('Format', videoSelect),
-          formRow('Resolution-width',
-            formInput('text', 'video.parameters.resolution.width', 640)),
-          formRow('Resolution-height',
-            formInput('text', 'video.parameters.resolution.height', 480)),
-          formRow('Framerate',
-            formInput('text', 'video.parameters.framerate', 24)),
-          formRow('Bitrate',
-            formInput('text', 'video.parameters.bitrate', 0)),
-          formRow('KeyFrameInterval',
-            formInput('text', 'video.parameters.keyFrameInterval', 100)),
-          formRow('BackgroundColor',
-            formColor('video.bgColor')),
-          formRow('MaxInput',
-            formInput('number', 'video.maxInput', 8)),
-          formRow('MotionFactor',
-            formInput('number', 'video.motionFactor', 0.6)),
+          "div",
+          { className: "container-fluid" },
+          formRow("Format", videoSelect),
+          formRow(
+            "Resolution-width",
+            formInput("text", "video.parameters.resolution.width", 640)
+          ),
+          formRow(
+            "Resolution-height",
+            formInput("text", "video.parameters.resolution.height", 480)
+          ),
+          formRow(
+            "Framerate",
+            formInput("text", "video.parameters.framerate", 24)
+          ),
+          formRow("Bitrate", formInput("text", "video.parameters.bitrate", 0)),
+          formRow(
+            "KeyFrameInterval",
+            formInput("text", "video.parameters.keyFrameInterval", 100)
+          ),
+          formRow("BackgroundColor", formColor("video.bgColor")),
+          formRow("MaxInput", formInput("number", "video.maxInput", 8)),
+          formRow(
+            "MotionFactor",
+            formInput("number", "video.motionFactor", 0.6)
+          ),
           e(
-            'div',
-            {className: 'row form-group'},
+            "div",
+            { className: "row form-group" },
             e(
-              'div',
-              {className: 'col-sm-3'},
-              this.renderCheckBox('KeepActiveInputPrimary', 'video.keepActiveInputPrimary'),
+              "div",
+              { className: "col-sm-3" },
+              this.renderCheckBox(
+                "KeepActiveInputPrimary",
+                "video.keepActiveInputPrimary"
+              )
             )
           ),
-          formRow('Layout-FitPolicy',
-            formSelect(['letterbox', 'crop'], 'video.layout.fitPolicy')),
-          formRow('Layout-BaseTemplate',
-            formSelect(['fluid', 'lecture', 'void'], 'video.layout.templates.base')),
-          formArea('video.layout.templates.custom')
+          formRow(
+            "Layout-FitPolicy",
+            formSelect(["letterbox", "crop"], "video.layout.fitPolicy")
+          ),
+          formRow(
+            "Layout-BaseTemplate",
+            formSelect(
+              ["fluid", "lecture", "void"],
+              "video.layout.templates.base"
+            )
+          ),
+          formArea("video.layout.templates.custom")
         )
       )
     );
@@ -497,84 +500,81 @@ class RoomView extends React.Component {
   render() {
     const views = this.props.views || [];
     const selectOptions = views.map((v, i) => {
-      return e('option', {key: i, value: i}, views[i].label);
+      return e("option", { key: i, value: i }, views[i].label);
     });
     const viewSelect = e(
-      'select',
+      "select",
       {
         value: this.state.index,
         onChange: (e) => {
           const newIndex = parseInt(e.target.value);
-          this.setState({index: newIndex, layoutArea: null});
+          this.setState({ index: newIndex, layoutArea: null });
         },
-        className: 'form-control',
-        style: {display: 'inline-block'}
+        className: "form-control",
+        style: { display: "inline-block" },
       },
       selectOptions
     );
-    const createInput = e(
-      'input',
-      {
-        className: 'form-control',
-        placeholder: 'Label',
-        type: 'text',
-        onChange: (e) => {
-          this.setState({create: e.target.value});
-        }
-      }
-    );
-    const createButton = e(
-      'button',
-      {
-        className: 'btn btn-default',
-        type: 'button',
-        onClick: (e)=> {
-          this.props.onViewCreate({label: this.state.create});
-        }
+    const createInput = e("input", {
+      className: "form-control",
+      placeholder: "Label",
+      type: "text",
+      onChange: (e) => {
+        this.setState({ create: e.target.value });
       },
-      'Create View'
+    });
+    const createButton = e(
+      "button",
+      {
+        className: "btn btn-default",
+        type: "button",
+        onClick: (e) => {
+          this.props.onViewCreate({ label: this.state.create });
+        },
+      },
+      "Create View"
     );
     const removeButton = e(
-      'button',
+      "button",
       {
-        className: 'btn',
+        className: "btn",
         onClick: (e) => {
           if (this.state.index >= 0) {
             this.props.onViewRemove(this.state.index);
           }
-        }
+        },
       },
-      'Remove'
+      "Remove"
     );
 
     return e(
-      'div',
-      {className: 'panel panel-default'},
-      e('div', {className: 'panel-heading'}, 'Views'),
+      "div",
+      { className: "panel panel-default" },
+      e("div", { className: "panel-heading" }, "Views"),
       e(
-        'div',
-        {className: 'panel-body'},
+        "div",
+        { className: "panel-body" },
         e(
-          'div',
-          {className: 'container-fluid'},
+          "div",
+          { className: "container-fluid" },
           e(
-            'div',
-            {className: 'row form-group'},
-            e('div', {className: 'col-sm-3'}, viewSelect),
+            "div",
+            { className: "row form-group" },
+            e("div", { className: "col-sm-3" }, viewSelect),
             e(
-              'div',
-              {className: 'col-sm-4'},
+              "div",
+              { className: "col-sm-4" },
               e(
-                'div',
-                {className: 'input-group'},
+                "div",
+                { className: "input-group" },
                 createInput,
-                e('span', {className: 'input-group-btn'}, createButton)
+                e("span", { className: "input-group-btn" }, createButton)
               )
             ),
-            e('div', {className: 'col-sm-3'}, removeButton),
+            e("div", { className: "col-sm-3" }, removeButton)
           ),
           this.renderAudio(),
-          this.renderVideo(),
+          this.renderVideo()
         )
       )
     );
@@ -585,7 +585,7 @@ class RoomModal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      room: _.cloneDeep(props.data)
+      room: _.cloneDeep(props.data),
     };
     this.handleChange = this.handleChange.bind(this);
     this.onViewUpdate = this.onViewUpdate.bind(this);
@@ -596,35 +596,35 @@ class RoomModal extends React.Component {
 
     this.mediaFormat = {
       // video
-      'h264': {codec: 'h264'},
-      'h264-constrained-baseline': {codec: 'h264', profile: 'CB'},
-      'h264-baseline': {codec: 'h264', profile: 'B'},
-      'h264-main': {codec: 'h264', profile: 'M'},
-      'h264-high': {codec: 'h264', profile: 'H'},
-      'h265': {codec: 'h265'},
-      'vp8': {codec: 'vp8'},
-      'vp9': {codec: 'vp9'},
-      'av1': {codec: 'av1'}, //for chrome95+
+      h264: { codec: "h264" },
+      "h264-constrained-baseline": { codec: "h264", profile: "CB" },
+      "h264-baseline": { codec: "h264", profile: "B" },
+      "h264-main": { codec: "h264", profile: "M" },
+      "h264-high": { codec: "h264", profile: "H" },
+      h265: { codec: "h265" },
+      vp8: { codec: "vp8" },
+      vp9: { codec: "vp9" },
+      av1: { codec: "av1" }, //for chrome95+
       // audio
-      'opus': {codec: 'opus', sampleRate: 48000, channelNum: 2},
-      'isac-16000': {codec: 'isac', sampleRate: 16000},
-      'isac-32000': {codec: 'isac', sampleRate: 32000},
-      'g722-16000-1': {codec: 'g722', sampleRate: 16000, channelNum: 1},
-      'pcma': {codec: 'pcma'},
-      'pcmu': {codec: 'pcmu'},
-      'aac': {codec: 'aac'},
-      'aac-48000-2': {codec: 'aac', sampleRate: 48000, channelNum: 2},
-      'ac3': {codec: 'ac3'},
-      'nellymoser': {codec: 'nellymoser'},
-      'ilbc': {codec: 'ilbc'},
+      opus: { codec: "opus", sampleRate: 48000, channelNum: 2 },
+      "isac-16000": { codec: "isac", sampleRate: 16000 },
+      "isac-32000": { codec: "isac", sampleRate: 32000 },
+      "g722-16000-1": { codec: "g722", sampleRate: 16000, channelNum: 1 },
+      pcma: { codec: "pcma" },
+      pcmu: { codec: "pcmu" },
+      aac: { codec: "aac" },
+      "aac-48000-2": { codec: "aac", sampleRate: 48000, channelNum: 2 },
+      ac3: { codec: "ac3" },
+      nellymoser: { codec: "nellymoser" },
+      ilbc: { codec: "ilbc" },
     };
-  };
+  }
 
   onViewUpdate(vIndex, path, value) {
     let newRoom = _.cloneDeep(this.state.room);
     if (newRoom.views) {
       _.set(newRoom.views[vIndex], path, value);
-      this.setState({room: newRoom});
+      this.setState({ room: newRoom });
     }
   }
 
@@ -632,14 +632,14 @@ class RoomModal extends React.Component {
     let newRoom = _.cloneDeep(this.state.room);
     newRoom.views = newRoom.views || [];
     newRoom.views.push(value);
-    this.setState({room: newRoom});
+    this.setState({ room: newRoom });
   }
 
   onViewRemove(vIndex) {
     let newRoom = _.cloneDeep(this.state.room);
     if (newRoom.views) {
       newRoom.views.splice(vIndex, 1);
-      this.setState({room: newRoom});
+      this.setState({ room: newRoom });
     }
   }
 
@@ -664,28 +664,25 @@ class RoomModal extends React.Component {
           const newValue = [...list, value];
           let newState = _.cloneDeep(this.state.room);
           _.set(newState, path, newValue);
-          this.setState({room: newState});
+          this.setState({ room: newState });
         } else {
           const newValue = list.filter((e) => !_.isEqual(value, e));
           let newState = _.cloneDeep(this.state.room);
           _.set(newState, path, newValue);
-          this.setState({room: newState});
+          this.setState({ room: newState });
         }
       };
     };
 
     return e(
-      'label',
-      {className: 'checkbox-inline'},
-      e(
-        'input',
-        {
-          type: 'checkbox',
-          value: name,
-          onChange: onMediaChange(),
-          defaultChecked: hasMediaFormat()
-        }
-      ),
+      "label",
+      { className: "checkbox-inline" },
+      e("input", {
+        type: "checkbox",
+        value: name,
+        onChange: onMediaChange(),
+        defaultChecked: hasMediaFormat(),
+      }),
       name
     );
   }
@@ -695,36 +692,43 @@ class RoomModal extends React.Component {
     const mediaCheckBox = this.renderMediaCheckBox.bind(this);
 
     const audioNames = [
-      'opus', 'isac-16000', 'isac-32000',
-      'g722-16000-1', 'pcmu', 'pcma',
-      'aac', 'ac3', 'nellymoser', 'libc',
+      "opus",
+      "isac-16000",
+      "isac-32000",
+      "g722-16000-1",
+      "pcmu",
+      "pcma",
+      "aac",
+      "ac3",
+      "nellymoser",
+      "libc",
     ];
     const audioCheckBoxes = audioNames.map((name) => {
-      return mediaCheckBox(name, 'mediaIn.audio');
+      return mediaCheckBox(name, "mediaIn.audio");
     });
 
-    const videoNames = ['h264', 'h265', 'vp8', 'vp9','av1'];
+    const videoNames = ["h264", "h265", "vp8", "vp9", "av1"];
     const videoCheckBoxes = videoNames.map((name) => {
-      return mediaCheckBox(name, 'mediaIn.video');
+      return mediaCheckBox(name, "mediaIn.video");
     });
 
     return e(
-      'div',
-      {className: 'panel panel-default'},
-      e('div', {className: 'panel-heading'}, 'Media In'),
+      "div",
+      { className: "panel panel-default" },
+      e("div", { className: "panel-heading" }, "Media In"),
       e(
-        'div',
-        {className: 'panel-body'},
+        "div",
+        { className: "panel-body" },
         e(
-          'div',
-          {className: 'form-group'},
-          e('label', {className: 'col-sm-1 control-label'}, 'Audio'),
+          "div",
+          { className: "form-group" },
+          e("label", { className: "col-sm-1 control-label" }, "Audio"),
           ...audioCheckBoxes
         ),
         e(
-          'div',
-          {className: 'form-group'},
-          e('label', {className: 'col-sm-1 control-label'}, 'Video'),
+          "div",
+          { className: "form-group" },
+          e("label", { className: "col-sm-1 control-label" }, "Video"),
           ...videoCheckBoxes
         )
       )
@@ -736,93 +740,112 @@ class RoomModal extends React.Component {
     const mediaCheckBox = this.renderMediaCheckBox.bind(this);
 
     const audioNames = [
-      'opus', 'isac-16000', 'isac-32000',
-      'g722-16000-1', 'pcmu', 'pcma',
-      'aac-48000-2', 'ac3', 'nellymoser', 'libc',
+      "opus",
+      "isac-16000",
+      "isac-32000",
+      "g722-16000-1",
+      "pcmu",
+      "pcma",
+      "aac-48000-2",
+      "ac3",
+      "nellymoser",
+      "libc",
     ];
     const audioCheckBoxes = audioNames.map((name) => {
-      return mediaCheckBox(name, 'mediaOut.audio');
+      return mediaCheckBox(name, "mediaOut.audio");
     });
 
     const videoNames = [
-      'h264-constrained-baseline',
-      'h264-baseline',
-      'h264-main',
-      'h264-high',
-      'h265', 'vp8', 'vp9', 'av1',
+      "h264-constrained-baseline",
+      "h264-baseline",
+      "h264-main",
+      "h264-high",
+      "h265",
+      "vp8",
+      "vp9",
+      "av1",
     ];
     const videoCheckBoxes = videoNames.map((name) => {
-      return mediaCheckBox(name, 'mediaOut.video.format');
+      return mediaCheckBox(name, "mediaOut.video.format");
     });
 
     const resolutions = [
-      'x3/4', 'x2/3', 'x1/2', 'x1/3', 'x1/4',
-      'hd1080p', 'hd720p', 'svga', 'vga', 'qvga', 'cif'
+      "x3/4",
+      "x2/3",
+      "x1/2",
+      "x1/3",
+      "x1/4",
+      "hd1080p",
+      "hd720p",
+      "svga",
+      "vga",
+      "qvga",
+      "cif",
     ];
     const resolutionBoxes = resolutions.map((name) => {
-      return mediaCheckBox(name, 'mediaOut.video.parameters.resolution');
+      return mediaCheckBox(name, "mediaOut.video.parameters.resolution");
     });
     const framerates = [6, 12, 15, 24, 30, 48, 60];
     const framerateBoxes = framerates.map((name) => {
-      return mediaCheckBox(name, 'mediaOut.video.parameters.framerate');
+      return mediaCheckBox(name, "mediaOut.video.parameters.framerate");
     });
-    const bitrates = ['x0.8', 'x0.6', 'x0.4', 'x0.2'];
+    const bitrates = ["x0.8", "x0.6", "x0.4", "x0.2"];
     const bitrateBoxes = bitrates.map((name) => {
-      return mediaCheckBox(name, 'mediaOut.video.parameters.bitrate');
+      return mediaCheckBox(name, "mediaOut.video.parameters.bitrate");
     });
     const kfis = [100, 30, 5, 2, 1];
     const kfiBoxes = kfis.map((name) => {
-      return mediaCheckBox(name, 'mediaOut.video.parameters.keyFrameInterval');
+      return mediaCheckBox(name, "mediaOut.video.parameters.keyFrameInterval");
     });
 
     return e(
-      'div',
-      {className: 'panel panel-default'},
-      e('div', {className: 'panel-heading'}, 'Media Out'),
+      "div",
+      { className: "panel panel-default" },
+      e("div", { className: "panel-heading" }, "Media Out"),
       e(
-        'div',
-        {className: 'panel-body'},
+        "div",
+        { className: "panel-body" },
         e(
-          'div',
-          {className: 'form-group'},
-          e('label', {className: 'col-sm-1 control-label'}, 'Audio'),
+          "div",
+          { className: "form-group" },
+          e("label", { className: "col-sm-1 control-label" }, "Audio"),
           ...audioCheckBoxes
         ),
         e(
-          'div',
-          {className: 'form-group'},
-          e('label', {className: 'col-sm-1 control-label'}, 'Video'),
+          "div",
+          { className: "form-group" },
+          e("label", { className: "col-sm-1 control-label" }, "Video"),
           ...videoCheckBoxes
         ),
         e(
-          'div',
-          {className: 'panel panel-default'},
-          e('div', {className: 'panel-heading'}, 'Video Parameters'),
+          "div",
+          { className: "panel panel-default" },
+          e("div", { className: "panel-heading" }, "Video Parameters"),
           e(
-            'div',
-            {className: 'panel-body'},
+            "div",
+            { className: "panel-body" },
             e(
-              'div',
-              {className: 'form-group'},
-              e('label', {style: {display: 'block'}}, 'Resolution'),
+              "div",
+              { className: "form-group" },
+              e("label", { style: { display: "block" } }, "Resolution"),
               ...resolutionBoxes
             ),
             e(
-              'div',
-              {className: 'form-group'},
-              e('label', {style: {display: 'block'}}, 'Framerate'),
+              "div",
+              { className: "form-group" },
+              e("label", { style: { display: "block" } }, "Framerate"),
               ...framerateBoxes
             ),
             e(
-              'div',
-              {className: 'form-group'},
-              e('label', {style: {display: 'block'}}, 'Bitrate'),
+              "div",
+              { className: "form-group" },
+              e("label", { style: { display: "block" } }, "Bitrate"),
               ...bitrateBoxes
             ),
             e(
-              'div',
-              {className: 'form-group'},
-              e('label', {style: {display: 'block'}}, 'KeyFrameInterval'),
+              "div",
+              { className: "form-group" },
+              e("label", { style: { display: "block" } }, "KeyFrameInterval"),
               ...kfiBoxes
             )
           )
@@ -834,47 +857,45 @@ class RoomModal extends React.Component {
   renderSip() {
     const room = this.state.room;
     const sipRow = (path) => {
-      const value = _.get(this.state.room.sip, path, '');
+      const value = _.get(this.state.room.sip, path, "");
       return e(
-        'div',
-        {className: 'row form-group'},
-        e('div', {className: 'col-sm-3'}, e('label', {}, path)),
+        "div",
+        { className: "row form-group" },
+        e("div", { className: "col-sm-3" }, e("label", {}, path)),
         e(
-          'div',
-          {className: 'col-sm-3'},
-          e('input',
-            {
-              type: (path === 'password') ? 'password' : 'text',
-              value,
-              className: 'form-control',
-              onChange: (e) => {
-                let newRoom = _.cloneDeep(this.state.room);
-                if (!newRoom.sip) {
-                  newRoom.sip = {sipServer: '', username: '', password: ''};
-                }
-                newRoom.sip[path] = e.target.value;
-                this.setState({room: newRoom});
-              },
+          "div",
+          { className: "col-sm-3" },
+          e("input", {
+            type: path === "password" ? "password" : "text",
+            value,
+            className: "form-control",
+            onChange: (e) => {
+              let newRoom = _.cloneDeep(this.state.room);
+              if (!newRoom.sip) {
+                newRoom.sip = { sipServer: "", username: "", password: "" };
+              }
+              newRoom.sip[path] = e.target.value;
+              this.setState({ room: newRoom });
             },
-          )
-        ),
+          })
+        )
       );
     };
 
     return e(
-      'div',
-      {className: 'panel panel-default'},
-      e('div', {className: 'panel-heading'}, 'SIP'),
+      "div",
+      { className: "panel panel-default" },
+      e("div", { className: "panel-heading" }, "SIP"),
       e(
-        'div',
-        {className: 'panel-body'},
+        "div",
+        { className: "panel-body" },
         e(
-          'div',
-          {className: 'container-fluid'},
-          sipRow('sipServer'),
-          sipRow('username'),
-          sipRow('password'),
-        ),
+          "div",
+          { className: "container-fluid" },
+          sipRow("sipServer"),
+          sipRow("username"),
+          sipRow("password")
+        )
       )
     );
   }
@@ -882,54 +903,52 @@ class RoomModal extends React.Component {
   renderNotifying() {
     const room = this.state.room;
     const notifyRow = (path) => {
-      const value = _.get(this.state.room.notifying, path, '');
+      const value = _.get(this.state.room.notifying, path, "");
       return e(
-        'div',
-        {className: 'row form-group'},
-        e('div', {className: 'col-sm-3'}, e('label', {}, path)),
+        "div",
+        { className: "row form-group" },
+        e("div", { className: "col-sm-3" }, e("label", {}, path)),
         e(
-          'div',
-          {className: 'col-sm-3'},
-          e('label',
-            {className: 'checkbox-inline'},
-            e(
-              'input',
-              {
-                type: 'checkbox',
-                value: path,
-                onChange: (e) => {
-                  let newRoom = _.cloneDeep(this.state.room);
-                  if (!newRoom.notifying) {
-                    newRoom.notifying = {
-                      streamChange: true,
-                      participantActivities: true
-                    };
-                  }
-                  newRoom.notifying[path] = e.target.checked;
-                  this.setState({room: newRoom});
-                },
-                checked: value
-              }
-            ),
+          "div",
+          { className: "col-sm-3" },
+          e(
+            "label",
+            { className: "checkbox-inline" },
+            e("input", {
+              type: "checkbox",
+              value: path,
+              onChange: (e) => {
+                let newRoom = _.cloneDeep(this.state.room);
+                if (!newRoom.notifying) {
+                  newRoom.notifying = {
+                    streamChange: true,
+                    participantActivities: true,
+                  };
+                }
+                newRoom.notifying[path] = e.target.checked;
+                this.setState({ room: newRoom });
+              },
+              checked: value,
+            }),
             path
           )
-        ),
+        )
       );
     };
 
     return e(
-      'div',
-      {className: 'panel panel-default'},
-      e('div', {className: 'panel-heading'}, 'Notification'),
+      "div",
+      { className: "panel panel-default" },
+      e("div", { className: "panel-heading" }, "Notification"),
       e(
-        'div',
-        {className: 'panel-body'},
+        "div",
+        { className: "panel-body" },
         e(
-          'div',
-          {className: 'container-fluid'},
-          notifyRow('streamChange'),
-          notifyRow('participantActivities'),
-        ),
+          "div",
+          { className: "container-fluid" },
+          notifyRow("streamChange"),
+          notifyRow("participantActivities")
+        )
       )
     );
   }
@@ -939,159 +958,153 @@ class RoomModal extends React.Component {
     const transcodingRow = (path, name) => {
       const value = _.get(this.state.room.transcoding, path, false);
       return e(
-        'div',
-        {className: 'row form-group'},
-        e('div', {className: 'col-sm-3'}, e('label', {}, name)),
+        "div",
+        { className: "row form-group" },
+        e("div", { className: "col-sm-3" }, e("label", {}, name)),
         e(
-          'div',
-          {className: 'col-sm-3'},
-          e('label',
-            {className: 'checkbox-inline'},
-            e(
-              'input',
-              {
-                type: 'checkbox',
-                value: name,
-                onChange: (e) => {
-                  let newRoom = _.cloneDeep(this.state.room);
-                  if (!newRoom.transcoding) {
-                    newRoom.transcoding = {};
-                  }
-                  _.set(newRoom.transcoding, path, e.target.checked);
-                  this.setState({room: newRoom});
-                },
-                checked: value
-              }
-            ),
+          "div",
+          { className: "col-sm-3" },
+          e(
+            "label",
+            { className: "checkbox-inline" },
+            e("input", {
+              type: "checkbox",
+              value: name,
+              onChange: (e) => {
+                let newRoom = _.cloneDeep(this.state.room);
+                if (!newRoom.transcoding) {
+                  newRoom.transcoding = {};
+                }
+                _.set(newRoom.transcoding, path, e.target.checked);
+                this.setState({ room: newRoom });
+              },
+              checked: value,
+            })
           )
-        ),
+        )
       );
     };
 
     return e(
-      'div',
-      {className: 'panel panel-default'},
-      e('div', {className: 'panel-heading'}, 'Transcoding'),
+      "div",
+      { className: "panel panel-default" },
+      e("div", { className: "panel-heading" }, "Transcoding"),
       e(
-        'div',
-        {className: 'panel-body'},
+        "div",
+        { className: "panel-body" },
         e(
-          'div',
-          {className: 'container-fluid'},
-          transcodingRow('audio', 'Audio Format'),
-          transcodingRow('video.format', 'Video Format'),
-          transcodingRow('video.parameters.resolution', 'Video Resolution'),
-          transcodingRow('video.parameters.framerate', 'Video Framerate'),
-          transcodingRow('video.parameters.bitrate', 'Video Bitrate'),
-          transcodingRow('video.parameters.keyFrameInterval', 'Video KeyFrameInterval'),
-        ),
+          "div",
+          { className: "container-fluid" },
+          transcodingRow("audio", "Audio Format"),
+          transcodingRow("video.format", "Video Format"),
+          transcodingRow("video.parameters.resolution", "Video Resolution"),
+          transcodingRow("video.parameters.framerate", "Video Framerate"),
+          transcodingRow("video.parameters.bitrate", "Video Bitrate"),
+          transcodingRow(
+            "video.parameters.keyFrameInterval",
+            "Video KeyFrameInterval"
+          )
+        )
       )
     );
   }
 
   renderActiveAudioSelecting() {
     return e(
-      'div',
-      {className: 'panel panel-default'},
-      e('div', {className: 'panel-heading'}, 'Forwarding'),
+      "div",
+      { className: "panel panel-default" },
+      e("div", { className: "panel-heading" }, "Forwarding"),
       e(
-        'div',
-        {className: 'panel-body'},
+        "div",
+        { className: "panel-body" },
         e(
-          'label',
-          {className: 'checkbox-inline'},
-          e(
-          'input',
-            {
-              type: 'checkbox',
-              onChange: (e) => {
-                let newRoom = _.cloneDeep(this.state.room);
-                newRoom.selectActiveAudio = e.target.checked;
-                this.setState({room: newRoom});
-              },
-              checked: this.state.room.selectActiveAudio
-            }
-          ),
-          'selectActiveAudio',
-        ),
-      ),
+          "label",
+          { className: "checkbox-inline" },
+          e("input", {
+            type: "checkbox",
+            onChange: (e) => {
+              let newRoom = _.cloneDeep(this.state.room);
+              newRoom.selectActiveAudio = e.target.checked;
+              this.setState({ room: newRoom });
+            },
+            checked: this.state.room.selectActiveAudio,
+          }),
+          "selectActiveAudio"
+        )
+      )
     );
   }
 
   render() {
     return e(
-      'div',
+      "div",
       {
-        className: 'modal-dialog modal-lg',
-        role: 'document'
+        className: "modal-dialog modal-lg",
+        role: "document",
       },
       e(
-        'div',
-        {className: 'modal-content'},
+        "div",
+        { className: "modal-content" },
         e(
-          'div',
-          {className: 'modal-header'},
+          "div",
+          { className: "modal-header" },
           e(
-            'button',
+            "button",
             {
-              type: 'button',
-              className: 'close',
-              'data-dismiss': 'modal',
-              'aria-label': 'Close'
+              type: "button",
+              className: "close",
+              "data-dismiss": "modal",
+              "aria-label": "Close",
             },
-            e('span', {'aria-hidden': true}, 'x')
+            e("span", { "aria-hidden": true }, "x")
           ),
-          e('h4', {className: 'modal-title'}, 'Room: ' + this.state.room._id)
+          e("h4", { className: "modal-title" }, "Room: " + this.state.room._id)
         ),
         e(
-          'div',
-          {className: 'modal-body'},
+          "div",
+          { className: "modal-body" },
           this.renderMediaIn(),
           this.renderMediaOut(),
           this.renderSip(),
           this.renderTranscoding(),
           this.renderNotifying(),
           this.renderActiveAudioSelecting(),
-          e(
-            RoomView,
-            {
-              views: this.state.room.views || [],
-              audioOut: _.get(this.state.room, 'mediaOut.audio', []),
-              videoOut: _.get(this.state.room, 'mediaOut.video.format', []),
-              onViewUpdate: this.onViewUpdate,
-              onViewCreate: this.onViewCreate,
-              onViewRemove: this.onViewRemove
-            }
-          ),
+          e(RoomView, {
+            views: this.state.room.views || [],
+            audioOut: _.get(this.state.room, "mediaOut.audio", []),
+            videoOut: _.get(this.state.room, "mediaOut.video.format", []),
+            onViewUpdate: this.onViewUpdate,
+            onViewCreate: this.onViewCreate,
+            onViewRemove: this.onViewRemove,
+          })
         ),
         e(
-          'div',
-          {className: 'modal-footer'},
+          "div",
+          { className: "modal-footer" },
           e(
-            'button',
+            "button",
             {
-              type: 'button',
-              className: 'btn btn-primary',
-              'data-dismiss': 'modal',
-              onClick: this.handleChange
+              type: "button",
+              className: "btn btn-primary",
+              "data-dismiss": "modal",
+              onClick: this.handleChange,
             },
-            e('i', {className: 'glyphicon glyphicon-ok'})
+            e("i", { className: "glyphicon glyphicon-ok" })
           ),
           e(
-            'button',
+            "button",
             {
-              type: 'button',
-              className: 'btn btn-default',
-              'data-dismiss': 'modal'
+              type: "button",
+              className: "btn btn-default",
+              "data-dismiss": "modal",
             },
-            e('i', {className: 'glyphicon glyphicon-remove'})
+            e("i", { className: "glyphicon glyphicon-remove" })
           )
         )
       )
     );
   }
 }
-
 
 class RoomApp extends React.Component {
   constructor(props) {
@@ -1101,9 +1114,9 @@ class RoomApp extends React.Component {
       updates: [],
       pages: null,
       loading: true,
-      pageSize: 10
+      pageSize: 10,
     };
-    this.modalId = this.props.modalId || 'RoomModal';
+    this.modalId = this.props.modalId || "RoomModal";
     this.roomCount = this.props.count;
     this.fetchData = this.fetchData.bind(this);
     this.renderEditable = this.renderEditable.bind(this);
@@ -1121,7 +1134,7 @@ class RoomApp extends React.Component {
     this.setState({ loading: true });
     restApi.getRooms(state.page, state.pageSize, (err, resp) => {
       if (err) {
-        return notify('error', 'Failed to get rooms', err);
+        return notify("error", "Failed to get rooms", err);
       }
       let ret = JSON.parse(resp);
       this.pagination = state;
@@ -1129,100 +1142,100 @@ class RoomApp extends React.Component {
         data: ret,
         pageSize: state.pageSize,
         pages: Math.ceil(this.roomCount / state.pageSize),
-        loading: false
+        loading: false,
       });
     });
   }
 
   renderEditable(cellInfo) {
-    return e(
-      'div',
-      {
-        style: { backgroundColor: '#fafafa' },
-        contentEditable: true,
-        suppressContentEditableWarning: true,
-        onBlur: e => {
-          const data = [...this.state.data];
-          const originColumn = data[cellInfo.index][cellInfo.column.id];
-          if (typeof originColumn === 'number') {
-            data[cellInfo.index][cellInfo.column.id] = parseInt(e.target.innerHTML);
-          }
-          if (typeof originColumn === 'string') {
-            data[cellInfo.index][cellInfo.column.id] = e.target.innerHTML;
-          }
-          this.setState({ data });
-        },
-        dangerouslySetInnerHTML: {
-          __html: this.state.data[cellInfo.index][cellInfo.column.id]
+    return e("div", {
+      style: { backgroundColor: "#fafafa" },
+      contentEditable: true,
+      suppressContentEditableWarning: true,
+      onBlur: (e) => {
+        const data = [...this.state.data];
+        const originColumn = data[cellInfo.index][cellInfo.column.id];
+        if (typeof originColumn === "number") {
+          data[cellInfo.index][cellInfo.column.id] = parseInt(
+            e.target.innerHTML
+          );
         }
-      }
-    );
+        if (typeof originColumn === "string") {
+          data[cellInfo.index][cellInfo.column.id] = e.target.innerHTML;
+        }
+        this.setState({ data });
+      },
+      dangerouslySetInnerHTML: {
+        __html: this.state.data[cellInfo.index][cellInfo.column.id],
+      },
+    });
   }
 
   renderOperation(cellInfo) {
     const opRoom = this.state.data[cellInfo.index];
     return e(
-      'div',
-      {style: {textAlign: 'center'}},
+      "div",
+      { style: { textAlign: "center" } },
       e(
-        'button',
+        "button",
         {
-          className: 'btn btn-sm btn-primary',
-          style: { marginRight: '5px' },
-          'data-toggle': 'modal',
-          'data-target': '#' + this.modalId,
-          onClick: ()=>{
-            const domModal = document.querySelector('#' + this.modalId);
+          className: "btn btn-sm btn-primary",
+          style: { marginRight: "5px" },
+          "data-toggle": "modal",
+          "data-target": "#" + this.modalId,
+          onClick: () => {
+            const domModal = document.querySelector("#" + this.modalId);
             ReactDOM.unmountComponentAtNode(domModal);
             ReactDOM.render(
-              e(
-                RoomModal,
-                {
-                  data: opRoom,
-                  index: cellInfo.index,
-                  onRoomUpdate: this.handleRoomUpdate
-                }
-              ),
+              e(RoomModal, {
+                data: opRoom,
+                index: cellInfo.index,
+                onRoomUpdate: this.handleRoomUpdate,
+              }),
               domModal
             );
-          }
+          },
         },
-        'Detail'
+        "Detail"
       ),
       e(
-        'button',
+        "button",
         {
-          className: 'btn btn-sm btn-success',
-          style: { marginRight: '5px' },
-          onClick: ()=>{
+          className: "btn btn-sm btn-success",
+          style: { marginRight: "5px" },
+          onClick: () => {
             restApi.updateRoom(opRoom._id, opRoom, (err, resp) => {
               if (err) {
-                return notify('error', 'Update Room', resp);
+                return notify("error", "Update Room", resp);
               }
-              notify('info', 'Update Room Success', opRoom._id);
+              notify("info", "Update Room Success", opRoom._id);
               this.fetchData(this.pagination);
             });
-          }
+          },
         },
-        'Apply'
+        "Apply"
       ),
       e(
-        'button',
+        "button",
         {
-          className: 'btn btn-sm btn-warning',
-          onClick: ()=>{
-            notifyConfirm('Delete', 'Are you sure want to delete room ' + opRoom._id, ()=>{
-              restApi.deleteRoom(opRoom._id, (err, resp) => {
-                if (err) {
-                  return notify('error', 'Delete Room', resp);
-                }
-                this.roomCount--;
-                this.fetchData(this.pagination);
-              });
-            });
-          }
+          className: "btn btn-sm btn-warning",
+          onClick: () => {
+            notifyConfirm(
+              "Delete",
+              "Are you sure want to delete room " + opRoom._id,
+              () => {
+                restApi.deleteRoom(opRoom._id, (err, resp) => {
+                  if (err) {
+                    return notify("error", "Delete Room", resp);
+                  }
+                  this.roomCount--;
+                  this.fetchData(this.pagination);
+                });
+              }
+            );
+          },
         },
-        'Remove'
+        "Remove"
       )
     );
   }
@@ -1231,83 +1244,88 @@ class RoomApp extends React.Component {
     const { data, pages, loading } = this.state;
     const columns = [
       {
-        Header: 'ID',
-        accessor: '_id'
+        Header: "ID",
+        accessor: "_id",
       },
       {
-        Header: 'Name',
-        accessor: 'name',
-        Cell: this.renderEditable
+        Header: "Name",
+        accessor: "name",
+        Cell: this.renderEditable,
       },
       {
-        Header: 'Input Limit',
-        accessor: 'inputLimit',
-        Cell: this.renderEditable
+        Header: "Input Limit",
+        accessor: "inputLimit",
+        Cell: this.renderEditable,
       },
       {
-        Header: 'Participant Limit',
-        accessor: 'participantLimit',
-        Cell: this.renderEditable
+        Header: "Participant Limit",
+        accessor: "participantLimit",
+        Cell: this.renderEditable,
       },
       {
-        id: 'views.length',
-        Header: 'View Count',
-        accessor: d => d.views ? d.views.length : 0
+        id: "views.length",
+        Header: "View Count",
+        accessor: (d) => (d.views ? d.views.length : 0),
       },
       {
         Header: e(
-          'button',
+          "button",
           {
-            className: 'btn btn-sm',
-            onClick: (e)=>{
+            className: "btn btn-sm",
+            onClick: (e) => {
               e.stopPropagation();
-              restApi.createRoom({name: 'NewRoom'}, (err, resp) => {
+              restApi.createRoom({ name: "NewRoom" }, (err, resp) => {
                 if (err) {
-                  return notify('error', 'Add Room Failed', resp);
+                  return notify("error", "Add Room Failed", resp);
                 }
                 let createdRoom = JSON.parse(resp);
-                notify('info', 'Add Room Success', createdRoom._id);
+                notify("info", "Add Room Success", createdRoom._id);
                 this.roomCount++;
                 this.fetchData(this.pagination);
               });
-            }
+            },
           },
-          'Create New Room'
+          "Create New Room"
         ),
-        Cell: this.renderOperation
-      }
+        Cell: this.renderOperation,
+      },
     ];
 
     const manual = true;
     const onFetchData = this.fetchData;
 
-    return e('div', {},
-      e('h1', {className: 'page-header'}, 'Rooms in current Service'),
-      e(
-        ReactTable,
-        {
-          data,
-          pages,
-          loading,
-          columns,
-          manual: true,
-          sortable: false,
-          onFetchData: this.fetchData,
-          defaultPageSize: 20
-        }
-      )
+    return e(
+      "div",
+      {},
+      e("h1", { className: "page-header" }, "Rooms in current Service"),
+      e(ReactTable, {
+        data,
+        pages,
+        loading,
+        columns,
+        manual: true,
+        sortable: false,
+        onFetchData: this.fetchData,
+        defaultPageSize: 20,
+      })
     );
   }
 }
 
-const domContainer = document.querySelector('#mainApp');
+const domContainer = document.querySelector("#mainApp");
 
 function renderRoom() {
   ReactDOM.unmountComponentAtNode(domContainer);
-  ReactDOM.render(e(RoomApp, {count: roomTotal || 1, modalId: 'mainModal'}), domContainer);
+  ReactDOM.render(
+    e(RoomApp, { count: roomTotal || 1, modalId: "mainModal" }),
+    domContainer
+  );
 }
 
 function renderService() {
   ReactDOM.unmountComponentAtNode(domContainer);
-  ReactDOM.render(e(ServiceApp, {count: roomTotal || 1, modalId: 'mainModal'}), domContainer);
+  ReactDOM.render(
+    e(ServiceApp, { count: roomTotal || 1, modalId: "mainModal" }),
+    domContainer
+  );
 }

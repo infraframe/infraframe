@@ -31,6 +31,7 @@ using boost::asio::ip::tcp;
  */
 class TransportServer : public TransportSession::Listener {
     DECLARE_LOGGER();
+
 public:
     class Listener {
     public:
@@ -48,7 +49,7 @@ public:
     void listenTo(uint32_t minPort, uint32_t maxPort);
     void sendData(const uint8_t* data, uint32_t len);
     void sendData(const uint8_t* header, uint32_t headerLength,
-                  const uint8_t* payload, uint32_t payloadLength);
+        const uint8_t* payload, uint32_t payloadLength);
     void close();
     bool initTicket(const std::string& ticket) { return true; }
 
@@ -67,7 +68,7 @@ private:
     void doAccept();
     void acceptHandler(const boost::system::error_code&);
     void handshakeHandler(std::shared_ptr<SSLSocket> sock,
-                          const boost::system::error_code& ec);
+        const boost::system::error_code& ec);
     void onSessionRemoved(int id);
 
     int m_nextSessionId;

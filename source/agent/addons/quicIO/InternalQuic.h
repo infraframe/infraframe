@@ -5,8 +5,8 @@
 #ifndef INTERNAL_QUIC_H_
 #define INTERNAL_QUIC_H_
 
-#include "QuicTransport.h"
 #include "MediaFramePipelineWrapper.h"
+#include "QuicTransport.h"
 #include <node.h>
 #include <node_object_wrap.h>
 
@@ -16,21 +16,21 @@
  * Receives media from one
  */
 class InternalQuicIn : public FrameSource {
- public:
-  static void Init(v8::Local<v8::Object> exports);
-  QuicIn* me;
+public:
+    static void Init(v8::Local<v8::Object> exports);
+    QuicIn* me;
 
- private:
-  InternalQuicIn();
-  ~InternalQuicIn();
-  static v8::Persistent<v8::Function> constructor;
+private:
+    InternalQuicIn();
+    ~InternalQuicIn();
+    static v8::Persistent<v8::Function> constructor;
 
-  static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void close(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void close(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  static void getListeningPort(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void addDestination(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void removeDestination(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void getListeningPort(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void addDestination(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void removeDestination(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
 /*
@@ -39,17 +39,17 @@ class InternalQuicIn : public FrameSource {
  * Send media from one
  */
 class InternalQuicOut : public FrameDestination {
- public:
-  static void Init(v8::Local<v8::Object> exports);
-  QuicOut* me;
+public:
+    static void Init(v8::Local<v8::Object> exports);
+    QuicOut* me;
 
- private:
-  InternalQuicOut();
-  ~InternalQuicOut();
-  static v8::Persistent<v8::Function> constructor;
+private:
+    InternalQuicOut();
+    ~InternalQuicOut();
+    static v8::Persistent<v8::Function> constructor;
 
-  static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void close(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void close(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
-#endif  // INTERNAL_QUIC_H_
+#endif // INTERNAL_QUIC_H_

@@ -89,7 +89,7 @@ void FrameSource::deliverFrame(const Frame& frame)
         for (auto it = m_video_dests.begin(); it != m_video_dests.end(); ++it) {
             (*it)->onFrame(frame);
         }
-    } else if (isDataFrame(frame)){
+    } else if (isDataFrame(frame)) {
         boost::shared_lock<boost::shared_mutex> lock(m_data_dests_mutex);
         for (auto it = m_data_dests.begin(); it != m_data_dests.end(); ++it) {
             (*it)->onFrame(frame);
@@ -155,7 +155,8 @@ void FrameDestination::unsetDataSource()
     m_data_src = nullptr;
 }
 
-void FrameDestination::deliverFeedbackMsg(const FeedbackMsg& msg) {
+void FrameDestination::deliverFeedbackMsg(const FeedbackMsg& msg)
+{
     if (msg.type == AUDIO_FEEDBACK) {
         boost::shared_lock<boost::shared_mutex> lock(m_audio_src_mutex);
         if (m_audio_src) {
@@ -177,4 +178,3 @@ void FrameDestination::deliverFeedbackMsg(const FeedbackMsg& msg) {
 }
 
 }
-

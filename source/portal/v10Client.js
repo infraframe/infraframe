@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-'use strict';
+"use strict";
 
-var log = require('./logger').logger.getLogger('V10Client');
-var V11Client = require('./v11Client');
+var log = require("./logger").logger.getLogger("V10Client");
+var V11Client = require("./v11Client");
 
 // Convert to 1.0 format
 var convertStream = function (stream) {
@@ -19,7 +19,7 @@ var convertStream = function (stream) {
   }
 };
 
-var V10Client = function(clientId, sigConnection, portal) {
+var V10Client = function (clientId, sigConnection, portal) {
   var client = V11Client(clientId, sigConnection, portal);
   var latestJoin = client.join;
   var latestNotify = client.notify;
@@ -31,20 +31,20 @@ var V10Client = function(clientId, sigConnection, portal) {
           convertStream(stream);
         });
       }
-      log.debug('converted join data:', JSON.stringify(data));
+      log.debug("converted join data:", JSON.stringify(data));
       return data;
     });
   };
 
   client.notify = (evt, data) => {
-    if (evt === 'stream') {
-      if (data.status === 'add') {
+    if (evt === "stream") {
+      if (data.status === "add") {
         convertStream(data.data);
       }
-      if (data.status === 'update' && data.data.field === '.') {
+      if (data.status === "update" && data.data.field === ".") {
         convertStream(data.data.value);
       }
-      log.debug('converted stream data:', JSON.stringify(data));
+      log.debug("converted stream data:", JSON.stringify(data));
     }
     latestNotify(evt, data);
   };

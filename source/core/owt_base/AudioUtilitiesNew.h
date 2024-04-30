@@ -17,12 +17,12 @@ static inline int64_t currentTimeMs()
 }
 
 struct CodecInst {
-  int pltype;
-  char plname[32];
-  int plfreq;
-  int pacsize;
-  size_t channels;
-  int rate;  // bits/sec unlike {start,min,max}Bitrate elsewhere in this file!
+    int pltype;
+    char plname[32];
+    int plfreq;
+    int pacsize;
+    size_t channels;
+    int rate; // bits/sec unlike {start,min,max}Bitrate elsewhere in this file!
 };
 
 FrameFormat getAudioFrameFormat(int pltype);

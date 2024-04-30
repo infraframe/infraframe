@@ -5,8 +5,8 @@
 #include <webrtc/base/logging.h>
 #include <webrtc/system_wrappers/include/trace.h>
 
-#include "VideoTranscoder.h"
 #include "VideoFrameTranscoderImpl.h"
+#include "VideoTranscoder.h"
 
 using namespace webrtc;
 using namespace owt_base;
@@ -31,10 +31,7 @@ VideoTranscoder::VideoTranscoder(const VideoTranscoderConfig& config)
         rtc::LogMessage::LogToDebug(rtc::LS_INFO);
         rtc::LogMessage::LogTimestamps(true);
 
-        const int kTraceFilter = webrtc::kTraceNone | webrtc::kTraceTerseInfo |
-            webrtc::kTraceWarning | webrtc::kTraceError |
-            webrtc::kTraceCritical | webrtc::kTraceDebug |
-            webrtc::kTraceInfo;
+        const int kTraceFilter = webrtc::kTraceNone | webrtc::kTraceTerseInfo | webrtc::kTraceWarning | webrtc::kTraceError | webrtc::kTraceCritical | webrtc::kTraceDebug | webrtc::kTraceInfo;
 
         webrtc::Trace::CreateTrace();
         webrtc::Trace::SetTraceFile(NULL, false);
@@ -46,8 +43,8 @@ VideoTranscoder::VideoTranscoder(const VideoTranscoderConfig& config)
         m_freeInputIndexes.push_back(true);
 
 #ifdef ENABLE_MSDK
-    MsdkBase *msdkBase = MsdkBase::get();
-    if(msdkBase != NULL) {
+    MsdkBase* msdkBase = MsdkBase::get();
+    if (msdkBase != NULL) {
         msdkBase->setConfigHevcEncoderGaccPlugin(config.useGacc);
         msdkBase->setConfigMFETimeout(config.MFE_timeout);
     }
@@ -96,7 +93,7 @@ bool VideoTranscoder::setInput(const std::string& inStreamID, const std::string&
         return true;
     }
 
-    assert("new source added with InputProcessor still available");    // should not go there
+    assert("new source added with InputProcessor still available"); // should not go there
     return false;
 }
 
@@ -120,17 +117,10 @@ void VideoTranscoder::unsetInput(const std::string& inStreamID)
 
 #ifndef BUILD_FOR_ANALYTICS
 bool VideoTranscoder::addOutput(
-    const std::string& outStreamID
-    , const std::string& codec
-    , const owt_base::VideoCodecProfile profile
-    , const std::string& resolution
-    , const unsigned int framerateFPS
-    , const unsigned int bitrateKbps
-    , const unsigned int keyFrameIntervalSeconds
-    , owt_base::FrameDestination* dest)
+    const std::string& outStreamID, const std::string& codec, const owt_base::VideoCodecProfile profile, const std::string& resolution, const unsigned int framerateFPS, const unsigned int bitrateKbps, const unsigned int keyFrameIntervalSeconds, owt_base::FrameDestination* dest)
 {
     owt_base::FrameFormat format = getFormat(codec);
-    VideoSize vSize{0, 0};
+    VideoSize vSize { 0, 0 };
     VideoResolutionHelper::getVideoSize(resolution, vSize);
     if (m_frameTranscoder->addOutput(m_nextOutputIndex, format, profile, vSize, framerateFPS, bitrateKbps, keyFrameIntervalSeconds, dest)) {
         boost::unique_lock<boost::shared_mutex> lock(m_outputsMutex);
@@ -141,19 +131,10 @@ bool VideoTranscoder::addOutput(
 }
 #else
 bool VideoTranscoder::addOutput(
-    const std::string& outStreamID
-    , const std::string& codec
-    , const owt_base::VideoCodecProfile profile
-    , const std::string& resolution
-    , const unsigned int framerateFPS
-    , const unsigned int bitrateKbps
-    , const unsigned int keyFrameIntervalSeconds
-    , const std::string& algorithm
-    , const std::string& pluginName
-    , owt_base::FrameDestination* dest)
+    const std::string& outStreamID, const std::string& codec, const owt_base::VideoCodecProfile profile, const std::string& resolution, const unsigned int framerateFPS, const unsigned int bitrateKbps, const unsigned int keyFrameIntervalSeconds, const std::string& algorithm, const std::string& pluginName, owt_base::FrameDestination* dest)
 {
     owt_base::FrameFormat format = getFormat(codec);
-    VideoSize vSize{0, 0};
+    VideoSize vSize { 0, 0 };
     VideoResolutionHelper::getVideoSize(resolution, vSize);
     if (m_frameTranscoder->addOutput(m_nextOutputIndex, format, profile, vSize, framerateFPS, bitrateKbps, keyFrameIntervalSeconds, algorithm, pluginName, dest)) {
         boost::unique_lock<boost::shared_mutex> lock(m_outputsMutex);
@@ -213,4 +194,4 @@ void VideoTranscoder::closeAll()
     ELOG_DEBUG("Closed all media in this Transcoder");
 }
 
-}/* namespace mcu */
+} /* namespace mcu */

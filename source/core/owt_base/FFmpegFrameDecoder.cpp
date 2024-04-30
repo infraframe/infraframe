@@ -8,9 +8,9 @@ namespace owt_base {
 
 DEFINE_LOGGER(FFmpegFrameDecoder, "owt.FFmpegFrameDecoder");
 
-int FFmpegFrameDecoder::AVGetBuffer(AVCodecContext *s, AVFrame *frame, int flags)
+int FFmpegFrameDecoder::AVGetBuffer(AVCodecContext* s, AVFrame* frame, int flags)
 {
-    FFmpegFrameDecoder *FFmpegDecoder = static_cast<FFmpegFrameDecoder *>(s->opaque);
+    FFmpegFrameDecoder* FFmpegDecoder = static_cast<FFmpegFrameDecoder*>(s->opaque);
     int width = frame->width;
     int height = frame->height;
 
@@ -29,22 +29,22 @@ int FFmpegFrameDecoder::AVGetBuffer(AVCodecContext *s, AVFrame *frame, int flags
     frame->format = s->pix_fmt;
     frame->reordered_opaque = s->reordered_opaque;
 
-    frame->data[0]       = frame_buffer->MutableDataY();
-    frame->linesize[0]   = frame_buffer->StrideY();
-    frame->data[1]       = frame_buffer->MutableDataU();
-    frame->linesize[1]   = frame_buffer->StrideU();
-    frame->data[2]       = frame_buffer->MutableDataV();
-    frame->linesize[2]   = frame_buffer->StrideV();
+    frame->data[0] = frame_buffer->MutableDataY();
+    frame->linesize[0] = frame_buffer->StrideY();
+    frame->data[1] = frame_buffer->MutableDataU();
+    frame->linesize[1] = frame_buffer->StrideU();
+    frame->data[2] = frame_buffer->MutableDataV();
+    frame->linesize[2] = frame_buffer->StrideV();
 
     frame->buf[0] = av_buffer_create(
-            frame->data[0],
-            total_size,
-            AVFreeBuffer,
-            static_cast<void*>(new webrtc::VideoFrame(frame_buffer,
-                    0 /* timestamp */,
-                    0 /* render_time_ms */,
-                    webrtc::kVideoRotation_0)),
-            0);
+        frame->data[0],
+        total_size,
+        AVFreeBuffer,
+        static_cast<void*>(new webrtc::VideoFrame(frame_buffer,
+            0 /* timestamp */,
+            0 /* render_time_ms */,
+            webrtc::kVideoRotation_0)),
+        0);
 
     return 0;
 }
@@ -83,25 +83,25 @@ bool FFmpegFrameDecoder::init(FrameFormat format)
     AVCodec* dec = NULL;
 
     switch (format) {
-        case FRAME_FORMAT_H264:
-            codec_id = AV_CODEC_ID_H264;
-            break;
+    case FRAME_FORMAT_H264:
+        codec_id = AV_CODEC_ID_H264;
+        break;
 
-        case FRAME_FORMAT_H265:
-            codec_id = AV_CODEC_ID_H265;
-            break;
+    case FRAME_FORMAT_H265:
+        codec_id = AV_CODEC_ID_H265;
+        break;
 
-        case FRAME_FORMAT_VP8:
-            codec_id = AV_CODEC_ID_VP8;
-            break;
+    case FRAME_FORMAT_VP8:
+        codec_id = AV_CODEC_ID_VP8;
+        break;
 
-        case FRAME_FORMAT_VP9:
-            codec_id = AV_CODEC_ID_VP9;
-            break;
+    case FRAME_FORMAT_VP9:
+        codec_id = AV_CODEC_ID_VP9;
+        break;
 
-        default:
-            ELOG_ERROR_T("Unspported video frame format %s(%d)", getFormatStr(format), format);
-            return false;
+    default:
+        ELOG_ERROR_T("Unspported video frame format %s(%d)", getFormatStr(format), format);
+        return false;
     }
 
     ELOG_DEBUG_T("Created %s decoder.", getFormatStr(format));
@@ -113,14 +113,14 @@ bool FFmpegFrameDecoder::init(FrameFormat format)
     }
 
     m_decCtx = avcodec_alloc_context3(dec);
-    if (!m_decCtx ) {
+    if (!m_decCtx) {
         ELOG_ERROR_T("Could not alloc ffmpeg decoder context");
         return false;
     }
 
     m_decCtx->get_buffer2 = AVGetBuffer;
     m_decCtx->opaque = this;
-    ret = avcodec_open2(m_decCtx, dec , NULL);
+    ret = avcodec_open2(m_decCtx, dec, NULL);
     if (ret < 0) {
         ELOG_ERROR_T("Could not open ffmpeg decoder context, %s", ff_err2str(ret));
         return false;
@@ -157,13 +157,13 @@ void FFmpegFrameDecoder::onFrame(const Frame& frame)
     if (ret == AVERROR(EAGAIN)) {
         ELOG_DEBUG_T("Retry receive frame, %s", ff_err2str(ret));
         return;
-    }else if (ret < 0) {
+    } else if (ret < 0) {
         ELOG_ERROR_T("Error while receive frame, %s", ff_err2str(ret));
         return;
     }
 
-    webrtc::VideoFrame *video_frame = static_cast<webrtc::VideoFrame*>(
-            av_buffer_get_opaque(m_decFrame->buf[0]));
+    webrtc::VideoFrame* video_frame = static_cast<webrtc::VideoFrame*>(
+        av_buffer_get_opaque(m_decFrame->buf[0]));
 
     {
         Frame frame;
@@ -176,17 +176,17 @@ void FFmpegFrameDecoder::onFrame(const Frame& frame)
         frame.additionalInfo.video.height = video_frame->height();
 
         ELOG_TRACE_T("deliverFrame, %dx%d, timeStamp %d",
-                frame.additionalInfo.video.width,
-                frame.additionalInfo.video.height,
-                frame.timeStamp);
+            frame.additionalInfo.video.width,
+            frame.additionalInfo.video.height,
+            frame.timeStamp);
         deliverFrame(frame);
     }
 }
 
-char *FFmpegFrameDecoder::ff_err2str(int errRet)
+char* FFmpegFrameDecoder::ff_err2str(int errRet)
 {
     av_strerror(errRet, (char*)(&m_errbuff), 500);
     return m_errbuff;
 }
 
-}//namespace owt_base
+} //namespace owt_base

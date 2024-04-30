@@ -5,14 +5,14 @@
 #ifndef QUIC_TRANSPORT_SESSION_H_
 #define QUIC_TRANSPORT_SESSION_H_
 
-#include <mutex>
-#include <nan.h>
-#include <unordered_map>
-#include <queue>
-#include <logger.h>
 #include <boost/asio.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/thread/mutex.hpp>
+#include <logger.h>
+#include <mutex>
+#include <nan.h>
+#include <queue>
+#include <unordered_map>
 
 #include "QuicTransportStream.h"
 #include "owt/quic/quic_transport_session_interface.h"
@@ -25,6 +25,7 @@
  */
 class QuicTransportSession : public owt::quic::QuicTransportSessionInterface::Visitor, public Nan::ObjectWrap {
     DECLARE_LOGGER();
+
 public:
     explicit QuicTransportSession();
     virtual ~QuicTransportSession();
@@ -46,8 +47,8 @@ public:
     // Implements QuicTransportSessionInterface.
     void OnIncomingStream(owt::quic::QuicTransportStreamInterface*) override;
     void OnStreamClosed(uint32_t id) override;
-private:
 
+private:
     owt::quic::QuicTransportSessionInterface* m_session;
     uv_async_t m_asyncOnNewStream;
     uv_async_t m_asyncOnClosedStream;
@@ -55,12 +56,12 @@ private:
     bool has_streamClosed_callback_;
     std::queue<owt::quic::QuicTransportStreamInterface*> stream_messages;
     std::queue<uint32_t> streamclosed_messages;
-    Nan::Callback *stream_callback_;
-    Nan::Callback *streamClosed_callback_;
-    Nan::AsyncResource *asyncResourceNewStream_;
-    Nan::AsyncResource *asyncResourceClosedStream_;
+    Nan::Callback* stream_callback_;
+    Nan::Callback* streamClosed_callback_;
+    Nan::AsyncResource* asyncResourceNewStream_;
+    Nan::AsyncResource* asyncResourceClosedStream_;
     boost::mutex mutex;
     static Nan::Persistent<v8::Function> s_constructor;
 };
 
-#endif  // QUIC_TRANSPORT_SESSION_H_
+#endif // QUIC_TRANSPORT_SESSION_H_

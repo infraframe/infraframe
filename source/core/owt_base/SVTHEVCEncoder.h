@@ -7,14 +7,14 @@
 
 #include <queue>
 
+#include <boost/asio.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/asio.hpp>
 #include <boost/thread.hpp>
 
-#include "logger.h"
 #include "MediaFramePipeline.h"
+#include "logger.h"
 
 #include "svt-hevc/EbApi.h"
 
@@ -27,7 +27,7 @@ public:
     SVTHEVCEncoder(FrameFormat format, VideoCodecProfile profile, bool useSimulcast = false);
     ~SVTHEVCEncoder();
 
-    FrameFormat getInputFormat() {return FRAME_FORMAT_I420;}
+    FrameFormat getInputFormat() { return FRAME_FORMAT_I420; }
 
     // Implements VideoFrameEncoder.
     void onFrame(const Frame&);
@@ -46,7 +46,7 @@ protected:
     bool allocateBuffers();
     void deallocateBuffers();
 
-    static void InitEncoder(SVTHEVCEncoder*This, uint32_t width, uint32_t height, uint32_t frameRate, uint32_t bitrateKbps, uint32_t keyFrameIntervalSeconds)
+    static void InitEncoder(SVTHEVCEncoder* This, uint32_t width, uint32_t height, uint32_t frameRate, uint32_t bitrateKbps, uint32_t keyFrameIntervalSeconds)
     {
         This->initEncoder(width, height, frameRate, bitrateKbps, keyFrameIntervalSeconds);
     }
@@ -54,15 +54,15 @@ protected:
     bool initEncoder(uint32_t width, uint32_t height, uint32_t frameRate, uint32_t bitrateKbps, uint32_t keyFrameIntervalSeconds);
     bool initEncoderAsync(uint32_t width, uint32_t height, uint32_t frameRate, uint32_t bitrateKbps, uint32_t keyFrameIntervalSeconds);
 
-    bool convert2BufferHeader(const Frame& frame, EB_BUFFERHEADERTYPE *bufferHeader);
+    bool convert2BufferHeader(const Frame& frame, EB_BUFFERHEADERTYPE* bufferHeader);
 
     void fillPacketDone(EB_BUFFERHEADERTYPE* pBufferHeader);
 
-    void dump(uint8_t *buf, int len);
+    void dump(uint8_t* buf, int len);
 
 private:
-    bool                        m_encoderReady;
-    FrameDestination            *m_dest;
+    bool m_encoderReady;
+    FrameDestination* m_dest;
 
     uint32_t m_width;
     uint32_t m_height;
@@ -70,11 +70,11 @@ private:
     uint32_t m_bitrateKbps;
     uint32_t m_keyFrameIntervalSeconds;
 
-    EB_COMPONENTTYPE            *m_handle;
-    EB_H265_ENC_CONFIGURATION   m_encParameters;
+    EB_COMPONENTTYPE* m_handle;
+    EB_H265_ENC_CONFIGURATION m_encParameters;
 
     std::vector<EB_BUFFERHEADERTYPE> m_inputBufferPool;
-    std::queue<EB_BUFFERHEADERTYPE *> m_freeInputBuffers;
+    std::queue<EB_BUFFERHEADERTYPE*> m_freeInputBuffers;
     std::vector<EB_BUFFERHEADERTYPE> m_streamBufferPool;
 
     bool m_forceIDR;
@@ -88,7 +88,7 @@ private:
     boost::shared_ptr<boost::thread> m_thread;
 
     bool m_enableBsDump;
-    FILE *m_bsDumpfp;
+    FILE* m_bsDumpfp;
 };
 
 } /* namespace owt_base */
