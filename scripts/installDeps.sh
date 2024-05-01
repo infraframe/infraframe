@@ -127,9 +127,6 @@ elif [[ "$OS" =~ .*ubuntu.* ]]; then
     esac
     if [[ "$OS_VERSION" =~ 20.04.* ]]; then
         install_gcc_7
-        if [ "$GITHUB_ACTIONS" != "true" ]; then
-            install_boost
-        fi
     fi
 fi
 

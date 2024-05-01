@@ -164,8 +164,7 @@ void RawTransport<prot>::createConnection(const std::string& ip, uint32_t port)
             if (m_socket.ssl.socket) {
                 ELOG_WARN("TSL transport existed, ignoring the connection request for ip %s port %d\n", ip.c_str(), port);
             } else {
-                m_socket.ssl.context.reset(new boost::asio::ssl::context(
-                    m_service->service(), boost::asio::ssl::context::sslv23));
+                m_socket.ssl.context.reset(new boost::asio::ssl::context(boost::asio::ssl::context::sslv23));
                 m_socket.ssl.context->set_verify_mode(boost::asio::ssl::context::verify_peer);
                 m_socket.ssl.context->load_verify_file(kServerCrt);
 
@@ -333,8 +332,7 @@ void RawTransport<prot>::listenTo(uint32_t port)
             if (m_socket.ssl.socket) {
                 ELOG_WARN("TLS transport existed, ignoring the listening request for port %d\n", port);
             } else {
-                m_socket.ssl.context.reset(new boost::asio::ssl::context(
-                    m_service->service(), boost::asio::ssl::context::sslv23));
+                m_socket.ssl.context.reset(new boost::asio::ssl::context(boost::asio::ssl::context::sslv23));
                 m_socket.ssl.context->set_options(
                     boost::asio::ssl::context::default_workarounds
                     | boost::asio::ssl::context::single_dh_use);

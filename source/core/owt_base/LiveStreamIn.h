@@ -12,6 +12,7 @@
 #include <boost/shared_array.hpp>
 #include <boost/thread.hpp>
 #include <logger.h>
+#include <queue>
 #include <string>
 
 extern "C" {

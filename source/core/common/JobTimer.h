@@ -9,6 +9,8 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/thread.hpp>
 
+#include <set>
+
 class JobTimerListener {
 public:
     virtual void onTimeout() = 0;
