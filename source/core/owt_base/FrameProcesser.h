@@ -16,11 +16,6 @@
 #include "MediaFramePipeline.h"
 #include <JobTimer.h>
 
-#ifdef ENABLE_MSDK
-#include "MsdkBase.h"
-#include "MsdkFrame.h"
-#endif
-
 #include "I420BufferManager.h"
 
 #include "FFmpegDrawText.h"
@@ -47,11 +42,6 @@ public:
 
 protected:
     bool filterFrame(const Frame& frame);
-#ifdef ENABLE_MSDK
-    boost::shared_ptr<owt_base::MsdkFrame> getMsdkFrame(const uint32_t width, const uint32_t height);
-
-    void SendFrame(boost::shared_ptr<owt_base::MsdkFrame> msdkFrame, uint32_t timeStamp);
-#endif
     void SendFrame(rtc::scoped_refptr<webrtc::I420Buffer> i420Buffer, uint32_t timeStamp);
 
 private:
@@ -62,12 +52,6 @@ private:
     uint32_t m_outWidth;
     uint32_t m_outHeight;
     uint32_t m_outFrameRate;
-
-#ifdef ENABLE_MSDK
-    boost::shared_ptr<mfxFrameAllocator> m_allocator;
-    std::vector<boost::shared_ptr<owt_base::MsdkFrame>> m_framePool;
-    boost::shared_ptr<owt_base::MsdkFrame> m_activeMsdkFrame;
-#endif
 
     boost::scoped_ptr<I420BufferManager> m_bufferManager;
     rtc::scoped_refptr<webrtc::I420Buffer> m_activeI420Buffer;

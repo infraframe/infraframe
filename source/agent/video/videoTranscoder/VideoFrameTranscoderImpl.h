@@ -23,11 +23,6 @@
 #include <FrameAnalyzer.h>
 #endif
 
-#ifdef ENABLE_MSDK
-#include <MsdkFrameDecoder.h>
-#include <MsdkFrameEncoder.h>
-#endif
-
 #ifdef ENABLE_SVT_HEVC_ENCODER
 #include <SVTHEVCEncoder.h>
 #endif
@@ -141,11 +136,6 @@ inline bool VideoFrameTranscoderImpl::setInput(int input, owt_base::FrameFormat 
 
     boost::shared_ptr<owt_base::VideoFrameDecoder> decoder;
 
-#ifdef ENABLE_MSDK
-    if (!decoder && owt_base::MsdkFrameDecoder::supportFormat(format))
-        decoder.reset(new owt_base::MsdkFrameDecoder());
-#endif
-
     if (!decoder && owt_base::VCMFrameDecoder::supportFormat(format))
         decoder.reset(new owt_base::VCMFrameDecoder(format));
 
@@ -207,12 +197,6 @@ inline bool VideoFrameTranscoderImpl::addOutput(int output,
 #endif
     boost::upgrade_lock<boost::shared_mutex> lock(m_outputMutex);
     int32_t streamId = -1;
-
-#ifdef ENABLE_MSDK
-    if (!encoder && owt_base::MsdkFrameEncoder::supportFormat(format)) {
-        encoder.reset(new owt_base::MsdkFrameEncoder(format, profile, false));
-    }
-#endif
 
 #if ENABLE_SVT_HEVC_ENCODER
     if (!encoder && format == owt_base::FRAME_FORMAT_H265)

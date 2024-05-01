@@ -52,14 +52,6 @@ VideoMixer::VideoMixer(const VideoMixerConfig& config)
         bgColor = DEFAULT_VIDEO_BG_COLOR;
     }
 
-#ifdef ENABLE_MSDK
-    MsdkBase* msdkBase = MsdkBase::get();
-    if (msdkBase != NULL) {
-        msdkBase->setConfigHevcEncoderGaccPlugin(config.useGacc);
-        msdkBase->setConfigMFETimeout(config.MFE_timeout);
-    }
-#endif
-
     ELOG_INFO("Init maxInput(%u), rootSize(%u, %u), bgColor(%u, %u, %u)", m_maxInputCount, rootSize.width, rootSize.height, bgColor.y, bgColor.cb, bgColor.cr);
 
     m_frameMixer.reset(new VideoFrameMixerImpl(m_maxInputCount, rootSize, bgColor, true, config.crop));

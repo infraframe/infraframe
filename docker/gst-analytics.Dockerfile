@@ -54,18 +54,6 @@ RUN  git clone ${X264_REPO} && \
     make install DESTDIR="/home/build" && \
     make install
 
-# Build Intel(R) Media SDK
-ARG MSDK_REPO=https://github.com/Intel-Media-SDK/MediaSDK/releases/download/intel-mediasdk-19.3.1/MediaStack.tar.gz
-RUN wget -O - ${MSDK_REPO} | tar xz && \
-    cd MediaStack && \
-    \
-    cp -r opt/ /home/build && \
-    cp -r etc/ /home/build && \
-    \
-    cp -a opt/. /opt/ && \
-    cp -a etc/. /opt/ && \
-    ldconfig
-
 ENV PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/opt/intel/mediasdk/lib64/pkgconfig
 ENV LIBRARY_PATH=/opt/intel/mediasdk/lib64:/usr/lib:${LIBRARY_PATH}
 ENV LIBVA_DRIVERS_PATH=/opt/intel/mediasdk/lib64
@@ -310,7 +298,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     libxkbcommon-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# Uninstalled dependencies: opencv, opencv4, libmfx(waiting intelMSDK), wayland(low version), vdpau
+# Uninstalled dependencies: opencv, opencv4, libmfx, wayland(low version), vdpau
 
 ARG GST_PLUGIN_BAD_REPO=https://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-${GST_VERSION}.tar.xz
 RUN wget ${GST_PLUGIN_BAD_REPO} -O build/src/gst-plugins-bad-${GST_VERSION}.tar.xz

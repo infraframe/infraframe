@@ -4,10 +4,6 @@
 
 #include "VideoFrameWriter.h"
 
-#ifdef ENABLE_MSDK
-#include "MsdkFrame.h"
-#endif
-
 using namespace webrtc;
 
 namespace owt_base {
@@ -97,23 +93,6 @@ void VideoFrameWriter::write(const Frame& frame)
 
         write(inputBuffer);
     } break;
-
-#ifdef ENABLE_MSDK
-    case FRAME_FORMAT_MSDK: {
-        MsdkFrameHolder* holder = (MsdkFrameHolder*)frame.payload;
-        boost::shared_ptr<MsdkFrame> msdkFrame = holder->frame;
-        rtc::scoped_refptr<webrtc::I420Buffer> inputBuffer;
-
-        if (!m_bufferManager)
-            m_bufferManager.reset(new I420BufferManager(1));
-
-        inputBuffer = m_bufferManager->getFreeBuffer(msdkFrame->getVideoWidth(), msdkFrame->getVideoHeight());
-
-        msdkFrame->convertTo(inputBuffer);
-
-        write(inputBuffer);
-    } break;
-#endif
 
     default:
         assert(false);

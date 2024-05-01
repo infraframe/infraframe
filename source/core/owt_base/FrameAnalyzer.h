@@ -16,8 +16,6 @@
 #include "MediaFramePipeline.h"
 #include <JobTimer.h>
 
-// TODO: enable MSDK for analyzer
-
 #include "I420BufferManager.h"
 
 #include "AnalyticsPlugin.h"

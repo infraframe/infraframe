@@ -11,10 +11,6 @@
 
 #include "MediaUtilities.h"
 
-#ifdef ENABLE_MSDK
-#include "MsdkFrame.h"
-#endif
-
 using namespace webrtc;
 
 namespace owt_base {
@@ -348,23 +344,7 @@ boost::shared_ptr<webrtc::VideoFrame> VCMFrameEncoder::frameConvert(const Frame&
         dstFrame.reset(new VideoFrame(rawBuffer, inputFrame->timestamp(), 0, webrtc::kVideoRotation_0));
         break;
     }
-#ifdef ENABLE_MSDK
-    case FRAME_FORMAT_MSDK: {
-        if (m_encodeFormat == FRAME_FORMAT_UNKNOWN)
-            return NULL;
 
-        MsdkFrameHolder* holder = (MsdkFrameHolder*)frame.payload;
-        boost::shared_ptr<MsdkFrame> msdkFrame = holder->frame;
-
-        if (!m_converter->convert(msdkFrame.get(), rawBuffer.get())) {
-            ELOG_ERROR_T("frameConverter failed");
-            return NULL;
-        }
-
-        dstFrame.reset(new VideoFrame(rawBuffer, frame.timeStamp, 0, webrtc::kVideoRotation_0));
-        break;
-    }
-#endif
     default:
         assert(false);
         return NULL;

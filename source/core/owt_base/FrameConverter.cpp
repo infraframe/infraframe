@@ -12,103 +12,14 @@ namespace owt_base {
 
 DEFINE_LOGGER(FrameConverter, "owt.FrameConverter");
 
-FrameConverter::FrameConverter(bool useMsdkVpp)
+FrameConverter::FrameConverter()
 {
     m_bufferManager.reset(new I420BufferManager(2));
-
-#ifdef ENABLE_MSDK
-    if (useMsdkVpp)
-        m_scaler.reset(new MsdkScaler());
-#endif
 }
 
 FrameConverter::~FrameConverter()
 {
 }
-
-#ifdef ENABLE_MSDK
-bool FrameConverter::convert(MsdkFrame* srcMsdkFrame, webrtc::I420Buffer* dstI420Buffer)
-{
-    if (srcMsdkFrame->getVideoWidth() == (uint32_t)dstI420Buffer->width()
-        && srcMsdkFrame->getVideoHeight() == (uint32_t)dstI420Buffer->height()) {
-        if (!srcMsdkFrame->convertTo(dstI420Buffer)) {
-            ELOG_ERROR("Fail to convert msdkFrame to i420Buffer");
-            return false;
-        }
-    } else { // scale
-        rtc::scoped_refptr<webrtc::I420Buffer> i420Buffer = m_bufferManager->getFreeBuffer(srcMsdkFrame->getVideoWidth(), srcMsdkFrame->getVideoHeight());
-        if (!i420Buffer) {
-            ELOG_ERROR("No valid i420Buffer");
-            return false;
-        }
-
-        if (!srcMsdkFrame->convertTo(i420Buffer)) {
-            ELOG_ERROR("Fail to convert msdkFrame to i420Buffer");
-            return false;
-        }
-
-        if (!convert(i420Buffer, dstI420Buffer)) {
-            ELOG_ERROR("Fail to convert i420Buffer to i420Buffer");
-            return false;
-        }
-    }
-
-    return true;
-}
-
-bool FrameConverter::convert(MsdkFrame* srcMsdkFrame, MsdkFrame* dstMsdkFrame)
-{
-    if (m_scaler)
-        return m_scaler->convert(srcMsdkFrame, dstMsdkFrame);
-    else {
-        rtc::scoped_refptr<webrtc::I420Buffer> i420Buffer = m_bufferManager->getFreeBuffer(srcMsdkFrame->getVideoWidth(), srcMsdkFrame->getVideoHeight());
-        if (!i420Buffer) {
-            ELOG_ERROR("No valid i420Buffer");
-            return false;
-        }
-
-        if (!srcMsdkFrame->convertTo(i420Buffer)) {
-            ELOG_ERROR("Fail to convert msdkFrame to i420Buffer");
-            return false;
-        }
-
-        if (!convert(i420Buffer, dstMsdkFrame)) {
-            ELOG_ERROR("Fail to convert i420Buffer to msdkFrame");
-            return false;
-        }
-
-        return true;
-    }
-}
-
-bool FrameConverter::convert(webrtc::VideoFrameBuffer* srcBuffer, MsdkFrame* dstMsdkFrame)
-{
-    if ((uint32_t)srcBuffer->width() == dstMsdkFrame->getVideoWidth() && (uint32_t)srcBuffer->height() == dstMsdkFrame->getVideoHeight()) {
-        if (!dstMsdkFrame->convertFrom(srcBuffer)) {
-            ELOG_ERROR("Fail to convert i420Buffer to msdkFrame");
-            return false;
-        }
-    } else { // scale
-        rtc::scoped_refptr<webrtc::I420Buffer> i420Buffer = m_bufferManager->getFreeBuffer(dstMsdkFrame->getVideoWidth(), dstMsdkFrame->getVideoHeight());
-        if (!i420Buffer) {
-            ELOG_ERROR("No valid i420Buffer");
-            return false;
-        }
-
-        if (!convert(srcBuffer, i420Buffer)) {
-            ELOG_ERROR("Fail to convert i420Buffer to i420Buffer");
-            return false;
-        }
-
-        if (!dstMsdkFrame->convertFrom(i420Buffer)) {
-            ELOG_ERROR("Fail to convert i420Buffer to msdkFrame");
-            return false;
-        }
-    }
-
-    return true;
-}
-#endif
 
 bool FrameConverter::convert(webrtc::VideoFrameBuffer* srcBuffer, webrtc::I420Buffer* dstI420Buffer)
 {

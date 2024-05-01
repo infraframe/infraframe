@@ -127,7 +127,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if ${HARDWARE}; then
-  echo "Initializing with hardware msdk"
+  echo "Initializing with hardware"
   init_hardware
   init_auth
 else

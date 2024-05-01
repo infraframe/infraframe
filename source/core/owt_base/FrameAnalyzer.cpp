@@ -40,7 +40,7 @@ bool FrameAnalyzer::init(FrameFormat format, const uint32_t width, const uint32_
 {
     ELOG_DEBUG_T("format(%s), size(%dx%d), frameRate(%d)", getFormatStr(format), width, height, frameRate);
 
-    if (format != FRAME_FORMAT_MSDK && format != FRAME_FORMAT_I420) {
+    if (format != FRAME_FORMAT_I420) {
         ELOG_ERROR_T("Invalid format(%d)", format);
         return false;
     }

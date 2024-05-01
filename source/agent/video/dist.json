@@ -61,14 +61,6 @@
         "name": "videoTranscoder-sw"
       },
       {
-        "folder": "videoMixer/videoMixer_msdk",
-        "name": "videoMixer-msdk"
-      },
-      {
-        "folder": "videoTranscoder/videoTranscoder_msdk",
-        "name": "videoTranscoder-msdk"
-      },
-      {
         "folder": "../addons/mediaFrameMulticaster",
         "name": "mediaFrameMulticaster"
       },

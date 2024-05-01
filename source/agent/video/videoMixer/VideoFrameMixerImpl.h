@@ -19,12 +19,6 @@
 
 #include <FFmpegFrameDecoder.h>
 
-#ifdef ENABLE_MSDK
-#include "MsdkVideoCompositor.h"
-#include <MsdkFrameDecoder.h>
-#include <MsdkFrameEncoder.h>
-#endif
-
 #ifdef ENABLE_SVT_HEVC_ENCODER
 #include <SVTHEVCEncoder.h>
 #endif
@@ -109,11 +103,6 @@ private:
 VideoFrameMixerImpl::VideoFrameMixerImpl(uint32_t maxInput, owt_base::VideoSize rootSize, owt_base::YUVColor bgColor, bool useSimulcast, bool crop)
     : m_useSimulcast(useSimulcast)
 {
-#ifdef ENABLE_MSDK
-    if (!m_compositor)
-        m_compositor.reset(new MsdkVideoCompositor(maxInput, rootSize, bgColor, crop));
-#endif
-
     if (!m_compositor)
         m_compositor.reset(new SoftVideoCompositor(maxInput, rootSize, bgColor, crop));
 }
@@ -152,11 +141,6 @@ inline bool VideoFrameMixerImpl::addInput(int input, owt_base::FrameFormat forma
         return false;
 
     boost::shared_ptr<owt_base::VideoFrameDecoder> decoder;
-
-#ifdef ENABLE_MSDK
-    if (!decoder && owt_base::MsdkFrameDecoder::supportFormat(format))
-        decoder.reset(new owt_base::MsdkFrameDecoder());
-#endif
 
     if (!decoder && owt_base::VCMFrameDecoder::supportFormat(format))
         decoder.reset(new owt_base::VCMFrameDecoder(format));
@@ -255,10 +239,6 @@ inline bool VideoFrameMixerImpl::addOutput(int output,
         if (streamId < 0)
             return false;
     } else { // Never found a reusable encoder.
-#ifdef ENABLE_MSDK
-        if (!encoder && owt_base::MsdkFrameEncoder::supportFormat(format))
-            encoder.reset(new owt_base::MsdkFrameEncoder(format, profile, m_useSimulcast));
-#endif
 
 #if ENABLE_SVT_HEVC_ENCODER
         if (!encoder && format == owt_base::FRAME_FORMAT_H265)

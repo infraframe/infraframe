@@ -14,37 +14,11 @@
       "sip"
     ]
   },
-  "mcu-msdk": {
-    "include": [
-      "video-mixer-msdk",
-      "video-transcoder-msdk",
-      "internal-io",
-      "logger",
-      "media-frame-multicaster",
-      "audio",
-      "audio-ranker",
-      "webrtc",
-      "avstream",
-      "sip"
-    ]
-  },
   "mcu-all": {
-    "include": [
-      "mcu",
-      "video-analyzer-sw",
-      "gst-pipeline",
-      "video-mixer-msdk",
-      "video-transcoder-msdk"
-    ]
+    "include": ["mcu", "video-analyzer-sw", "gst-pipeline"]
   },
   "all": {
-    "include": [
-      "mcu",
-      "video-analyzer-sw",
-      "gst-pipeline",
-      "video-mixer-msdk",
-      "video-transcoder-msdk"
-    ]
+    "include": ["mcu", "video-analyzer-sw", "gst-pipeline"]
   },
   "webrtc": {
     "include": ["webrtc-conn", "webrtc-frame"]
@@ -63,14 +37,6 @@
   "video-analyzer-sw": {
     "path": "source/agent/video/videoTranscoder/videoAnalyzer_sw",
     "gyp": "binding.sw.gyp"
-  },
-  "video-mixer-msdk": {
-    "path": "source/agent/video/videoMixer/videoMixer_msdk",
-    "gyp": "binding.msdk.gyp"
-  },
-  "video-transcoder-msdk": {
-    "path": "source/agent/video/videoTranscoder/videoTranscoder_msdk",
-    "gyp": "binding.msdk.gyp"
   },
   "gst-pipeline": {
     "path": "source/agent/analytics/videoGstPipeline",

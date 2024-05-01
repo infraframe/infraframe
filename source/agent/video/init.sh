@@ -21,14 +21,6 @@ usage() {
   echo
 }
 
-install_config() {
-  # install mediaproess config
-  [[ -s ${this}/.msdk_log_config.ini ]] || return
-  echo -e "\x1b[32mInitializing Intel Media Server Studio configuration for video agent...\x1b[0m"
-  [[ -s /tmp/msdk_log_config.ini ]] && rm -f /tmp/msdk_log_config.ini
-  ln -sf ${this}/.msdk_log_config.ini /tmp/msdk_log_config.ini
-}
-
 ENABLE_HARDWARE=false
 
 shopt -s extglob
@@ -46,9 +38,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if ${ENABLE_HARDWARE}; then
-  install_config
   echo -e "\x1b[36mHardware acceleration enabled\x1b[0m"
-  sed -i 's/^hardwareAccelerated = false/hardwareAccelerated = true/' ${this}/agent.toml
 else
   echo -e "\x1b[36mHardware acceleration disbled\x1b[0m"
   sed -i 's/^hardwareAccelerated = true/hardwareAccelerated = false/' ${this}/agent.toml

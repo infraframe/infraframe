@@ -42,14 +42,6 @@ VideoTranscoder::VideoTranscoder(const VideoTranscoderConfig& config)
     for (size_t i = 0; i < m_maxInputCount; ++i)
         m_freeInputIndexes.push_back(true);
 
-#ifdef ENABLE_MSDK
-    MsdkBase* msdkBase = MsdkBase::get();
-    if (msdkBase != NULL) {
-        msdkBase->setConfigHevcEncoderGaccPlugin(config.useGacc);
-        msdkBase->setConfigMFETimeout(config.MFE_timeout);
-    }
-#endif
-
     ELOG_INFO("Init");
 
     m_frameTranscoder.reset(new VideoFrameTranscoderImpl());

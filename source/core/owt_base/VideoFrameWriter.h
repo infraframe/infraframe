@@ -14,10 +14,6 @@
 
 #include "MediaFramePipeline.h"
 
-#ifdef ENABLE_MSDK
-#include "I420BufferManager.h"
-#endif
-
 namespace owt_base {
 
 class VideoFrameWriter {
@@ -41,10 +37,6 @@ private:
 
     int32_t m_width;
     int32_t m_height;
-
-#ifdef ENABLE_MSDK
-    boost::scoped_ptr<I420BufferManager> m_bufferManager;
-#endif
 };
 
 }
