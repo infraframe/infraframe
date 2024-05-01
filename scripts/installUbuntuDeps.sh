@@ -3,8 +3,8 @@
 install_apt_deps() {
     ${SUDO} apt-get update -y
     ${SUDO} apt-get install git make gcc g++ libglib2.0-dev docbook2x pkg-config -y
-    ${SUDO} apt-get install libboost-regex-dev libboost-thread-dev libboost-system-dev liblog4cxx-dev -y
-    ${SUDO} apt-get install openjdk-8-jre curl libboost-test-dev nasm yasm gyp libx11-dev libkrb5-dev intel-gpu-tools -y
+    ${SUDO} apt-get install liblog4cxx-dev -y
+    ${SUDO} apt-get install openjdk-8-jre curl nasm yasm gyp libx11-dev libkrb5-dev -y
     ${SUDO} apt-get install m4 autoconf libtool automake cmake libfreetype6-dev libgstreamer-plugins-base1.0-dev -y
     if [ "$GITHUB_ACTIONS" != "true" ]; then
         ${SUDO} apt-get install rabbitmq-server mongodb -y
