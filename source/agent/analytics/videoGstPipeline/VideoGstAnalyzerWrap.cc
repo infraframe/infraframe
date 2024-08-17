@@ -69,8 +69,8 @@ void VideoGstAnalyzerWrap::createPipeline(const FunctionCallbackInfo<Value>& arg
 
     Nan::Utf8String param1(Nan::To<v8::String>(args[1]).ToLocalChecked());
     std::string resolution = std::string(*param1);
-    owt_base::VideoSize vSize { 0, 0 };
-    owt_base::VideoResolutionHelper::getVideoSize(resolution, vSize);
+    infraframe::VideoSize vSize { 0, 0 };
+    infraframe::VideoResolutionHelper::getVideoSize(resolution, vSize);
     unsigned int width = vSize.width;
     unsigned int height = vSize.height;
 
@@ -112,7 +112,7 @@ void VideoGstAnalyzerWrap::linkInput(const FunctionCallbackInfo<Value>& args)
 
     FrameSource* param8 = ObjectWrap::Unwrap<FrameSource>(
         Nan::To<v8::Object>(args[0]).ToLocalChecked());
-    owt_base::FrameSource* src = param8->src;
+    infraframe::FrameSource* src = param8->src;
 
     bool result = me->linkInput(src);
     args.GetReturnValue().Set(Number::New(isolate, result));
@@ -127,7 +127,7 @@ void VideoGstAnalyzerWrap::removeOutput(const FunctionCallbackInfo<Value>& args)
 
     FrameDestination* param8 = ObjectWrap::Unwrap<FrameDestination>(
         Nan::To<v8::Object>(args[0]).ToLocalChecked());
-    owt_base::FrameDestination* out = param8->dest;
+    infraframe::FrameDestination* out = param8->dest;
 
     me->removeOutput(out);
 }
@@ -141,7 +141,7 @@ void VideoGstAnalyzerWrap::addOutput(const FunctionCallbackInfo<Value>& args)
 
     FrameDestination* param8 = ObjectWrap::Unwrap<FrameDestination>(
         Nan::To<v8::Object>(args[0]).ToLocalChecked());
-    owt_base::FrameDestination* out = param8->dest;
+    infraframe::FrameDestination* out = param8->dest;
 
     bool result = me->addOutput(out);
     args.GetReturnValue().Set(Number::New(isolate, result));

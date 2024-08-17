@@ -9,7 +9,7 @@
 #include <thread>
 
 //using namespace net;
-using namespace owt_base;
+using namespace infraframe;
 using v8::Function;
 using v8::FunctionTemplate;
 using v8::Local;

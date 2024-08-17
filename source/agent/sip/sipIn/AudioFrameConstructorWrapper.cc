@@ -16,91 +16,97 @@ Persistent<Function> AudioFrameConstructor::constructor;
 AudioFrameConstructor::AudioFrameConstructor() {};
 AudioFrameConstructor::~AudioFrameConstructor() {};
 
-void AudioFrameConstructor::Init(v8::Local<v8::Object> exports) {
-  Isolate* isolate = Isolate::GetCurrent();
-  // Prepare constructor template
-  Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate, New);
-  tpl->SetClassName(String::NewFromUtf8(isolate, "AudioFrameConstructor"));
-  tpl->InstanceTemplate()->SetInternalFieldCount(1);
-  // Prototype
-  NODE_SET_PROTOTYPE_METHOD(tpl, "close", close);
+void AudioFrameConstructor::Init(v8::Local<v8::Object> exports)
+{
+    Isolate* isolate = Isolate::GetCurrent();
+    // Prepare constructor template
+    Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate, New);
+    tpl->SetClassName(String::NewFromUtf8(isolate, "AudioFrameConstructor"));
+    tpl->InstanceTemplate()->SetInternalFieldCount(1);
+    // Prototype
+    NODE_SET_PROTOTYPE_METHOD(tpl, "close", close);
 
-  NODE_SET_PROTOTYPE_METHOD(tpl, "bindTransport", bindTransport);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "unbindTransport", unbindTransport);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "addDestination", addDestination);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "removeDestination", removeDestination);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "bindTransport", bindTransport);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "unbindTransport", unbindTransport);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "addDestination", addDestination);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "removeDestination", removeDestination);
 
-  constructor.Reset(isolate, tpl->GetFunction());
-  exports->Set(String::NewFromUtf8(isolate, "AudioFrameConstructor"), tpl->GetFunction());
+    constructor.Reset(isolate, tpl->GetFunction());
+    exports->Set(String::NewFromUtf8(isolate, "AudioFrameConstructor"), tpl->GetFunction());
 }
 
-void AudioFrameConstructor::New(const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = Isolate::GetCurrent();
-  HandleScope scope(isolate);
+void AudioFrameConstructor::New(const FunctionCallbackInfo<Value>& args)
+{
+    Isolate* isolate = Isolate::GetCurrent();
+    HandleScope scope(isolate);
 
-  AudioFrameConstructor* obj = new AudioFrameConstructor();
-  obj->me = new owt_base::AudioFrameConstructor();
-  obj->src = obj->me;
-  obj->msink = obj->me;
+    AudioFrameConstructor* obj = new AudioFrameConstructor();
+    obj->me = new infraframe::AudioFrameConstructor();
+    obj->src = obj->me;
+    obj->msink = obj->me;
 
-  obj->Wrap(args.This());
-  args.GetReturnValue().Set(args.This());
+    obj->Wrap(args.This());
+    args.GetReturnValue().Set(args.This());
 }
 
-void AudioFrameConstructor::close(const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = Isolate::GetCurrent();
-  HandleScope scope(isolate);
-  AudioFrameConstructor* obj = ObjectWrap::Unwrap<AudioFrameConstructor>(args.Holder());
-  owt_base::AudioFrameConstructor* me = obj->me;
-  delete me;
+void AudioFrameConstructor::close(const FunctionCallbackInfo<Value>& args)
+{
+    Isolate* isolate = Isolate::GetCurrent();
+    HandleScope scope(isolate);
+    AudioFrameConstructor* obj = ObjectWrap::Unwrap<AudioFrameConstructor>(args.Holder());
+    infraframe::AudioFrameConstructor* me = obj->me;
+    delete me;
 }
 
-void AudioFrameConstructor::bindTransport(const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = Isolate::GetCurrent();
-  HandleScope scope(isolate);
+void AudioFrameConstructor::bindTransport(const FunctionCallbackInfo<Value>& args)
+{
+    Isolate* isolate = Isolate::GetCurrent();
+    HandleScope scope(isolate);
 
-  AudioFrameConstructor* obj = ObjectWrap::Unwrap<AudioFrameConstructor>(args.Holder());
-  owt_base::AudioFrameConstructor* me = obj->me;
+    AudioFrameConstructor* obj = ObjectWrap::Unwrap<AudioFrameConstructor>(args.Holder());
+    infraframe::AudioFrameConstructor* me = obj->me;
 
-  SipCallConnection* param = ObjectWrap::Unwrap<SipCallConnection>(args[0]->ToObject());
-  sip_gateway::SipCallConnection* transport = param->me;
+    SipCallConnection* param = ObjectWrap::Unwrap<SipCallConnection>(args[0]->ToObject());
+    sip_gateway::SipCallConnection* transport = param->me;
 
-  me->bindTransport(transport, transport);
+    me->bindTransport(transport, transport);
 }
 
-void AudioFrameConstructor::unbindTransport(const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = Isolate::GetCurrent();
-  HandleScope scope(isolate);
+void AudioFrameConstructor::unbindTransport(const FunctionCallbackInfo<Value>& args)
+{
+    Isolate* isolate = Isolate::GetCurrent();
+    HandleScope scope(isolate);
 
-  AudioFrameConstructor* obj = ObjectWrap::Unwrap<AudioFrameConstructor>(args.Holder());
-  owt_base::AudioFrameConstructor* me = obj->me;
+    AudioFrameConstructor* obj = ObjectWrap::Unwrap<AudioFrameConstructor>(args.Holder());
+    infraframe::AudioFrameConstructor* me = obj->me;
 
-  me->unbindTransport();
+    me->unbindTransport();
 }
 
-void AudioFrameConstructor::addDestination(const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = Isolate::GetCurrent();
-  HandleScope scope(isolate);
+void AudioFrameConstructor::addDestination(const FunctionCallbackInfo<Value>& args)
+{
+    Isolate* isolate = Isolate::GetCurrent();
+    HandleScope scope(isolate);
 
-  AudioFrameConstructor* obj = ObjectWrap::Unwrap<AudioFrameConstructor>(args.Holder());
-  owt_base::AudioFrameConstructor* me = obj->me;
+    AudioFrameConstructor* obj = ObjectWrap::Unwrap<AudioFrameConstructor>(args.Holder());
+    infraframe::AudioFrameConstructor* me = obj->me;
 
-  FrameDestination* param = ObjectWrap::Unwrap<FrameDestination>(args[0]->ToObject());
-  owt_base::FrameDestination* dest = param->dest;
+    FrameDestination* param = ObjectWrap::Unwrap<FrameDestination>(args[0]->ToObject());
+    infraframe::FrameDestination* dest = param->dest;
 
-  me->addAudioDestination(dest);
+    me->addAudioDestination(dest);
 }
 
-void AudioFrameConstructor::removeDestination(const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = Isolate::GetCurrent();
-  HandleScope scope(isolate);
+void AudioFrameConstructor::removeDestination(const FunctionCallbackInfo<Value>& args)
+{
+    Isolate* isolate = Isolate::GetCurrent();
+    HandleScope scope(isolate);
 
-  AudioFrameConstructor* obj = ObjectWrap::Unwrap<AudioFrameConstructor>(args.Holder());
-  owt_base::AudioFrameConstructor* me = obj->me;
+    AudioFrameConstructor* obj = ObjectWrap::Unwrap<AudioFrameConstructor>(args.Holder());
+    infraframe::AudioFrameConstructor* me = obj->me;
 
-  FrameDestination* param = ObjectWrap::Unwrap<FrameDestination>(args[0]->ToObject());
-  owt_base::FrameDestination* dest = param->dest;
+    FrameDestination* param = ObjectWrap::Unwrap<FrameDestination>(args[0]->ToObject());
+    infraframe::FrameDestination* dest = param->dest;
 
-  me->removeAudioDestination(dest);
+    me->removeAudioDestination(dest);
 }
-

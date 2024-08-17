@@ -37,7 +37,7 @@ QuicTransportStream::QuicTransportStream(owt::quic::WebTransportStreamInterface*
     , m_buffer(nullptr)
     , m_bufferSize(0)
     , m_trackKind("unknown")
-    , m_frameFormat(owt_base::FRAME_FORMAT_UNKNOWN)
+    , m_frameFormat(infraframe::FRAME_FORMAT_UNKNOWN)
     , m_readingFrameSize(false)
     , m_frameSizeOffset(0)
     , m_frameSizeArray(new uint8_t[frameHeaderSize])
@@ -97,21 +97,21 @@ void QuicTransportStream::RemovedDestination()
     // When all destinations are removed, set m_hasSink to false.
 }
 
-void QuicTransportStream::addAudioDestination(owt_base::FrameDestination* dest)
+void QuicTransportStream::addAudioDestination(infraframe::FrameDestination* dest)
 {
-    owt_base::FrameSource::addAudioDestination(dest);
+    infraframe::FrameSource::addAudioDestination(dest);
     AddedDestination();
 }
 
-void QuicTransportStream::addVideoDestination(owt_base::FrameDestination* dest)
+void QuicTransportStream::addVideoDestination(infraframe::FrameDestination* dest)
 {
-    owt_base::FrameSource::addVideoDestination(dest);
+    infraframe::FrameSource::addVideoDestination(dest);
     AddedDestination();
 };
 
-void QuicTransportStream::addDataDestination(owt_base::FrameDestination* dest)
+void QuicTransportStream::addDataDestination(infraframe::FrameDestination* dest)
 {
-    owt_base::FrameSource::addDataDestination(dest);
+    infraframe::FrameSource::addDataDestination(dest);
     AddedDestination();
 };
 
@@ -179,7 +179,7 @@ NAN_METHOD(QuicTransportStream::addDestination)
     if (info.Length() == 3) {
         isNanDestination = Nan::To<bool>(info[2]).FromJust();
     }
-    owt_base::FrameDestination* dest(nullptr);
+    infraframe::FrameDestination* dest(nullptr);
     if (isNanDestination) {
         NanFrameNode* param = Nan::ObjectWrap::Unwrap<NanFrameNode>(
             Nan::To<v8::Object>(info[1]).ToLocalChecked());
@@ -414,9 +414,9 @@ void QuicTransportStream::SignalOnData()
             }
             // Complete frame.
             if (m_receivedFrameOffset == m_currentFrameSize) {
-                owt_base::Frame frame;
+                infraframe::Frame frame;
                 if (m_trackKind == "audio") {
-                    frame.format = owt_base::FRAME_FORMAT_OPUS;
+                    frame.format = infraframe::FRAME_FORMAT_OPUS;
                     frame.timeStamp = m_audioTimeStamp;
                     // TODO: Fill a correct timestamp and check overflow.
                     m_audioTimeStamp += 10 * 1000;
@@ -425,7 +425,7 @@ void QuicTransportStream::SignalOnData()
                     frame.additionalInfo.audio.sampleRate = 48000;
                     frame.additionalInfo.audio.channels = 2;
                 } else if (m_trackKind == "video") {
-                    frame.format = owt_base::FRAME_FORMAT_H264;
+                    frame.format = infraframe::FRAME_FORMAT_H264;
                     // Transport layer doesn't know a frame's type. Video agent is able to parse the type of a frame from bistream. However, video agent doesn't feed the frame to decoder when a key frame is requested.
                     frame.additionalInfo.video.isKeyFrame = "key";
                 } else {
@@ -441,8 +441,8 @@ void QuicTransportStream::SignalOnData()
             if (readableBytes > m_bufferSize) {
                 ReallocateBuffer(readableBytes);
             }
-            owt_base::Frame frame;
-            frame.format = owt_base::FRAME_FORMAT_DATA;
+            infraframe::Frame frame;
+            frame.format = infraframe::FRAME_FORMAT_DATA;
             frame.length = readableBytes;
             frame.payload = m_buffer;
             m_stream->Read(frame.payload, readableBytes);
@@ -463,12 +463,12 @@ void QuicTransportStream::ReallocateBuffer(size_t size)
     }
 }
 
-void QuicTransportStream::onFeedback(const owt_base::FeedbackMsg&)
+void QuicTransportStream::onFeedback(const infraframe::FeedbackMsg&)
 {
     // No feedbacks righ now.
 }
 
-void QuicTransportStream::onFrame(const owt_base::Frame& frame)
+void QuicTransportStream::onFrame(const infraframe::Frame& frame)
 {
     size_t wrote = m_stream->Write(frame.payload, frame.length);
     if (wrote != frame.length) {

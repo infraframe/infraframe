@@ -18,7 +18,7 @@
 #include "QuicTransportStream.h"
 #include "owt/quic/web_transport_session_interface.h"
 
-class QuicTransportConnection : public owt_base::FrameDestination, public NanFrameNode, public owt::quic::WebTransportSessionInterface::Visitor, QuicTransportStream::Visitor {
+class QuicTransportConnection : public infraframe::FrameDestination, public NanFrameNode, public owt::quic::WebTransportSessionInterface::Visitor, QuicTransportStream::Visitor {
     DECLARE_LOGGER();
 
 public:
@@ -43,13 +43,13 @@ public:
 
     static Nan::Persistent<v8::Function> s_constructor;
 
-    // Overrides owt_base::FrameDestination.
-    void onFrame(const owt_base::Frame&) override;
+    // Overrides infraframe::FrameDestination.
+    void onFrame(const infraframe::Frame&) override;
     void onVideoSourceChanged() override;
 
     // Overrides NanFrameNode.
-    owt_base::FrameSource* FrameSource() override { return nullptr; }
-    owt_base::FrameDestination* FrameDestination() override { return this; }
+    infraframe::FrameSource* FrameSource() override { return nullptr; }
+    infraframe::FrameDestination* FrameDestination() override { return this; }
 
 protected:
     // Overrides owt::quic::WebTransportSessionInterface::Visitor.

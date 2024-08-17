@@ -75,7 +75,7 @@ void MediaFrameMulticaster::New(const FunctionCallbackInfo<Value>& args)
     HandleScope scope(isolate);
 
     MediaFrameMulticaster* obj = new MediaFrameMulticaster();
-    obj->me = new owt_base::MediaFrameMulticaster();
+    obj->me = new infraframe::MediaFrameMulticaster();
     obj->dest = obj->me;
 
     obj->Wrap(args.This());
@@ -87,7 +87,7 @@ void MediaFrameMulticaster::close(const FunctionCallbackInfo<Value>& args)
     Isolate* isolate = Isolate::GetCurrent();
     HandleScope scope(isolate);
     MediaFrameMulticaster* obj = ObjectWrap::Unwrap<MediaFrameMulticaster>(args.Holder());
-    owt_base::MediaFrameMulticaster* me = obj->me;
+    infraframe::MediaFrameMulticaster* me = obj->me;
     delete me;
 }
 
@@ -97,14 +97,14 @@ void MediaFrameMulticaster::addDestination(const FunctionCallbackInfo<Value>& ar
     HandleScope scope(isolate);
 
     MediaFrameMulticaster* obj = ObjectWrap::Unwrap<MediaFrameMulticaster>(args.Holder());
-    owt_base::MediaFrameMulticaster* me = obj->me;
+    infraframe::MediaFrameMulticaster* me = obj->me;
 
     Nan::Utf8String param0(Nan::To<v8::String>(args[0]).ToLocalChecked());
     std::string track = std::string(*param0);
 
     FrameDestination* param = ObjectWrap::Unwrap<FrameDestination>(
         Nan::To<v8::Object>(args[1]).ToLocalChecked());
-    owt_base::FrameDestination* dest = param->dest;
+    infraframe::FrameDestination* dest = param->dest;
 
     if (track == "audio") {
         me->addAudioDestination(dest);
@@ -119,14 +119,14 @@ void MediaFrameMulticaster::removeDestination(const FunctionCallbackInfo<Value>&
     HandleScope scope(isolate);
 
     MediaFrameMulticaster* obj = ObjectWrap::Unwrap<MediaFrameMulticaster>(args.Holder());
-    owt_base::MediaFrameMulticaster* me = obj->me;
+    infraframe::MediaFrameMulticaster* me = obj->me;
 
     Nan::Utf8String param0(Nan::To<v8::String>(args[0]).ToLocalChecked());
     std::string track = std::string(*param0);
 
     FrameDestination* param = ObjectWrap::Unwrap<FrameDestination>(
         Nan::To<v8::Object>(args[1]).ToLocalChecked());
-    owt_base::FrameDestination* dest = param->dest;
+    infraframe::FrameDestination* dest = param->dest;
 
     if (track == "audio") {
         me->removeAudioDestination(dest);

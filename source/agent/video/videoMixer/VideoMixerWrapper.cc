@@ -123,7 +123,7 @@ void VideoMixer::addInput(const v8::FunctionCallbackInfo<v8::Value>& args)
     std::string codec = getString(args[1]);
     FrameSource* param2 = ObjectWrap::Unwrap<FrameSource>(
         Nan::To<v8::Object>(args[2]).ToLocalChecked());
-    owt_base::FrameSource* src = param2->src;
+    infraframe::FrameSource* src = param2->src;
 
     // Set avatar data
     std::string avatarData = getString(args[3]);
@@ -175,20 +175,20 @@ void VideoMixer::addOutput(const v8::FunctionCallbackInfo<v8::Value>& args)
     unsigned int keyFrameIntervalSeconds = Nan::To<uint32_t>(args[5]).FromJust();
     FrameDestination* param6 = ObjectWrap::Unwrap<FrameDestination>(
         Nan::To<v8::Object>(args[6]).ToLocalChecked());
-    owt_base::FrameDestination* dest = param6->dest;
+    infraframe::FrameDestination* dest = param6->dest;
 
-    owt_base::VideoCodecProfile profile = owt_base::PROFILE_UNKNOWN;
+    infraframe::VideoCodecProfile profile = infraframe::PROFILE_UNKNOWN;
     if (codec.find("h264") != std::string::npos) {
         if (codec == "h264_cb") {
-            profile = owt_base::PROFILE_AVC_CONSTRAINED_BASELINE;
+            profile = infraframe::PROFILE_AVC_CONSTRAINED_BASELINE;
         } else if (codec == "h264_b") {
-            profile = owt_base::PROFILE_AVC_BASELINE;
+            profile = infraframe::PROFILE_AVC_BASELINE;
         } else if (codec == "h264_m") {
-            profile = owt_base::PROFILE_AVC_MAIN;
+            profile = infraframe::PROFILE_AVC_MAIN;
         } else if (codec == "h264_e") {
-            profile = owt_base::PROFILE_AVC_MAIN;
+            profile = infraframe::PROFILE_AVC_MAIN;
         } else if (codec == "h264_h") {
-            profile = owt_base::PROFILE_AVC_HIGH;
+            profile = infraframe::PROFILE_AVC_HIGH;
         }
         codec = "h264";
     }

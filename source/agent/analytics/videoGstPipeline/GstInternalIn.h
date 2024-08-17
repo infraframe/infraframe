@@ -12,14 +12,14 @@
 #include "MediaFramePipeline.h"
 #include "RawTransport.h"
 
-class GstInternalIn : public owt_base::FrameDestination {
+class GstInternalIn : public infraframe::FrameDestination {
     DECLARE_LOGGER();
 
 public:
     GstInternalIn(GstAppSrc* data, int framerate);
     virtual ~GstInternalIn();
 
-    void onFrame(const owt_base::Frame& frame);
+    void onFrame(const infraframe::Frame& frame);
     void setPushData(bool status);
 
 private:

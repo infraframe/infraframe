@@ -11,23 +11,23 @@
 #include <node_object_wrap.h>
 
 /*
- * Wrapper class of owt_base::VideoFramePacketizer
+ * Wrapper class of infraframe::VideoFramePacketizer
  */
 class VideoFramePacketizer : public FrameDestination {
- public:
-  static void Init(v8::Local<v8::Object> exports);
-  owt_base::VideoFramePacketizer* me;
+public:
+    static void Init(v8::Local<v8::Object> exports);
+    infraframe::VideoFramePacketizer* me;
 
- private:
-  VideoFramePacketizer();
-  ~VideoFramePacketizer();
-  static v8::Persistent<v8::Function> constructor;
+private:
+    VideoFramePacketizer();
+    ~VideoFramePacketizer();
+    static v8::Persistent<v8::Function> constructor;
 
-  static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void close(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void close(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  static void bindTransport(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void unbindTransport(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void bindTransport(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void unbindTransport(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
 #endif

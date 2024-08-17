@@ -4,7 +4,7 @@
 
 #include "IOService.h"
 
-namespace owt_base {
+namespace infraframe {
 
 static constexpr uint32_t kServiceNum = 4;
 static boost::mutex g_serviceMutex;
@@ -46,4 +46,4 @@ std::shared_ptr<IOService> getIOService()
 }
 
 }
-/* namespace owt_base */
+/* namespace infraframe */

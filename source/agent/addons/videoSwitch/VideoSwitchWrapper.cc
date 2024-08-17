@@ -36,16 +36,16 @@ NAN_MODULE_INIT(VideoSwitch::Init)
 NAN_METHOD(VideoSwitch::New)
 {
     if (info.IsConstructCall()) {
-        std::vector<owt_base::FrameSource*> sources;
+        std::vector<infraframe::FrameSource*> sources;
         for (int i = 0; i < info.Length(); i++) {
             FrameSource* param = node::ObjectWrap::Unwrap<FrameSource>(
                 info[i]->ToObject(Nan::GetCurrentContext()).ToLocalChecked());
-            owt_base::FrameSource* src = param->src;
+            infraframe::FrameSource* src = param->src;
             sources.push_back(src);
         }
 
         VideoSwitch* obj = new VideoSwitch();
-        obj->me.reset(new owt_base::VideoQualitySwitch(sources));
+        obj->me.reset(new infraframe::VideoQualitySwitch(sources));
         obj->src = obj->me.get();
 
         obj->Wrap(info.This());
@@ -78,7 +78,7 @@ NAN_METHOD(VideoSwitch::addDestination)
 
     FrameDestination* param = ObjectWrap::Unwrap<FrameDestination>(
         info[1]->ToObject(Nan::GetCurrentContext()).ToLocalChecked());
-    owt_base::FrameDestination* dest = param->dest;
+    infraframe::FrameDestination* dest = param->dest;
 
     if (track == "audio") {
         obj->me->addAudioDestination(dest);
@@ -96,7 +96,7 @@ NAN_METHOD(VideoSwitch::removeDestination)
 
     FrameDestination* param = ObjectWrap::Unwrap<FrameDestination>(
         info[1]->ToObject(Nan::GetCurrentContext()).ToLocalChecked());
-    owt_base::FrameDestination* dest = param->dest;
+    infraframe::FrameDestination* dest = param->dest;
 
     if (track == "audio") {
         obj->me->removeAudioDestination(dest);

@@ -10,7 +10,7 @@
 namespace mcu {
 
 using namespace webrtc;
-using namespace owt_base;
+using namespace infraframe;
 
 DEFINE_LOGGER(AcmEncoder, "mcu.media.AcmEncoder");
 
@@ -165,7 +165,7 @@ int32_t AcmEncoder::SendData(FrameType frame_type,
         return -1;
     }
 
-    owt_base::Frame frame;
+    infraframe::Frame frame;
     memset(&frame, 0, sizeof(frame));
     frame.format = m_format;
     frame.additionalInfo.audio.sampleRate = getAudioSampleRate(frame.format);

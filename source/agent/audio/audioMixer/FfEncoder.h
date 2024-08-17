@@ -26,7 +26,7 @@ extern "C" {
 }
 
 namespace mcu {
-using namespace owt_base;
+using namespace infraframe;
 using namespace webrtc;
 
 class FfEncoder : public AudioEncoder {

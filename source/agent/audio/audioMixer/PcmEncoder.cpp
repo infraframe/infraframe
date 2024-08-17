@@ -10,7 +10,7 @@
 namespace mcu {
 
 using namespace webrtc;
-using namespace owt_base;
+using namespace infraframe;
 
 DEFINE_LOGGER(PcmEncoder, "mcu.media.PcmEncoder");
 
@@ -68,9 +68,9 @@ bool PcmEncoder::addAudioFrame(const AudioFrame* audioFrame)
         audioFrame->samples_per_channel_,
         audioFrame->timestamp_);
 
-    owt_base::Frame frame;
+    infraframe::Frame frame;
     memset(&frame, 0, sizeof(frame));
-    frame.format = owt_base::FRAME_FORMAT_PCM_48000_2;
+    frame.format = infraframe::FRAME_FORMAT_PCM_48000_2;
     frame.payload = const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(audioFrame->data_));
     frame.length = audioFrame->samples_per_channel_ * audioFrame->num_channels_ * sizeof(int16_t);
     frame.additionalInfo.audio.nbSamples = audioFrame->samples_per_channel_;

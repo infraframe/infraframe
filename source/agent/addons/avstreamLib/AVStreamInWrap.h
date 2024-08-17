@@ -10,13 +10,13 @@
 #include <nan.h>
 
 /*
- * Wrapper class of owt_base::FrameSource
+ * Wrapper class of infraframe::FrameSource
  */
 class AVStreamInWrap : public NodeEventedObjectWrap {
 public:
     static void Init(v8::Local<v8::Object>);
     static void Init(v8::Local<v8::Object>, v8::Local<v8::Object>);
-    owt_base::FrameSource* me;
+    infraframe::FrameSource* me;
 
 private:
     AVStreamInWrap();

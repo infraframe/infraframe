@@ -15,7 +15,7 @@ void setPassphrase(const FunctionCallbackInfo<Value>& args)
 {
     String::Utf8Value param0(args[0]->ToString());
     std::string p = std::string(*param0);
-    owt_base::RawTransport<owt_base::Protocol::TCP>::setPassphrase(p);
+    infraframe::RawTransport<infraframe::Protocol::TCP>::setPassphrase(p);
 }
 
 void InitInternalConfig(v8::Local<v8::Object> exports)

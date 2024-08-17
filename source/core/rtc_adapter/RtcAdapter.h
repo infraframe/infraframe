@@ -16,18 +16,18 @@ public:
 
 class AdapterFrameListener {
 public:
-    virtual void onAdapterFrame(const owt_base::Frame& frame) = 0;
+    virtual void onAdapterFrame(const infraframe::Frame& frame) = 0;
 };
 
 class AdapterFeedbackListener {
 public:
-    virtual void onFeedback(const owt_base::FeedbackMsg& msg) = 0;
+    virtual void onFeedback(const infraframe::FeedbackMsg& msg) = 0;
 };
 
 struct AdapterStats {
     int width = 0;
     int height = 0;
-    owt_base::FrameFormat format = owt_base::FRAME_FORMAT_UNKNOWN;
+    infraframe::FrameFormat format = infraframe::FRAME_FORMAT_UNKNOWN;
 };
 
 class AdapterStatsListener {
@@ -49,7 +49,7 @@ public:
         uint32_t retransmit_bitrate_bps = 0;
         uint32_t estimated_bandwidth = 0;
     };
-    virtual void onFrame(const owt_base::Frame&) = 0;
+    virtual void onFrame(const infraframe::Frame&) = 0;
     virtual int onRtcpData(const char* data, int len) = 0;
     virtual uint32_t ssrc() = 0;
     virtual void reset() = 0;
@@ -63,7 +63,7 @@ public:
 
 class AudioSendAdapter {
 public:
-    virtual void onFrame(const owt_base::Frame&) = 0;
+    virtual void onFrame(const infraframe::Frame&) = 0;
     virtual int onRtcpData(const char* data, int len) = 0;
     virtual uint32_t ssrc() = 0;
 };

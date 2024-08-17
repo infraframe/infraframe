@@ -66,7 +66,7 @@ void VideoFramePacketizer::New(const FunctionCallbackInfo<Value>& args)
         : false;
 
     VideoFramePacketizer* obj = new VideoFramePacketizer();
-    owt_base::VideoFramePacketizer::Config config;
+    infraframe::VideoFramePacketizer::Config config;
     config.enableRed = supportRED;
     config.enableUlpfec = supportULPFEC;
     config.transportccExt = transportccExt;
@@ -80,14 +80,14 @@ void VideoFramePacketizer::New(const FunctionCallbackInfo<Value>& args)
     if (transportccExt > 0) {
         config.enableTransportcc = true;
         config.selfRequestKeyframe = false;
-        obj->me = new owt_base::VideoFramePacketizer(config);
+        obj->me = new infraframe::VideoFramePacketizer(config);
     } else if (selfRequestKeyframe) {
         config.enableTransportcc = false;
         config.selfRequestKeyframe = true;
-        obj->me = new owt_base::VideoFramePacketizer(config);
+        obj->me = new infraframe::VideoFramePacketizer(config);
     } else {
         config.enableTransportcc = false;
-        obj->me = new owt_base::VideoFramePacketizer(config);
+        obj->me = new infraframe::VideoFramePacketizer(config);
     }
     obj->dest = obj->me;
 
@@ -100,7 +100,7 @@ void VideoFramePacketizer::close(const FunctionCallbackInfo<Value>& args)
     Isolate* isolate = Isolate::GetCurrent();
     HandleScope scope(isolate);
     VideoFramePacketizer* obj = ObjectWrap::Unwrap<VideoFramePacketizer>(args.Holder());
-    owt_base::VideoFramePacketizer* me = obj->me;
+    infraframe::VideoFramePacketizer* me = obj->me;
     delete me;
 }
 
@@ -110,7 +110,7 @@ void VideoFramePacketizer::bindTransport(const FunctionCallbackInfo<Value>& args
     HandleScope scope(isolate);
 
     VideoFramePacketizer* obj = ObjectWrap::Unwrap<VideoFramePacketizer>(args.Holder());
-    owt_base::VideoFramePacketizer* me = obj->me;
+    infraframe::VideoFramePacketizer* me = obj->me;
 
     MediaFilter* param = Nan::ObjectWrap::Unwrap<MediaFilter>(Nan::To<v8::Object>(args[0]).ToLocalChecked());
     erizo::MediaSink* transport = param->msink;
@@ -124,7 +124,7 @@ void VideoFramePacketizer::unbindTransport(const FunctionCallbackInfo<Value>& ar
     HandleScope scope(isolate);
 
     VideoFramePacketizer* obj = ObjectWrap::Unwrap<VideoFramePacketizer>(args.Holder());
-    owt_base::VideoFramePacketizer* me = obj->me;
+    infraframe::VideoFramePacketizer* me = obj->me;
 
     me->unbindTransport();
 }
@@ -135,7 +135,7 @@ void VideoFramePacketizer::enable(const v8::FunctionCallbackInfo<v8::Value>& arg
     HandleScope scope(isolate);
 
     VideoFramePacketizer* obj = ObjectWrap::Unwrap<VideoFramePacketizer>(args.Holder());
-    owt_base::VideoFramePacketizer* me = obj->me;
+    infraframe::VideoFramePacketizer* me = obj->me;
 
     bool b = Nan::To<bool>(args[0]).FromMaybe(true);
     me->enable(b);
@@ -147,7 +147,7 @@ void VideoFramePacketizer::getSsrc(const v8::FunctionCallbackInfo<v8::Value>& ar
     HandleScope scope(isolate);
 
     VideoFramePacketizer* obj = ObjectWrap::Unwrap<VideoFramePacketizer>(args.Holder());
-    owt_base::VideoFramePacketizer* me = obj->me;
+    infraframe::VideoFramePacketizer* me = obj->me;
 
     uint32_t ssrc = me->getSsrc();
     args.GetReturnValue().Set(Number::New(isolate, ssrc));
@@ -159,7 +159,7 @@ void VideoFramePacketizer::getTotalBitrate(const v8::FunctionCallbackInfo<v8::Va
     HandleScope scope(isolate);
 
     VideoFramePacketizer* obj = ObjectWrap::Unwrap<VideoFramePacketizer>(args.Holder());
-    owt_base::VideoFramePacketizer* me = obj->me;
+    infraframe::VideoFramePacketizer* me = obj->me;
 
     uint32_t bitrate = me->getTotalBitrate();
     args.GetReturnValue().Set(Number::New(isolate, bitrate));
@@ -171,7 +171,7 @@ void VideoFramePacketizer::getRetransmitBitrate(const v8::FunctionCallbackInfo<v
     HandleScope scope(isolate);
 
     VideoFramePacketizer* obj = ObjectWrap::Unwrap<VideoFramePacketizer>(args.Holder());
-    owt_base::VideoFramePacketizer* me = obj->me;
+    infraframe::VideoFramePacketizer* me = obj->me;
 
     uint32_t bitrate = me->getRetransmitBitrate();
     args.GetReturnValue().Set(Number::New(isolate, bitrate));
@@ -183,7 +183,7 @@ void VideoFramePacketizer::getEstimatedBandwidth(const v8::FunctionCallbackInfo<
     HandleScope scope(isolate);
 
     VideoFramePacketizer* obj = ObjectWrap::Unwrap<VideoFramePacketizer>(args.Holder());
-    owt_base::VideoFramePacketizer* me = obj->me;
+    infraframe::VideoFramePacketizer* me = obj->me;
 
     uint32_t bitrate = me->getEstimatedBandwidth();
     args.GetReturnValue().Set(Number::New(isolate, bitrate));

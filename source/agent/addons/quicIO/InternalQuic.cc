@@ -83,7 +83,7 @@ void InternalQuicIn::addDestination(const FunctionCallbackInfo<Value>& args)
     std::string track = std::string(*param0);
 
     FrameDestination* param = ObjectWrap::Unwrap<FrameDestination>(args[1]->ToObject());
-    owt_base::FrameDestination* dest = param->dest;
+    infraframe::FrameDestination* dest = param->dest;
 
     if (track == "audio") {
         me->addAudioDestination(dest);
@@ -104,7 +104,7 @@ void InternalQuicIn::removeDestination(const FunctionCallbackInfo<Value>& args)
     std::string track = std::string(*param0);
 
     FrameDestination* param = ObjectWrap::Unwrap<FrameDestination>(args[1]->ToObject());
-    owt_base::FrameDestination* dest = param->dest;
+    infraframe::FrameDestination* dest = param->dest;
 
     if (track == "audio") {
         me->removeAudioDestination(dest);

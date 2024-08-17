@@ -46,9 +46,9 @@ void InternalOut::New(const v8::FunctionCallbackInfo<v8::Value>& args)
 
     InternalOut* obj = new InternalOut();
     if (ticket.empty()) {
-        obj->me = new owt_base::InternalOut(protocol, dest_ip, dest_port);
+        obj->me = new infraframe::InternalOut(protocol, dest_ip, dest_port);
     } else {
-        obj->me = new owt_base::InternalOut(protocol, ticket, dest_ip, dest_port);
+        obj->me = new infraframe::InternalOut(protocol, ticket, dest_ip, dest_port);
     }
     obj->dest = obj->me;
 
@@ -61,6 +61,6 @@ void InternalOut::close(const v8::FunctionCallbackInfo<v8::Value>& args)
     Isolate* isolate = Isolate::GetCurrent();
     HandleScope scope(isolate);
     InternalOut* obj = ObjectWrap::Unwrap<InternalOut>(args.Holder());
-    owt_base::InternalOut* me = obj->me;
+    infraframe::InternalOut* me = obj->me;
     delete me;
 }

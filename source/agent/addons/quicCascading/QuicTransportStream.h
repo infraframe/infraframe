@@ -15,7 +15,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "../../core/owt_base/MediaFramePipeline.h"
+#include "../../core/infraframe/MediaFramePipeline.h"
 #include "../common/MediaFramePipelineWrapper.h"
 #include "owt/quic/quic_transport_stream_interface.h"
 
@@ -24,7 +24,7 @@
  *
  * Receives media from one
  */
-class QuicTransportStream : public owt_base::FrameSource, public owt_base::FrameDestination, public owt::quic::QuicTransportStreamInterface::Visitor, public NanFrameNode {
+class QuicTransportStream : public infraframe::FrameSource, public infraframe::FrameDestination, public owt::quic::QuicTransportStreamInterface::Visitor, public NanFrameNode {
     DECLARE_LOGGER();
 
 public:
@@ -49,16 +49,16 @@ public:
 
     static NAUV_WORK_CB(onStreamDataCallback);
 
-    // Overrides owt_base::FrameSource.
-    void onFeedback(const owt_base::FeedbackMsg&) override;
+    // Overrides infraframe::FrameSource.
+    void onFeedback(const infraframe::FeedbackMsg&) override;
 
-    // Overrides owt_base::FrameDestination.
-    void onFrame(const owt_base::Frame&) override;
+    // Overrides infraframe::FrameDestination.
+    void onFrame(const infraframe::Frame&) override;
     void onVideoSourceChanged() override;
 
     // Overrides NanFrameNode.
-    owt_base::FrameSource* FrameSource() override { return this; }
-    owt_base::FrameDestination* FrameDestination() override { return this; }
+    infraframe::FrameSource* FrameSource() override { return this; }
+    infraframe::FrameDestination* FrameDestination() override { return this; }
 
     void OnData(owt::quic::QuicTransportStreamInterface* stream, char* buf, size_t len) override;
 
@@ -67,7 +67,7 @@ public:
     uint32_t id;
 
 private:
-    void sendFeedback(const owt_base::FeedbackMsg& msg);
+    void sendFeedback(const infraframe::FeedbackMsg& msg);
     typedef struct {
         boost::shared_array<char> buffer;
         int length;

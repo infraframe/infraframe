@@ -11,7 +11,7 @@
 #include "MediaFramePipeline.h"
 #include "RawTransport.h"
 
-class GstInternalOut : public owt_base::FrameSource, public owt_base::FrameDestination {
+class GstInternalOut : public infraframe::FrameSource, public infraframe::FrameDestination {
     DECLARE_LOGGER();
 
 public:
@@ -21,9 +21,9 @@ public:
     void setPad(GstPad* pad);
 
     // Implements FrameSource
-    void onFeedback(const owt_base::FeedbackMsg&);
+    void onFeedback(const infraframe::FeedbackMsg&);
 
-    void onFrame(const owt_base::Frame& frame);
+    void onFrame(const infraframe::Frame& frame);
 
 private:
     GstPad* encoder_pad;

@@ -327,14 +327,14 @@ void VideoGstAnalyzer::new_sample_from_sink(GstElement* source, gpointer data)
     GstMapInfo map;
     gst_buffer_map(buffer, &map, GST_MAP_READ);
 
-    owt_base::Frame outFrame;
+    infraframe::Frame outFrame;
     memset(&outFrame, 0, sizeof(outFrame));
 
     if (pStreamObj->outputcodec.compare("vp8") == 0) {
-        outFrame.format = owt_base::FRAME_FORMAT_VP8;
+        outFrame.format = infraframe::FRAME_FORMAT_VP8;
         outFrame.additionalInfo.video.isKeyFrame = isVp8KeyFrame(map.data, map.size);
     } else if (pStreamObj->outputcodec.find("h264") != std::string::npos) {
-        outFrame.format = owt_base::FRAME_FORMAT_H264;
+        outFrame.format = infraframe::FRAME_FORMAT_H264;
         outFrame.additionalInfo.video.isKeyFrame = isH264KeyFrame(map.data, map.size);
     } else {
         printf("Not support codec:%s\n", pStreamObj->outputcodec.c_str());
@@ -389,7 +389,7 @@ void VideoGstAnalyzer::setPlaying()
     m_thread = g_thread_create((GThreadFunc)main_loop_thread, NULL, TRUE, NULL);
 }
 
-bool VideoGstAnalyzer::linkInput(owt_base::FrameSource* videosource)
+bool VideoGstAnalyzer::linkInput(infraframe::FrameSource* videosource)
 {
     assert(videosource);
 
@@ -430,7 +430,7 @@ bool VideoGstAnalyzer::linkInput(owt_base::FrameSource* videosource)
     return true;
 }
 
-bool VideoGstAnalyzer::addOutput(owt_base::FrameDestination* out)
+bool VideoGstAnalyzer::addOutput(infraframe::FrameDestination* out)
 {
     ELOG_DEBUG("Add analyzed stream back to OWT\n");
     if (sink != nullptr) {
@@ -442,7 +442,7 @@ bool VideoGstAnalyzer::addOutput(owt_base::FrameDestination* out)
     }
 }
 
-void VideoGstAnalyzer::removeOutput(owt_base::FrameDestination* out)
+void VideoGstAnalyzer::removeOutput(infraframe::FrameDestination* out)
 {
     ELOG_DEBUG("Disconnect remote connection\n");
     m_gstinternalout->removeVideoDestination(out);

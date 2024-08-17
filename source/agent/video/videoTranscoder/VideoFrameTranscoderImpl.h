@@ -5,58 +5,53 @@
 #ifndef VideoFrameTranscoderImpl_h
 #define VideoFrameTranscoderImpl_h
 
-#include <MediaFramePipeline.h>
-#include <MediaUtilities.h>
-#include <VideoFrameTranscoder.h>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/shared_mutex.hpp>
+
 #include <map>
 
-#include <VCMFrameDecoder.h>
-#include <VCMFrameEncoder.h>
-
-#include <FFmpegFrameDecoder.h>
+#include <GstreamerFrameDecoder.h>
+#include <GstreamerFrameEncoder.h>
 
 #include <FrameProcesser.h>
+#include <MediaFramePipeline.h>
+#include <MediaUtilities.h>
+#include <VideoFrameTranscoder.h>
 #ifdef BUILD_FOR_ANALYTICS
 #include <FrameAnalyzer.h>
 #endif
 
-#ifdef ENABLE_SVT_HEVC_ENCODER
-#include <SVTHEVCEncoder.h>
-#endif
-
 namespace mcu {
 
-class VideoFrameTranscoderImpl : public VideoFrameTranscoder, public owt_base::FrameSource, public owt_base::FrameDestination {
+class VideoFrameTranscoderImpl : public VideoFrameTranscoder, public infraframe::FrameSource, public infraframe::FrameDestination {
 public:
     VideoFrameTranscoderImpl();
     ~VideoFrameTranscoderImpl();
 
-    bool setInput(int input, owt_base::FrameFormat, owt_base::FrameSource*);
+    bool setInput(int input, infraframe::FrameFormat, infraframe::FrameSource*);
     void unsetInput(int input);
 
 #ifndef BUILD_FOR_ANALYTICS
     bool addOutput(int output,
-        owt_base::FrameFormat,
-        const owt_base::VideoCodecProfile profile,
-        const owt_base::VideoSize&,
+        infraframe::FrameFormat,
+        const infraframe::VideoCodecProfile profile,
+        const infraframe::VideoSize&,
         const unsigned int framerateFPS,
         const unsigned int bitrateKbps,
         const unsigned int keyFrameIntervalSeconds,
-        owt_base::FrameDestination*);
+        infraframe::FrameDestination*);
 #else
     bool addOutput(int output,
-        owt_base::FrameFormat,
-        const owt_base::VideoCodecProfile profile,
-        const owt_base::VideoSize&,
+        infraframe::FrameFormat,
+        const infraframe::VideoCodecProfile profile,
+        const infraframe::VideoSize&,
         const unsigned int framerateFPS,
         const unsigned int bitrateKbps,
         const unsigned int keyFrameIntervalSeconds,
         const std::string& algorithm,
         const std::string& pluginName,
-        owt_base::FrameDestination*);
+        infraframe::FrameDestination*);
 #endif
     void removeOutput(int output);
 
@@ -66,23 +61,23 @@ public:
     void clearText();
 #endif
 
-    void onFrame(const owt_base::Frame& frame)
+    void onFrame(const infraframe::Frame& frame)
     {
         deliverFrame(frame);
     }
 
 private:
     struct Input {
-        owt_base::FrameSource* source;
-        boost::shared_ptr<owt_base::VideoFrameDecoder> decoder;
+        infraframe::FrameSource* source;
+        boost::shared_ptr<infraframe::VideoFrameDecoder> decoder;
     };
 
     struct Output {
-        boost::shared_ptr<owt_base::VideoFrameProcesser> processer;
+        boost::shared_ptr<infraframe::VideoFrameProcesser> processer;
 #ifdef BUILD_FOR_ANALYTICS
-        boost::shared_ptr<owt_base::VideoFrameAnalyzer> analyzer;
+        boost::shared_ptr<infraframe::VideoFrameAnalyzer> analyzer;
 #endif
-        boost::shared_ptr<owt_base::VideoFrameEncoder> encoder;
+        boost::shared_ptr<infraframe::VideoFrameEncoder> encoder;
         int streamId;
     };
 
@@ -125,7 +120,7 @@ VideoFrameTranscoderImpl::~VideoFrameTranscoderImpl()
     }
 }
 
-inline bool VideoFrameTranscoderImpl::setInput(int input, owt_base::FrameFormat format, owt_base::FrameSource* source)
+inline bool VideoFrameTranscoderImpl::setInput(int input, infraframe::FrameFormat format, infraframe::FrameSource* source)
 {
     assert(source);
 
@@ -134,13 +129,13 @@ inline bool VideoFrameTranscoderImpl::setInput(int input, owt_base::FrameFormat 
     if (it != m_inputs.end())
         return false;
 
-    boost::shared_ptr<owt_base::VideoFrameDecoder> decoder;
+    boost::shared_ptr<infraframe::VideoFrameDecoder> decoder;
 
-    if (!decoder && owt_base::VCMFrameDecoder::supportFormat(format))
-        decoder.reset(new owt_base::VCMFrameDecoder(format));
+    if (!decoder && infraframe::VCMFrameDecoder::supportFormat(format))
+        decoder.reset(new infraframe::VCMFrameDecoder(format));
 
-    if (!decoder && owt_base::FFmpegFrameDecoder::supportFormat(format))
-        decoder.reset(new owt_base::FFmpegFrameDecoder());
+    if (!decoder && infraframe::FFmpegFrameDecoder::supportFormat(format))
+        decoder.reset(new infraframe::FFmpegFrameDecoder());
 
     if (!decoder)
         return false;
@@ -170,41 +165,41 @@ inline void VideoFrameTranscoderImpl::unsetInput(int input)
 
 #ifndef BUILD_FOR_ANALYTICS
 inline bool VideoFrameTranscoderImpl::addOutput(int output,
-    owt_base::FrameFormat format,
-    const owt_base::VideoCodecProfile profile,
-    const owt_base::VideoSize& rootSize,
+    infraframe::FrameFormat format,
+    const infraframe::VideoCodecProfile profile,
+    const infraframe::VideoSize& rootSize,
     const unsigned int framerateFPS,
     const unsigned int bitrateKbps,
     const unsigned int keyFrameIntervalSeconds,
-    owt_base::FrameDestination* dest)
+    infraframe::FrameDestination* dest)
 #else
 inline bool VideoFrameTranscoderImpl::addOutput(int output,
-    owt_base::FrameFormat format,
-    const owt_base::VideoCodecProfile profile,
-    const owt_base::VideoSize& rootSize,
+    infraframe::FrameFormat format,
+    const infraframe::VideoCodecProfile profile,
+    const infraframe::VideoSize& rootSize,
     const unsigned int framerateFPS,
     const unsigned int bitrateKbps,
     const unsigned int keyFrameIntervalSeconds,
     const std::string& algorithm,
     const std::string& pluginName,
-    owt_base::FrameDestination* dest)
+    infraframe::FrameDestination* dest)
 #endif
 {
-    boost::shared_ptr<owt_base::VideoFrameEncoder> encoder;
-    boost::shared_ptr<owt_base::VideoFrameProcesser> processer;
+    boost::shared_ptr<infraframe::VideoFrameEncoder> encoder;
+    boost::shared_ptr<infraframe::VideoFrameProcesser> processer;
 #ifdef BUILD_FOR_ANALYTICS
-    boost::shared_ptr<owt_base::VideoFrameAnalyzer> analyzer;
+    boost::shared_ptr<infraframe::VideoFrameAnalyzer> analyzer;
 #endif
     boost::upgrade_lock<boost::shared_mutex> lock(m_outputMutex);
     int32_t streamId = -1;
 
 #if ENABLE_SVT_HEVC_ENCODER
-    if (!encoder && format == owt_base::FRAME_FORMAT_H265)
-        encoder.reset(new owt_base::SVTHEVCEncoder(format, profile));
+    if (!encoder && format == infraframe::FRAME_FORMAT_H265)
+        encoder.reset(new infraframe::SVTHEVCEncoder(format, profile));
 #endif
 
-    if (!encoder && owt_base::VCMFrameEncoder::supportFormat(format))
-        encoder.reset(new owt_base::VCMFrameEncoder(format, profile, false));
+    if (!encoder && infraframe::GStreamerVideoEncoder::supportFormat(format))
+        encoder.reset(new infraframe::VCMFrameEncoder(format, profile, false));
 
     if (!encoder)
         return false;
@@ -214,7 +209,7 @@ inline bool VideoFrameTranscoderImpl::addOutput(int output,
         return false;
 
     if (!processer) {
-        processer.reset(new owt_base::FrameProcesser());
+        processer.reset(new infraframe::FrameProcesser());
     }
 
     if (!processer->init(encoder->getInputFormat(), rootSize.width, rootSize.height, framerateFPS))
@@ -223,7 +218,7 @@ inline bool VideoFrameTranscoderImpl::addOutput(int output,
     this->addVideoDestination(processer.get());
 #ifdef BUILD_FOR_ANALYTICS
     if (!analyzer) {
-        analyzer.reset(new owt_base::FrameAnalyzer());
+        analyzer.reset(new infraframe::FrameAnalyzer());
     }
     if (!analyzer->init(encoder->getInputFormat(), rootSize.width, rootSize.height, framerateFPS, pluginName))
         return false;

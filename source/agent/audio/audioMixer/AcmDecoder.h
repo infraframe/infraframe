@@ -16,7 +16,7 @@
 #include "MediaFramePipeline.h"
 
 namespace mcu {
-using namespace owt_base;
+using namespace infraframe;
 using namespace webrtc;
 
 class AcmDecoder : public AudioDecoder {
@@ -29,7 +29,7 @@ public:
     bool init() override;
     bool getAudioFrame(AudioFrame* audioFrame) override;
 
-    // Implements owt_base::FrameDestination
+    // Implements infraframe::FrameDestination
     void onFrame(const Frame& frame) override;
 
 private:

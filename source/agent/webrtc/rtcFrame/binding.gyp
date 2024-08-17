@@ -7,11 +7,11 @@
                 "source_abs_dir%": "<(module_root_dir)/../../..",  # absolute source dir path
             },
             "sources": [
-                "<(source_rel_dir)/core/owt_base/AudioFrameConstructor.cpp",
-                "<(source_rel_dir)/core/owt_base/AudioFramePacketizer.cpp",
-                "<(source_rel_dir)/core/owt_base/VideoFrameConstructor.cpp",
-                "<(source_rel_dir)/core/owt_base/VideoFramePacketizer.cpp",
-                "<(source_rel_dir)/core/owt_base/MediaFramePipeline.cpp",
+                "<(source_rel_dir)/core/infraframe/AudioFrameConstructor.cpp",
+                "<(source_rel_dir)/core/infraframe/AudioFramePacketizer.cpp",
+                "<(source_rel_dir)/core/infraframe/VideoFrameConstructor.cpp",
+                "<(source_rel_dir)/core/infraframe/VideoFramePacketizer.cpp",
+                "<(source_rel_dir)/core/infraframe/MediaFramePipeline.cpp",
                 "<(source_rel_dir)/core/common/JobTimer.cpp",
                 "AudioFrameConstructorWrapper.cc",
                 "AudioFramePacketizerWrapper.cc",
@@ -42,7 +42,7 @@
                 "<!(node -e \"require('nan')\")",
                 "../rtcConn/erizo/src/erizo",
                 "<(source_rel_dir)/core/common",
-                "<(source_rel_dir)/core/owt_base",
+                "<(source_rel_dir)/core/infraframe",
                 "<(source_rel_dir)/core/rtc_adapter",
                 "$(DEFAULT_DEPENDENCY_PATH)/include",
                 "$(CUSTOM_INCLUDE_PATH)",
@@ -95,9 +95,9 @@
                 "<(source_rel_dir)/core/rtc_adapter/VideoSendAdapter.cc",
                 "<(source_rel_dir)/core/rtc_adapter/AudioSendAdapter.cc",
                 "<(source_rel_dir)/core/rtc_adapter/thread/StaticTaskQueueFactory.cc",
-                "<(source_rel_dir)/core/owt_base/SsrcGenerator.cc",
-                "<(source_rel_dir)/core/owt_base/AudioUtilitiesNew.cpp",
-                "<(source_rel_dir)/core/owt_base/TaskRunnerPool.cpp",
+                "<(source_rel_dir)/core/infraframe/SsrcGenerator.cc",
+                "<(source_rel_dir)/core/infraframe/AudioUtilitiesNew.cpp",
+                "<(source_rel_dir)/core/infraframe/TaskRunnerPool.cpp",
             ],
             "cflags_cc": [
                 "-DWEBRTC_POSIX",
@@ -120,7 +120,7 @@
             "include_dirs": [
                 "<!(node -e \"require('nan')\")",
                 "<(source_rel_dir)/core/common",
-                "<(source_rel_dir)/core/owt_base",
+                "<(source_rel_dir)/core/infraframe",
                 "<(source_rel_dir)/core/rtc_adapter",
                 "<(webrtc_abs_dir)/src",  # webrtc include files
                 "<(webrtc_abs_dir)/src/third_party/abseil-cpp",  # abseil-cpp include files used by webrtc

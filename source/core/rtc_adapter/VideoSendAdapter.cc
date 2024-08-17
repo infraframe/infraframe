@@ -16,7 +16,7 @@
 #include <rtc_base/logging.h>
 #include <rtputils.h>
 
-using namespace owt_base;
+using namespace infraframe;
 
 namespace rtc_adapter {
 

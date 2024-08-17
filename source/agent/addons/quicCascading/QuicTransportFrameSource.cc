@@ -74,7 +74,7 @@ NAN_METHOD(QuicTransportFrameSource::addDestination)
     if (info.Length() == 3) {
         isNanDestination = Nan::To<bool>(info[2]).FromJust();
     }
-    owt_base::FrameDestination* dest(nullptr);
+    infraframe::FrameDestination* dest(nullptr);
     if (isNanDestination) {
         NanFrameNode* param = Nan::ObjectWrap::Unwrap<NanFrameNode>(
             Nan::To<v8::Object>(info[1]).ToLocalChecked());
@@ -89,13 +89,13 @@ NAN_METHOD(QuicTransportFrameSource::addDestination)
     obj->addDataDestination(dest);
 }
 
-void QuicTransportFrameSource::onFeedback(const owt_base::FeedbackMsg& msg)
+void QuicTransportFrameSource::onFeedback(const infraframe::FeedbackMsg& msg)
 {
     ELOG_DEBUG("onFeedback ");
     deliverFeedbackMsg(msg);
 }
 
-void QuicTransportFrameSource::onFrame(const owt_base::Frame& frame)
+void QuicTransportFrameSource::onFrame(const infraframe::Frame& frame)
 {
     deliverFrame(frame);
 }

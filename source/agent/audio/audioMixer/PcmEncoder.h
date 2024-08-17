@@ -16,7 +16,7 @@
 #include "MediaFramePipeline.h"
 
 namespace mcu {
-using namespace owt_base;
+using namespace infraframe;
 using namespace webrtc;
 
 class PcmEncoder : public AudioEncoder {

@@ -9,13 +9,13 @@
 #include <nan.h>
 
 /*
- * Wrapper class of owt_base::AudioRanker
+ * Wrapper class of infraframe::AudioRanker
  */
 class AudioRanker : public Nan::ObjectWrap,
-                    public owt_base::AudioRanker::Visitor {
+                    public infraframe::AudioRanker::Visitor {
 public:
     static NAN_MODULE_INIT(Init);
-    owt_base::AudioRanker* me;
+    infraframe::AudioRanker* me;
 
     boost::mutex mutex;
     std::queue<std::string> jsonChanges;

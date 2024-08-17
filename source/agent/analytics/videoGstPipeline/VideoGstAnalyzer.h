@@ -30,9 +30,9 @@ public:
     bool createPipeline(std::string codec, int width, int height,
         int framerate, int bitrate, int kfi, std::string algo, std::string pluginName);
     void clearPipeline();
-    void removeOutput(owt_base::FrameDestination* out);
-    bool addOutput(owt_base::FrameDestination* out);
-    bool linkInput(owt_base::FrameSource* videosource);
+    void removeOutput(infraframe::FrameDestination* out);
+    bool addOutput(infraframe::FrameDestination* out);
+    bool linkInput(infraframe::FrameSource* videosource);
 
     static void start_feed(GstElement* source, guint size, gpointer data);
     static gboolean push_data(gpointer data);

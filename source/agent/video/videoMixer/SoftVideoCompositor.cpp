@@ -13,7 +13,7 @@
 #include <boost/make_shared.hpp>
 
 using namespace webrtc;
-using namespace owt_base;
+using namespace infraframe;
 
 namespace mcu {
 
@@ -180,7 +180,7 @@ SoftInput::SoftInput()
     : m_active(false)
 {
     m_bufferManager.reset(new I420BufferManager(3));
-    m_converter.reset(new owt_base::FrameConverter());
+    m_converter.reset(new infraframe::FrameConverter());
 }
 
 SoftInput::~SoftInput()
@@ -241,8 +241,8 @@ DEFINE_LOGGER(SoftFrameGenerator, "mcu.media.SoftVideoCompositor.SoftFrameGenera
 
 SoftFrameGenerator::SoftFrameGenerator(
     SoftVideoCompositor* owner,
-    owt_base::VideoSize& size,
-    owt_base::YUVColor& bgColor,
+    infraframe::VideoSize& size,
+    infraframe::YUVColor& bgColor,
     const bool crop,
     const uint32_t maxFps,
     const uint32_t minFps)
@@ -296,7 +296,7 @@ SoftFrameGenerator::SoftFrameGenerator(
             m_thrGrp->create_thread(boost::bind(&boost::asio::io_service::run, m_srv));
     }
 
-    m_textDrawer.reset(new owt_base::FFmpegDrawText());
+    m_textDrawer.reset(new infraframe::FFmpegDrawText());
 
     m_jobTimer.reset(new JobTimer(m_maxSupportedFps, this));
     m_jobTimer->start();
@@ -351,7 +351,7 @@ bool SoftFrameGenerator::isSupported(uint32_t width, uint32_t height, uint32_t f
     return false;
 }
 
-bool SoftFrameGenerator::addOutput(const uint32_t width, const uint32_t height, const uint32_t fps, owt_base::FrameDestination* dst)
+bool SoftFrameGenerator::addOutput(const uint32_t width, const uint32_t height, const uint32_t fps, infraframe::FrameDestination* dst)
 {
     assert(isSupported(width, height, fps));
 
@@ -364,7 +364,7 @@ bool SoftFrameGenerator::addOutput(const uint32_t width, const uint32_t height, 
     return true;
 }
 
-bool SoftFrameGenerator::removeOutput(owt_base::FrameDestination* dst)
+bool SoftFrameGenerator::removeOutput(infraframe::FrameDestination* dst)
 {
     boost::unique_lock<boost::shared_mutex> lock(m_outputMutex);
 
@@ -405,9 +405,9 @@ void SoftFrameGenerator::onTimeout()
                 m_clock->TimeInMilliseconds());
             compositeFrame.set_timestamp(compositeFrame.timestamp_us() * kMsToRtpTimestamp);
 
-            owt_base::Frame frame;
+            infraframe::Frame frame;
             memset(&frame, 0, sizeof(frame));
-            frame.format = owt_base::FRAME_FORMAT_I420;
+            frame.format = infraframe::FRAME_FORMAT_I420;
             frame.payload = reinterpret_cast<uint8_t*>(&compositeFrame);
             frame.length = 0; // unused.
             frame.timeStamp = compositeFrame.timestamp();
@@ -661,13 +661,13 @@ bool SoftVideoCompositor::unsetAvatar(int input)
 
 void SoftVideoCompositor::pushInput(int input, const Frame& frame)
 {
-    assert(frame.format == owt_base::FRAME_FORMAT_I420);
+    assert(frame.format == infraframe::FRAME_FORMAT_I420);
     webrtc::VideoFrame* i420Frame = reinterpret_cast<webrtc::VideoFrame*>(frame.payload);
 
     m_inputs[input]->pushInput(i420Frame);
 }
 
-bool SoftVideoCompositor::addOutput(const uint32_t width, const uint32_t height, const uint32_t framerateFPS, owt_base::FrameDestination* dst)
+bool SoftVideoCompositor::addOutput(const uint32_t width, const uint32_t height, const uint32_t framerateFPS, infraframe::FrameDestination* dst)
 {
     ELOG_DEBUG("addOutput, %dx%d, fps(%d), dst(%p)", width, height, framerateFPS, dst);
 
@@ -681,7 +681,7 @@ bool SoftVideoCompositor::addOutput(const uint32_t width, const uint32_t height,
     return false;
 }
 
-bool SoftVideoCompositor::removeOutput(owt_base::FrameDestination* dst)
+bool SoftVideoCompositor::removeOutput(infraframe::FrameDestination* dst)
 {
     ELOG_DEBUG("removeOutput, dst(%p)", dst);
 

@@ -5,27 +5,22 @@
 #ifndef VideoFrameMixerImpl_h
 #define VideoFrameMixerImpl_h
 
-#include <MediaFramePipeline.h>
-#include <MediaUtilities.h>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/shared_mutex.hpp>
+
 #include <map>
+
+#include <GstreamerFrameDecoder.h>
+#include <GstreamerFrameEncoder.h>
+#include <MediaFramePipeline.h>
+#include <MediaUtilities.h>
 
 #include "SoftVideoCompositor.h"
 
-#include <VCMFrameDecoder.h>
-#include <VCMFrameEncoder.h>
-
-#include <FFmpegFrameDecoder.h>
-
-#ifdef ENABLE_SVT_HEVC_ENCODER
-#include <SVTHEVCEncoder.h>
-#endif
-
 namespace mcu {
 
-class CompositeIn : public owt_base::FrameDestination {
+class CompositeIn : public infraframe::FrameDestination {
 public:
     CompositeIn(int index, const std::string& avatar, boost::shared_ptr<VideoFrameCompositor> compositor)
         : m_index(index)
@@ -41,7 +36,7 @@ public:
         m_compositor->deActivateInput(m_index);
     }
 
-    void onFrame(const owt_base::Frame& frame)
+    void onFrame(const infraframe::Frame& frame)
     {
         m_compositor->pushInput(m_index, frame);
     }
@@ -53,21 +48,21 @@ private:
 
 class VideoFrameMixerImpl : public VideoFrameMixer {
 public:
-    VideoFrameMixerImpl(uint32_t maxInput, owt_base::VideoSize rootSize, owt_base::YUVColor bgColor, bool useSimulcast, bool crop);
+    VideoFrameMixerImpl(uint32_t maxInput, infraframe::VideoSize rootSize, infraframe::YUVColor bgColor, bool useSimulcast, bool crop);
     ~VideoFrameMixerImpl();
 
-    bool addInput(int input, owt_base::FrameFormat, owt_base::FrameSource*, const std::string& avatar);
+    bool addInput(int input, infraframe::FrameFormat, infraframe::FrameSource*, const std::string& avatar);
     void removeInput(int input);
     void setInputActive(int input, bool active);
 
     bool addOutput(int output,
-        owt_base::FrameFormat,
-        const owt_base::VideoCodecProfile profile,
-        const owt_base::VideoSize&,
+        infraframe::FrameFormat,
+        const infraframe::VideoCodecProfile profile,
+        const infraframe::VideoSize&,
         const unsigned int framerateFPS,
         const unsigned int bitrateKbps,
         const unsigned int keyFrameIntervalSeconds,
-        owt_base::FrameDestination*);
+        infraframe::FrameDestination*);
     void removeOutput(int output);
     void setBitrate(unsigned short kbps, int output);
     void requestKeyFrame(int output);
@@ -79,13 +74,13 @@ public:
 
 private:
     struct Input {
-        owt_base::FrameSource* source;
-        boost::shared_ptr<owt_base::VideoFrameDecoder> decoder;
+        infraframe::FrameSource* source;
+        boost::shared_ptr<infraframe::VideoFrameDecoder> decoder;
         boost::shared_ptr<CompositeIn> compositorIn;
     };
 
     struct Output {
-        boost::shared_ptr<owt_base::VideoFrameEncoder> encoder;
+        boost::shared_ptr<infraframe::VideoFrameEncoder> encoder;
         int streamId;
     };
 
@@ -100,7 +95,7 @@ private:
     bool m_useSimulcast;
 };
 
-VideoFrameMixerImpl::VideoFrameMixerImpl(uint32_t maxInput, owt_base::VideoSize rootSize, owt_base::YUVColor bgColor, bool useSimulcast, bool crop)
+VideoFrameMixerImpl::VideoFrameMixerImpl(uint32_t maxInput, infraframe::VideoSize rootSize, infraframe::YUVColor bgColor, bool useSimulcast, bool crop)
     : m_useSimulcast(useSimulcast)
 {
     if (!m_compositor)
@@ -131,7 +126,7 @@ VideoFrameMixerImpl::~VideoFrameMixerImpl()
     m_compositor.reset();
 }
 
-inline bool VideoFrameMixerImpl::addInput(int input, owt_base::FrameFormat format, owt_base::FrameSource* source, const std::string& avatar)
+inline bool VideoFrameMixerImpl::addInput(int input, infraframe::FrameFormat format, infraframe::FrameSource* source, const std::string& avatar)
 {
     assert(source);
 
@@ -140,13 +135,13 @@ inline bool VideoFrameMixerImpl::addInput(int input, owt_base::FrameFormat forma
     if (it != m_inputs.end())
         return false;
 
-    boost::shared_ptr<owt_base::VideoFrameDecoder> decoder;
+    boost::shared_ptr<infraframe::VideoFrameDecoder> decoder;
 
-    if (!decoder && owt_base::VCMFrameDecoder::supportFormat(format))
-        decoder.reset(new owt_base::VCMFrameDecoder(format));
+    if (!decoder && infraframe::VCMFrameDecoder::supportFormat(format))
+        decoder.reset(new infraframe::VCMFrameDecoder(format));
 
-    if (!decoder && owt_base::FFmpegFrameDecoder::supportFormat(format))
-        decoder.reset(new owt_base::FFmpegFrameDecoder());
+    if (!decoder && infraframe::FFmpegFrameDecoder::supportFormat(format))
+        decoder.reset(new infraframe::FFmpegFrameDecoder());
 
     if (!decoder)
         return false;
@@ -214,15 +209,15 @@ inline void VideoFrameMixerImpl::requestKeyFrame(int output)
 }
 
 inline bool VideoFrameMixerImpl::addOutput(int output,
-    owt_base::FrameFormat format,
-    const owt_base::VideoCodecProfile profile,
-    const owt_base::VideoSize& outputSize,
+    infraframe::FrameFormat format,
+    const infraframe::VideoCodecProfile profile,
+    const infraframe::VideoSize& outputSize,
     const unsigned int framerateFPS,
     const unsigned int bitrateKbps,
     const unsigned int keyFrameIntervalSeconds,
-    owt_base::FrameDestination* dest)
+    infraframe::FrameDestination* dest)
 {
-    boost::shared_ptr<owt_base::VideoFrameEncoder> encoder;
+    boost::shared_ptr<infraframe::VideoFrameEncoder> encoder;
     boost::upgrade_lock<boost::shared_mutex> lock(m_outputMutex);
 
     // find a reusable encoder.
@@ -240,13 +235,8 @@ inline bool VideoFrameMixerImpl::addOutput(int output,
             return false;
     } else { // Never found a reusable encoder.
 
-#if ENABLE_SVT_HEVC_ENCODER
-        if (!encoder && format == owt_base::FRAME_FORMAT_H265)
-            encoder.reset(new owt_base::SVTHEVCEncoder(format, profile, m_useSimulcast));
-#endif
-
-        if (!encoder && owt_base::VCMFrameEncoder::supportFormat(format))
-            encoder.reset(new owt_base::VCMFrameEncoder(format, profile, m_useSimulcast));
+        if (!encoder && infraframe::GStreamerFrameEncoder::supportFormat(format))
+            encoder.reset(new infraframe::GStreamerFrameEncoder(format, profile, m_useSimulcast));
 
         if (!encoder)
             return false;

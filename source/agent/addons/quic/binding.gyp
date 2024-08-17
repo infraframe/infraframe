@@ -15,9 +15,9 @@
                 "WebTransportFrameDestination.cc",
                 "VideoRtpPacketizer.cc",
                 "RtpFactory.cc",
-                "../../../core/owt_base/MediaFramePipeline.cpp",
-                "../../../core/owt_base/MediaFrameMulticaster.cpp",
-                "../../../core/owt_base/Utils.cc",
+                "../../../core/infraframe/MediaFramePipeline.cpp",
+                "../../../core/infraframe/MediaFrameMulticaster.cpp",
+                "../../../core/infraframe/Utils.cc",
             ],
             "defines": [
                 "OWT_ENABLE_QUIC=1",
@@ -62,7 +62,7 @@
             "include_dirs": [
                 "<!(node -e \"require('nan')\")",
                 "../../../core/common",
-                "../../../core/owt_base",
+                "../../../core/infraframe",
                 "$(DEFAULT_DEPENDENCY_PATH)/include",
                 "$(CUSTOM_INCLUDE_PATH)",
                 "<!@(pkg-config glib-2.0 --cflags-only-I | sed s/-I//g)",

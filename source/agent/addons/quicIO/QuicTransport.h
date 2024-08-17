@@ -18,7 +18,7 @@
  *
  * Receives media from one
  */
-class QuicIn : public owt_base::FrameSource, public net::RQuicListener {
+class QuicIn : public infraframe::FrameSource, public net::RQuicListener {
 public:
     QuicIn(const std::string& cert_file, const std::string& key_file);
     virtual ~QuicIn();
@@ -26,7 +26,7 @@ public:
     unsigned int getListeningPort();
 
     // Implements FrameSource
-    void onFeedback(const owt_base::FeedbackMsg&) override;
+    void onFeedback(const infraframe::FeedbackMsg&) override;
 
     // Implements RQuicListener.
     void onReady() override;
@@ -52,13 +52,13 @@ private:
  *
  * Sends media to server
  */
-class QuicOut : public owt_base::FrameDestination, public net::RQuicListener {
+class QuicOut : public infraframe::FrameDestination, public net::RQuicListener {
 public:
     QuicOut(const std::string& dest_ip, unsigned int dest_port);
     virtual ~QuicOut();
 
     // Implements FrameDestination
-    void onFrame(const owt_base::Frame&) override;
+    void onFrame(const infraframe::Frame&) override;
 
     // Implements RQuicListener.
     void onReady() override;

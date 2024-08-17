@@ -59,7 +59,7 @@ void GstInternalIn::setPushData(bool status)
     }
 }
 
-void GstInternalIn::onFrame(const owt_base::Frame& frame)
+void GstInternalIn::onFrame(const infraframe::Frame& frame)
 {
     if (!m_start) {
         ELOG_INFO("Not start yet, stop pushing data to appsrc\n");
@@ -82,7 +82,7 @@ void GstInternalIn::onFrame(const owt_base::Frame& frame)
             m_needKeyFrame = false;
         } else {
             ELOG_DEBUG("Request key frame\n");
-            owt_base::FeedbackMsg msg { .type = owt_base::VIDEO_FEEDBACK, .cmd = owt_base::REQUEST_KEY_FRAME };
+            infraframe::FeedbackMsg msg { .type = infraframe::VIDEO_FEEDBACK, .cmd = infraframe::REQUEST_KEY_FRAME };
             deliverFeedbackMsg(msg);
             return;
         }
@@ -94,7 +94,7 @@ void GstInternalIn::onFrame(const owt_base::Frame& frame)
     size_t ivf_header_length = 0;
     size_t ivf_frame_header_length = 0;
 
-    if (frame.format == owt_base::FRAME_FORMAT_VP8) {
+    if (frame.format == infraframe::FRAME_FORMAT_VP8) {
         if (num_frames == 0) {
             ivf_header[0] = 'D';
             ivf_header[1] = 'K';
@@ -123,7 +123,7 @@ void GstInternalIn::onFrame(const owt_base::Frame& frame)
     /* Create a new empty buffer */
     buffer = gst_buffer_new_and_alloc(payloadLength + ivf_header_length + ivf_frame_header_length);
     gst_buffer_map(buffer, &map, GST_MAP_WRITE);
-    if (frame.format == owt_base::FRAME_FORMAT_VP8) {
+    if (frame.format == infraframe::FRAME_FORMAT_VP8) {
         if (num_frames == 0) {
             memcpy(map.data, ivf_header, ivf_header_length);
         }

@@ -75,7 +75,7 @@ NAN_METHOD(WebTransportFrameSource::addDestination)
     if (info.Length() == 3) {
         isNanDestination = Nan::To<bool>(info[2]).FromJust();
     }
-    owt_base::FrameDestination* dest(nullptr);
+    infraframe::FrameDestination* dest(nullptr);
     if (isNanDestination) {
         NanFrameNode* param = Nan::ObjectWrap::Unwrap<NanFrameNode>(
             Nan::To<v8::Object>(info[1]).ToLocalChecked());
@@ -95,12 +95,12 @@ NAN_METHOD(WebTransportFrameSource::receiver)
     info.GetReturnValue().Set(info.This());
 }
 
-void WebTransportFrameSource::onFeedback(const owt_base::FeedbackMsg&)
+void WebTransportFrameSource::onFeedback(const infraframe::FeedbackMsg&)
 {
     // No feedbacks righ now.
 }
 
-void WebTransportFrameSource::onFrame(const owt_base::Frame& frame)
+void WebTransportFrameSource::onFrame(const infraframe::Frame& frame)
 {
     deliverFrame(frame);
 }

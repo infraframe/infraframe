@@ -29,10 +29,10 @@ extern "C" {
 }
 
 namespace mcu {
-using namespace owt_base;
+using namespace infraframe;
 using namespace webrtc;
 
-class FfDecoder : public AudioDecoder, public owt_base::FrameSource {
+class FfDecoder : public AudioDecoder, public infraframe::FrameSource {
     DECLARE_LOGGER();
 
 public:
@@ -42,7 +42,7 @@ public:
     bool init() override;
     bool getAudioFrame(AudioFrame* audioFrame) override;
 
-    // Implements owt_base::FrameDestination
+    // Implements infraframe::FrameDestination
     void onFrame(const Frame& frame) override;
 
 protected:

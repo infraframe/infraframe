@@ -10,7 +10,7 @@
 namespace mcu {
 
 using namespace webrtc;
-using namespace owt_base;
+using namespace infraframe;
 
 static enum AVSampleFormat getCodecPreferedSampleFmt(AVCodec* codec, enum AVSampleFormat PreferedSampleFmt)
 {
@@ -246,7 +246,7 @@ void FfEncoder::encode()
 
 void FfEncoder::sendOut(AVPacket& pkt)
 {
-    owt_base::Frame frame;
+    infraframe::Frame frame;
     memset(&frame, 0, sizeof(frame));
     frame.format = m_format;
     frame.payload = const_cast<uint8_t*>(pkt.data);

@@ -13,18 +13,18 @@
 #include <node_object_wrap.h>
 
 /*
- * Wrapper class of owt_base::VideoFrameConstructor
+ * Wrapper class of infraframe::VideoFrameConstructor
  */
-class VideoFrameConstructor : public MediaSink, public owt_base::VideoInfoListener {
+class VideoFrameConstructor : public MediaSink, public infraframe::VideoInfoListener {
 public:
     static NAN_MODULE_INIT(Init);
-    owt_base::VideoFrameConstructor* me;
-    owt_base::FrameSource* src;
+    infraframe::VideoFrameConstructor* me;
+    infraframe::FrameSource* src;
 
     std::queue<std::string> videoInfoMsgs;
     boost::mutex mutex;
 
-    owt_base::VideoFrameConstructor* parent;
+    infraframe::VideoFrameConstructor* parent;
     std::string layerId;
 
 private:
@@ -62,7 +62,7 @@ private:
 class VideoFrameSource : public FrameSource {
 public:
     static NAN_MODULE_INIT(Init);
-    owt_base::VideoFrameConstructor* me;
+    infraframe::VideoFrameConstructor* me;
 
 private:
     VideoFrameSource() {};

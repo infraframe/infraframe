@@ -52,9 +52,9 @@ void InternalIn::New(const FunctionCallbackInfo<Value>& args)
 
     InternalIn* obj = new InternalIn();
     if (ticket.empty()) {
-        obj->me = new owt_base::InternalIn(protocol, minPort, maxPort);
+        obj->me = new infraframe::InternalIn(protocol, minPort, maxPort);
     } else {
-        obj->me = new owt_base::InternalIn(protocol, ticket, minPort, maxPort);
+        obj->me = new infraframe::InternalIn(protocol, ticket, minPort, maxPort);
     }
     obj->src = obj->me;
 
@@ -67,7 +67,7 @@ void InternalIn::close(const FunctionCallbackInfo<Value>& args)
     Isolate* isolate = Isolate::GetCurrent();
     HandleScope scope(isolate);
     InternalIn* obj = ObjectWrap::Unwrap<InternalIn>(args.Holder());
-    owt_base::InternalIn* me = obj->me;
+    infraframe::InternalIn* me = obj->me;
     delete me;
 }
 
@@ -77,7 +77,7 @@ void InternalIn::getListeningPort(const FunctionCallbackInfo<Value>& args)
     HandleScope scope(isolate);
 
     InternalIn* obj = ObjectWrap::Unwrap<InternalIn>(args.This());
-    owt_base::InternalIn* me = obj->me;
+    infraframe::InternalIn* me = obj->me;
 
     uint32_t port = me->getListeningPort();
 
@@ -90,13 +90,13 @@ void InternalIn::addDestination(const FunctionCallbackInfo<Value>& args)
     HandleScope scope(isolate);
 
     InternalIn* obj = ObjectWrap::Unwrap<InternalIn>(args.Holder());
-    owt_base::InternalIn* me = obj->me;
+    infraframe::InternalIn* me = obj->me;
 
     String::Utf8Value param0(args[0]->ToString());
     std::string track = std::string(*param0);
 
     FrameDestination* param = ObjectWrap::Unwrap<FrameDestination>(args[1]->ToObject());
-    owt_base::FrameDestination* dest = param->dest;
+    infraframe::FrameDestination* dest = param->dest;
 
     if (track == "audio") {
         me->addAudioDestination(dest);
@@ -111,13 +111,13 @@ void InternalIn::removeDestination(const FunctionCallbackInfo<Value>& args)
     HandleScope scope(isolate);
 
     InternalIn* obj = ObjectWrap::Unwrap<InternalIn>(args.Holder());
-    owt_base::InternalIn* me = obj->me;
+    infraframe::InternalIn* me = obj->me;
 
     String::Utf8Value param0(args[0]->ToString());
     std::string track = std::string(*param0);
 
     FrameDestination* param = ObjectWrap::Unwrap<FrameDestination>(args[1]->ToObject());
-    owt_base::FrameDestination* dest = param->dest;
+    infraframe::FrameDestination* dest = param->dest;
 
     if (track == "audio") {
         me->removeAudioDestination(dest);

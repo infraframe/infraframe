@@ -7,14 +7,14 @@
 #ifndef QUIC_ADDON_WEB_TRANSPORT_FRAME_SOURCE_H_
 #define QUIC_ADDON_WEB_TRANSPORT_FRAME_SOURCE_H_
 
-#include "../../core/owt_base/MediaFramePipeline.h"
+#include "../../core/infraframe/MediaFramePipeline.h"
 #include "../common/MediaFramePipelineWrapper.h"
 #include "owt/quic/web_transport_stream_interface.h"
 #include <logger.h>
 #include <nan.h>
 
 // A WebTransportFrameSource is a hub for multiple WebTransport inputs to a single InternalIO output.
-class WebTransportFrameSource : public owt_base::FrameSource, public owt_base::FrameDestination, public NanFrameNode {
+class WebTransportFrameSource : public infraframe::FrameSource, public infraframe::FrameDestination, public NanFrameNode {
     DECLARE_LOGGER();
 
 public:
@@ -23,16 +23,16 @@ public:
 
     static NAN_MODULE_INIT(init);
 
-    // Overrides owt_base::FrameSource.
-    void onFeedback(const owt_base::FeedbackMsg&) override;
+    // Overrides infraframe::FrameSource.
+    void onFeedback(const infraframe::FeedbackMsg&) override;
 
-    // Overrides owt_base::FrameDestination.
-    void onFrame(const owt_base::Frame&) override;
+    // Overrides infraframe::FrameDestination.
+    void onFrame(const infraframe::Frame&) override;
     void onVideoSourceChanged() override;
 
     // Overrides NanFrameNode.
-    owt_base::FrameSource* FrameSource() override { return this; }
-    owt_base::FrameDestination* FrameDestination() override { return this; }
+    infraframe::FrameSource* FrameSource() override { return this; }
+    infraframe::FrameDestination* FrameDestination() override { return this; }
 
 private:
     // new WebTransportFrameSource(contentSessionId, options)

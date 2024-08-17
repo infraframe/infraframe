@@ -73,7 +73,7 @@ NAN_METHOD(InternalClient::New)
         unsigned int port = Nan::To<unsigned int>(info[3]).FromJust();
 
         InternalClient* obj = new InternalClient();
-        obj->me = new owt_base::InternalClient(
+        obj->me = new infraframe::InternalClient(
             streamId, protocol, ip, port, obj);
         if (info.Length() > 4 && info[4]->IsFunction()) {
             obj->stats_callback_ = new Nan::Callback(info[4].As<Function>());
@@ -97,7 +97,7 @@ NAN_METHOD(InternalClient::close)
 NAN_METHOD(InternalClient::addDestination)
 {
     InternalClient* obj = ObjectWrap::Unwrap<InternalClient>(info.Holder());
-    owt_base::InternalClient* me = obj->me;
+    infraframe::InternalClient* me = obj->me;
 
     Nan::Utf8String param0(Nan::To<v8::String>(info[0]).ToLocalChecked());
     std::string track = std::string(*param0);
@@ -107,7 +107,7 @@ NAN_METHOD(InternalClient::addDestination)
         isNanDestination = Nan::To<bool>(info[2]).FromJust();
     }
 
-    owt_base::FrameDestination* dest(nullptr);
+    infraframe::FrameDestination* dest(nullptr);
     if (isNanDestination) {
         NanFrameNode* param = Nan::ObjectWrap::Unwrap<NanFrameNode>(
             Nan::To<v8::Object>(info[1]).ToLocalChecked());
@@ -130,12 +130,12 @@ NAN_METHOD(InternalClient::addDestination)
 NAN_METHOD(InternalClient::removeDestination)
 {
     InternalClient* obj = ObjectWrap::Unwrap<InternalClient>(info.Holder());
-    owt_base::InternalClient* me = obj->me;
+    infraframe::InternalClient* me = obj->me;
 
     Nan::Utf8String param0(Nan::To<v8::String>(info[0]).ToLocalChecked());
     std::string track = std::string(*param0);
 
-    owt_base::FrameDestination* dest(nullptr);
+    infraframe::FrameDestination* dest(nullptr);
     bool isNanDestination(false);
     if (info.Length() >= 3) {
         isNanDestination = Nan::To<bool>(info[2]).FromJust();

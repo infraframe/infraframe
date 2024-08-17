@@ -157,10 +157,10 @@ NAN_GETTER(WebTransportFrameDestination::rtpConfigGetter)
     info.GetReturnValue().Set(rtpConfig);
 }
 
-void WebTransportFrameDestination::onFrame(const owt_base::Frame& frame)
+void WebTransportFrameDestination::onFrame(const infraframe::Frame& frame)
 {
     // Packetize video frames or send RTP packets.
-    if (frame.format != owt_base::FRAME_FORMAT_RTP) {
+    if (frame.format != infraframe::FRAME_FORMAT_RTP) {
         if (m_isDatagram && m_videoRtpPacketizer) {
             m_videoRtpPacketizer->onFrame(frame);
         } else if (!m_isDatagram) {
@@ -178,7 +178,7 @@ void WebTransportFrameDestination::onFrame(const owt_base::Frame& frame)
 
 void WebTransportFrameDestination::onVideoSourceChanged() { }
 
-void WebTransportFrameDestination::onFeedback(const owt_base::FeedbackMsg& feedback)
+void WebTransportFrameDestination::onFeedback(const infraframe::FeedbackMsg& feedback)
 {
     // TODO: RTCP packet could be for audio. Sending to audio packetizer when audio support is added.
     if (!m_videoRtpPacketizer) {
@@ -188,17 +188,17 @@ void WebTransportFrameDestination::onFeedback(const owt_base::FeedbackMsg& feedb
     m_videoRtpPacketizer->onFeedback(feedback);
 }
 
-void WebTransportFrameDestination::DispatchMediaFrame(const owt_base::Frame& frame)
+void WebTransportFrameDestination::DispatchMediaFrame(const infraframe::Frame& frame)
 {
     std::shared_lock<std::shared_timed_mutex> lock(m_streamOutputMutex);
-    owt_base::FrameDestination* dest(nullptr);
-    if (owt_base::isAudioFrame(frame)) {
+    infraframe::FrameDestination* dest(nullptr);
+    if (infraframe::isAudioFrame(frame)) {
         if (m_streamOutput.find(audioTrackId) == m_streamOutput.end()) {
             ELOG_DEBUG("Audio output not found. Dropping an audio frame.");
             return;
         }
         dest = m_streamOutput[audioTrackId]->FrameDestination();
-    } else if (owt_base::isVideoFrame(frame)) {
+    } else if (infraframe::isVideoFrame(frame)) {
         if (m_streamOutput.find(videoTrackId) == m_streamOutput.end()) {
             ELOG_DEBUG("Video output not found. Dropping a video frame.");
             return;
@@ -215,8 +215,8 @@ void WebTransportFrameDestination::DispatchMediaFrame(const owt_base::Frame& fra
         buffer[3 - i] = payloadSize & 0xFF;
         payloadSize >>= 8;
     }
-    owt_base::Frame header;
-    header.format = owt_base::FRAME_FORMAT_DATA;
+    infraframe::Frame header;
+    header.format = infraframe::FRAME_FORMAT_DATA;
     header.length = 4;
     header.payload = buffer;
     dest->onFrame(header);

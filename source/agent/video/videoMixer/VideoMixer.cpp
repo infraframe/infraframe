@@ -10,7 +10,7 @@
 #include "VideoMixer.h"
 
 using namespace webrtc;
-using namespace owt_base;
+using namespace infraframe;
 
 namespace mcu {
 
@@ -62,7 +62,7 @@ VideoMixer::~VideoMixer()
     closeAll();
 }
 
-bool VideoMixer::addInput(const int inputIndex, const std::string& codec, owt_base::FrameSource* source, const std::string& avatar)
+bool VideoMixer::addInput(const int inputIndex, const std::string& codec, infraframe::FrameSource* source, const std::string& avatar)
 {
     if (m_inputs.find(inputIndex) != m_inputs.end()) {
         ELOG_WARN("addInput already exist:%d", inputIndex);
@@ -73,7 +73,7 @@ bool VideoMixer::addInput(const int inputIndex, const std::string& codec, owt_ba
         return false;
     }
 
-    owt_base::FrameFormat format = getFormat(codec);
+    infraframe::FrameFormat format = getFormat(codec);
 
     if (m_frameMixer->addInput(inputIndex, format, source, avatar)) {
         m_inputs.insert(inputIndex);
@@ -105,9 +105,9 @@ void VideoMixer::setInputActive(const int inputIndex, bool active)
 }
 
 bool VideoMixer::addOutput(
-    const std::string& outStreamID, const std::string& codec, const owt_base::VideoCodecProfile profile, const std::string& resolution, const unsigned int framerateFPS, const unsigned int bitrateKbps, const unsigned int keyFrameIntervalSeconds, owt_base::FrameDestination* dest)
+    const std::string& outStreamID, const std::string& codec, const infraframe::VideoCodecProfile profile, const std::string& resolution, const unsigned int framerateFPS, const unsigned int bitrateKbps, const unsigned int keyFrameIntervalSeconds, infraframe::FrameDestination* dest)
 {
-    owt_base::FrameFormat format = getFormat(codec);
+    infraframe::FrameFormat format = getFormat(codec);
     VideoSize vSize;
     VideoResolutionHelper::getVideoSize(resolution, vSize);
 

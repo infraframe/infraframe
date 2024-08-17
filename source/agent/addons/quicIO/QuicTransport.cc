@@ -8,7 +8,7 @@
 #include <thread>
 
 using namespace net;
-using namespace owt_base;
+using namespace infraframe;
 
 const char TDT_FEEDBACK_MSG = 0x5A;
 const char TDT_MEDIA_FRAME = 0x8F;
@@ -55,7 +55,7 @@ void QuicIn::onFeedback(const FeedbackMsg& msg)
 
 void QuicIn::dFrame(char* buf)
 {
-    owt_base::Frame* frame = nullptr;
+    infraframe::Frame* frame = nullptr;
     switch (buf[0]) {
     case TDT_MEDIA_FRAME:
         frame = reinterpret_cast<Frame*>(buf + 1);

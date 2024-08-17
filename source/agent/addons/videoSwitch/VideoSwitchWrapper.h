@@ -12,12 +12,12 @@
 #include <memory>
 
 /*
- * Wrapper class of owt_base::VideoQualitySwitch
+ * Wrapper class of infraframe::VideoQualitySwitch
  */
 class VideoSwitch : public FrameSource {
 public:
     static NAN_MODULE_INIT(Init);
-    std::shared_ptr<owt_base::VideoQualitySwitch> me;
+    std::shared_ptr<infraframe::VideoQualitySwitch> me;
 
 private:
     VideoSwitch();

@@ -170,9 +170,9 @@ NAN_METHOD(QuicTransportConnection::close)
     obj->m_session->Close(closeCode, reason.c_str());
 }
 
-void QuicTransportConnection::onFrame(const owt_base::Frame& frame)
+void QuicTransportConnection::onFrame(const infraframe::Frame& frame)
 {
-    if (frame.format != owt_base::FRAME_FORMAT_RTP) {
+    if (frame.format != infraframe::FRAME_FORMAT_RTP) {
         ELOG_WARN("WebTransport datagram output only supports RTP packets. Received frame type %d. Discard this frame.", frame.format);
         return;
     }
@@ -193,11 +193,11 @@ void QuicTransportConnection::OnConnectionClosed()
 
 void QuicTransportConnection::OnDatagramReceived(const uint8_t* data, size_t length)
 {
-    if (length > owt_base::FeedbackMsg::kMaxBufferByteLength) {
+    if (length > infraframe::FeedbackMsg::kMaxBufferByteLength) {
         ELOG_WARN("The length of datagram received is larger than expected.");
         return;
     }
-    owt_base::FeedbackMsg feedback = { .type = owt_base::DATA_FEEDBACK, .cmd = owt_base::RTCP_PACKET };
+    infraframe::FeedbackMsg feedback = { .type = infraframe::DATA_FEEDBACK, .cmd = infraframe::RTCP_PACKET };
     feedback.buffer.len = length;
     memcpy(feedback.buffer.data, data, length);
     deliverFeedbackMsg(feedback);

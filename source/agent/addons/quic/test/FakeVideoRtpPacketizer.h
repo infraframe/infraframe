@@ -16,12 +16,12 @@ public:
     explicit FakeVideoRtpPacketizer();
     virtual ~FakeVideoRtpPacketizer();
 
-    // Overrides owt_base::FrameDestination.
-    void onFrame(const owt_base::Frame&) override {};
+    // Overrides infraframe::FrameDestination.
+    void onFrame(const infraframe::Frame&) override {};
     void onVideoSourceChanged() override {};
 
     // Overrides AdapterFeedbackListener.
-    void onFeedback(const owt_base::FeedbackMsg& msg) override {};
+    void onFeedback(const infraframe::FeedbackMsg& msg) override {};
     // Overrides AdapterStatsListener.
     void onAdapterStats(const rtc_adapter::AdapterStats& stats) override {};
     // Overrides AdapterDataListener.

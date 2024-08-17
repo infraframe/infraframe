@@ -15,7 +15,7 @@
 #include <unordered_map>
 
 // A WebTransportFrameDestination is a hub for a single InternalIO input to multiple WebTransport outputs.
-class WebTransportFrameDestination : public owt_base::FrameSource, public owt_base::FrameDestination, public NanFrameNode {
+class WebTransportFrameDestination : public infraframe::FrameSource, public infraframe::FrameDestination, public NanFrameNode {
     DECLARE_LOGGER();
 
 public:
@@ -24,16 +24,16 @@ public:
 
     static NAN_MODULE_INIT(init);
 
-    // Overrides owt_base::FrameSource.
-    void onFeedback(const owt_base::FeedbackMsg&) override;
+    // Overrides infraframe::FrameSource.
+    void onFeedback(const infraframe::FeedbackMsg&) override;
 
-    // Overrides owt_base::FrameDestination.
-    void onFrame(const owt_base::Frame&) override;
+    // Overrides infraframe::FrameDestination.
+    void onFrame(const infraframe::Frame&) override;
     void onVideoSourceChanged() override;
 
     // Overrides NanFrameNode.
-    owt_base::FrameSource* FrameSource() override { return nullptr; }
-    owt_base::FrameDestination* FrameDestination() override { return this; }
+    infraframe::FrameSource* FrameSource() override { return nullptr; }
+    infraframe::FrameDestination* FrameDestination() override { return this; }
 
 private:
     static Nan::Persistent<v8::Function> s_constructor;
@@ -50,7 +50,7 @@ private:
     static NAN_GETTER(rtpConfigGetter);
 
     // Dispatch a media frame to its corresponding WebTransport stream. It works for WebTransport streams only.
-    void DispatchMediaFrame(const owt_base::Frame&);
+    void DispatchMediaFrame(const infraframe::Frame&);
 
     bool m_isDatagram;
     std::shared_timed_mutex m_datagramOutputMutex;

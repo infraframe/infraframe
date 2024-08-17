@@ -12,7 +12,7 @@
 #include "owt/quic/quic_transport_factory.h"
 #include "owt/quic/quic_transport_session_interface.h"
 
-using namespace owt_base;
+using namespace infraframe;
 using v8::Function;
 using v8::FunctionTemplate;
 using v8::Local;

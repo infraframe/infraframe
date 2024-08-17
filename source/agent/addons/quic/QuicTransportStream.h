@@ -7,7 +7,7 @@
 #ifndef QUIC_QUICTRANSPORTSTREAM_H_
 #define QUIC_QUICTRANSPORTSTREAM_H_
 
-#include "../../core/owt_base/MediaFramePipeline.h"
+#include "../../core/infraframe/MediaFramePipeline.h"
 #include "../common/MediaFramePipelineWrapper.h"
 #include "owt/quic/web_transport_stream_interface.h"
 #include <logger.h>
@@ -15,7 +15,7 @@
 #include <nan.h>
 #include <string>
 
-class QuicTransportStream : public owt_base::FrameSource, public owt_base::FrameDestination, public NanFrameNode, public owt::quic::WebTransportStreamInterface::Visitor {
+class QuicTransportStream : public infraframe::FrameSource, public infraframe::FrameDestination, public NanFrameNode, public owt::quic::WebTransportStreamInterface::Visitor {
     DECLARE_LOGGER();
 
 public:
@@ -50,16 +50,16 @@ public:
     // Only signaling stream (UUID: 0) invokes this method.
     static NAUV_WORK_CB(onData); // TODO: Move to pipe.
 
-    // Overrides owt_base::FrameSource.
-    void onFeedback(const owt_base::FeedbackMsg&) override;
+    // Overrides infraframe::FrameSource.
+    void onFeedback(const infraframe::FeedbackMsg&) override;
 
-    // Overrides owt_base::FrameDestination.
-    void onFrame(const owt_base::Frame&) override;
+    // Overrides infraframe::FrameDestination.
+    void onFrame(const infraframe::Frame&) override;
     void onVideoSourceChanged() override;
 
     // Overrides NanFrameNode.
-    owt_base::FrameSource* FrameSource() override { return this; }
-    owt_base::FrameDestination* FrameDestination() override { return this; }
+    infraframe::FrameSource* FrameSource() override { return this; }
+    infraframe::FrameDestination* FrameDestination() override { return this; }
 
     static Nan::Persistent<v8::Function> s_constructor;
 
@@ -69,10 +69,10 @@ protected:
     void OnCanWrite() override;
     void OnFinRead() override;
 
-    // Overrides owt_base::FrameSource.
-    void addAudioDestination(owt_base::FrameDestination*) override;
-    void addVideoDestination(owt_base::FrameDestination*) override;
-    void addDataDestination(owt_base::FrameDestination*) override;
+    // Overrides infraframe::FrameSource.
+    void addAudioDestination(infraframe::FrameDestination*) override;
+    void addVideoDestination(infraframe::FrameDestination*) override;
+    void addDataDestination(infraframe::FrameDestination*) override;
 
 private:
     // Read content session ID from data buffered.
@@ -100,7 +100,7 @@ private:
 
     // Indicates the kind of this stream, could be 'audio', 'video', 'data'. If this is not a data track, it can only be piped to another QUIC agent.
     std::string m_trackKind;
-    owt_base::FrameFormat m_frameFormat;
+    infraframe::FrameFormat m_frameFormat;
     Nan::Persistent<v8::Value> m_onDataCallback;
 
     size_t m_readingFrameSize;

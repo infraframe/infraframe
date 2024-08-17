@@ -99,21 +99,21 @@ void AVStreamOutWrap::New(const v8::FunctionCallbackInfo<v8::Value>& args)
         std::string url = getString(
             Nan::Get(connection, Nan::New("url").ToLocalChecked()).ToLocalChecked());
 
-        owt_base::LiveStreamOut::StreamingFormat format;
+        infraframe::LiveStreamOut::StreamingFormat format;
         if (protocol.compare("rtsp") == 0) {
-            format = owt_base::LiveStreamOut::STREAMING_FORMAT_RTSP;
+            format = infraframe::LiveStreamOut::STREAMING_FORMAT_RTSP;
         } else if (protocol.compare("rtmp") == 0) {
-            format = owt_base::LiveStreamOut::STREAMING_FORMAT_RTMP;
+            format = infraframe::LiveStreamOut::STREAMING_FORMAT_RTMP;
         } else if (protocol.compare("hls") == 0) {
-            format = owt_base::LiveStreamOut::STREAMING_FORMAT_HLS;
+            format = infraframe::LiveStreamOut::STREAMING_FORMAT_HLS;
         } else if (protocol.compare("dash") == 0) {
-            format = owt_base::LiveStreamOut::STREAMING_FORMAT_DASH;
+            format = infraframe::LiveStreamOut::STREAMING_FORMAT_DASH;
         } else {
             Nan::ThrowError("Unsupported AVStreamOut type");
             return;
         }
 
-        owt_base::LiveStreamOut::StreamingOptions opts;
+        infraframe::LiveStreamOut::StreamingOptions opts;
 
         opts.format = format;
         if (protocol.compare("hls") == 0) {
@@ -149,9 +149,9 @@ void AVStreamOutWrap::New(const v8::FunctionCallbackInfo<v8::Value>& args)
                 sizeof(opts.dash_method) - 1);
         }
 
-        obj->me = new owt_base::LiveStreamOut(url, requireAudio, requireVideo, obj, initializeTimeout, opts);
+        obj->me = new infraframe::LiveStreamOut(url, requireAudio, requireVideo, obj, initializeTimeout, opts);
     } else if (type.compare("file") == 0) {
-        obj->me = new owt_base::MediaFileOut(url, requireAudio, requireVideo, obj, initializeTimeout);
+        obj->me = new infraframe::MediaFileOut(url, requireAudio, requireVideo, obj, initializeTimeout);
     } else {
         Nan::ThrowError("Unsupported AVStreamOut type");
         return;

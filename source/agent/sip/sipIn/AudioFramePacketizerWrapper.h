@@ -11,23 +11,23 @@
 #include <node_object_wrap.h>
 
 /*
- * Wrapper class of owt_base::AudioFramePacketizer
+ * Wrapper class of infraframe::AudioFramePacketizer
  */
 class AudioFramePacketizer : public FrameDestination {
- public:
-  static void Init(v8::Local<v8::Object> exports);
-  owt_base::AudioFramePacketizer* me;
+public:
+    static void Init(v8::Local<v8::Object> exports);
+    infraframe::AudioFramePacketizer* me;
 
- private:
-  AudioFramePacketizer();
-  ~AudioFramePacketizer();
-  static v8::Persistent<v8::Function> constructor;
+private:
+    AudioFramePacketizer();
+    ~AudioFramePacketizer();
+    static v8::Persistent<v8::Function> constructor;
 
-  static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void close(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void close(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  static void bindTransport(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void unbindTransport(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void bindTransport(const v8::FunctionCallbackInfo<v8::Value>& args);
+    static void unbindTransport(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
 #endif

@@ -18,8 +18,8 @@
                 "AcmmOutput.cpp",
                 "AudioTime.cpp",
                 "../../addons/common/NodeEventRegistry.cc",
-                "../../../core/owt_base/MediaFramePipeline.cpp",
-                "../../../core/owt_base/AudioUtilities.cpp",
+                "../../../core/infraframe/MediaFramePipeline.cpp",
+                "../../../core/infraframe/AudioUtilities.cpp",
                 "../../../core/common/JobTimer.cpp",
             ],
             "cflags_cc": [
@@ -35,7 +35,7 @@
             "include_dirs": [
                 "<!(node -e \"require('nan')\")",
                 "$(CORE_HOME)/common",
-                "$(CORE_HOME)/owt_base",
+                "$(CORE_HOME)/infraframe",
                 "$(CORE_HOME)/../../third_party/webrtc/src",
                 "$(DEFAULT_DEPENDENCY_PATH)/include",
                 "$(CUSTOM_INCLUDE_PATH)",

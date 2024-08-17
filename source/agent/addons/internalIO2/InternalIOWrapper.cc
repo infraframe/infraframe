@@ -50,7 +50,7 @@ void SctpIn::New(const FunctionCallbackInfo<Value>& args)
     HandleScope scope(isolate);
 
     SctpIn* obj = new SctpIn();
-    obj->me = new owt_base::InternalSctp();
+    obj->me = new infraframe::InternalSctp();
     obj->src = obj->me;
 
     obj->Wrap(args.This());
@@ -76,7 +76,7 @@ void SctpIn::getListeningPort(const FunctionCallbackInfo<Value>& args)
     HandleScope scope(isolate);
 
     SctpIn* obj = ObjectWrap::Unwrap<SctpIn>(args.This());
-    owt_base::InternalSctp* me = obj->me;
+    infraframe::InternalSctp* me = obj->me;
 
     if (!me) {
         // Skip when function close has been called
@@ -100,7 +100,7 @@ void SctpIn::connect(const FunctionCallbackInfo<Value>& args)
     HandleScope scope(isolate);
 
     SctpIn* obj = ObjectWrap::Unwrap<SctpIn>(args.Holder());
-    owt_base::InternalSctp* me = obj->me;
+    infraframe::InternalSctp* me = obj->me;
 
     if (!me) {
         // Skip when function close has been called
@@ -122,7 +122,7 @@ void SctpIn::addDestination(const FunctionCallbackInfo<Value>& args)
     HandleScope scope(isolate);
 
     SctpIn* obj = ObjectWrap::Unwrap<SctpIn>(args.Holder());
-    owt_base::InternalSctp* me = obj->me;
+    infraframe::InternalSctp* me = obj->me;
 
     if (!me) {
         // Skip when function close has been called
@@ -134,7 +134,7 @@ void SctpIn::addDestination(const FunctionCallbackInfo<Value>& args)
     std::string track = std::string(*param0);
 
     FrameDestination* param = ObjectWrap::Unwrap<FrameDestination>(args[1]->ToObject());
-    owt_base::FrameDestination* dest = param->dest;
+    infraframe::FrameDestination* dest = param->dest;
 
     if (track == "audio") {
         me->addAudioDestination(dest);
@@ -149,7 +149,7 @@ void SctpIn::removeDestination(const FunctionCallbackInfo<Value>& args)
     HandleScope scope(isolate);
 
     SctpIn* obj = ObjectWrap::Unwrap<SctpIn>(args.Holder());
-    owt_base::InternalSctp* me = obj->me;
+    infraframe::InternalSctp* me = obj->me;
 
     if (!me) {
         // Skip when function close has been called
@@ -161,7 +161,7 @@ void SctpIn::removeDestination(const FunctionCallbackInfo<Value>& args)
     std::string track = std::string(*param0);
 
     FrameDestination* param = ObjectWrap::Unwrap<FrameDestination>(args[1]->ToObject());
-    owt_base::FrameDestination* dest = param->dest;
+    infraframe::FrameDestination* dest = param->dest;
 
     if (track == "audio") {
         me->removeAudioDestination(dest);
@@ -207,7 +207,7 @@ void SctpOut::New(const FunctionCallbackInfo<Value>& args)
     HandleScope scope(isolate);
 
     SctpOut* obj = new SctpOut();
-    obj->me = new owt_base::InternalSctp();
+    obj->me = new infraframe::InternalSctp();
     obj->dest = obj->me;
 
     obj->Wrap(args.This());
@@ -233,7 +233,7 @@ void SctpOut::getListeningPort(const FunctionCallbackInfo<Value>& args)
     HandleScope scope(isolate);
 
     SctpOut* obj = ObjectWrap::Unwrap<SctpOut>(args.This());
-    owt_base::InternalSctp* me = obj->me;
+    infraframe::InternalSctp* me = obj->me;
 
     if (!me) {
         // Skip when function close has been called
@@ -257,7 +257,7 @@ void SctpOut::connect(const FunctionCallbackInfo<Value>& args)
     HandleScope scope(isolate);
 
     SctpOut* obj = ObjectWrap::Unwrap<SctpOut>(args.Holder());
-    owt_base::InternalSctp* me = obj->me;
+    infraframe::InternalSctp* me = obj->me;
 
     if (!me) {
         // Skip when function close has been called

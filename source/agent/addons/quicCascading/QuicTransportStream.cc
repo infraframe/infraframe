@@ -9,7 +9,7 @@
 #include <thread>
 
 //using namespace net;
-using namespace owt_base;
+using namespace infraframe;
 using v8::Function;
 using v8::FunctionTemplate;
 using v8::Local;
@@ -136,7 +136,7 @@ NAN_METHOD(QuicTransportStream::addDestination)
         ELOG_DEBUG("addDestination has 3 parameters");
         isNanDestination = Nan::To<bool>(info[2]).FromJust();
     }
-    owt_base::FrameDestination* dest(nullptr);
+    infraframe::FrameDestination* dest(nullptr);
     if (isNanDestination) {
         ELOG_DEBUG("addDestination isNanDestination is true");
         NanFrameNode* param = Nan::ObjectWrap::Unwrap<NanFrameNode>(
@@ -246,7 +246,7 @@ void QuicTransportStream::onVideoSourceChanged()
     // Do nothing.
 }
 
-void QuicTransportStream::onFrame(const owt_base::Frame& frame)
+void QuicTransportStream::onFrame(const infraframe::Frame& frame)
 {
     //ELOG_DEBUG("QuicTransportStream::onFrame");
     //dump(this, frame.payload, frame.length);
@@ -321,7 +321,7 @@ void QuicTransportStream::OnData(owt::quic::QuicTransportStreamInterface* stream
             char* dpos = m_receiveData.buffer.get() + 4;
             Frame* frame = nullptr;
             std::string s_data(dpos + 1, payloadlen - 1);
-            owt_base::FeedbackMsg msg { .type = owt_base::VIDEO_FEEDBACK, .cmd = owt_base::REQUEST_KEY_FRAME };
+            infraframe::FeedbackMsg msg { .type = infraframe::VIDEO_FEEDBACK, .cmd = infraframe::REQUEST_KEY_FRAME };
 
             switch (dpos[0]) {
             case TDT_MEDIA_FRAME:

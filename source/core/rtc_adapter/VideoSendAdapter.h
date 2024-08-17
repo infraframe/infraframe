@@ -45,7 +45,7 @@ public:
     ~VideoSendAdapterImpl();
 
     // Implement VideoSendAdapter
-    void onFrame(const owt_base::Frame&) override;
+    void onFrame(const infraframe::Frame&) override;
     int onRtcpData(const char* data, int len) override;
     void reset() override;
     uint32_t ssrc() { return m_ssrc; }
@@ -82,13 +82,13 @@ private:
     boost::shared_mutex m_rtpRtcpMutex;
 
     boost::shared_ptr<webrtc::Transport> m_videoTransport;
-    boost::shared_ptr<owt_base::WebRTCTaskRunner> m_taskRunner;
-    owt_base::FrameFormat m_frameFormat;
+    boost::shared_ptr<infraframe::WebRTCTaskRunner> m_taskRunner;
+    infraframe::FrameFormat m_frameFormat;
     uint16_t m_frameWidth;
     uint16_t m_frameHeight;
     webrtc::Random m_random;
     uint32_t m_ssrc;
-    owt_base::SsrcGenerator* const m_ssrcGenerator;
+    infraframe::SsrcGenerator* const m_ssrcGenerator;
 
     boost::shared_mutex m_transportMutex;
 

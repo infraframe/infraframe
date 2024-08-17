@@ -10,7 +10,7 @@
 #include <logger.h>
 #include <nan.h>
 
-#include "../../core/owt_base/MediaFramePipeline.h"
+#include "../../core/infraframe/MediaFramePipeline.h"
 #include "../common/MediaFramePipelineWrapper.h"
 #include "owt/quic/quic_transport_stream_interface.h"
 

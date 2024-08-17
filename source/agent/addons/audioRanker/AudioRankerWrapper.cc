@@ -45,9 +45,9 @@ NAN_METHOD(AudioRanker::New)
         if (info.Length() > 2) {
             bool detectMute = Nan::To<bool>(info[1]).FromJust();
             int changeInterval = Nan::To<int>(info[2]).FromJust();
-            obj->me = new owt_base::AudioRanker(obj, detectMute, changeInterval);
+            obj->me = new infraframe::AudioRanker(obj, detectMute, changeInterval);
         } else {
-            obj->me = new owt_base::AudioRanker(obj);
+            obj->me = new infraframe::AudioRanker(obj);
         }
 
         obj->Wrap(info.This());
@@ -74,11 +74,11 @@ NAN_METHOD(AudioRanker::close)
 NAN_METHOD(AudioRanker::addOutput)
 {
     AudioRanker* obj = Nan::ObjectWrap::Unwrap<AudioRanker>(info.Holder());
-    owt_base::AudioRanker* me = obj->me;
+    infraframe::AudioRanker* me = obj->me;
 
     FrameDestination* param = node::ObjectWrap::Unwrap<FrameDestination>(
         Nan::To<v8::Object>(info[0]).ToLocalChecked());
-    owt_base::FrameDestination* dest = param->dest;
+    infraframe::FrameDestination* dest = param->dest;
 
     me->addOutput(dest);
 }
@@ -86,11 +86,11 @@ NAN_METHOD(AudioRanker::addOutput)
 NAN_METHOD(AudioRanker::addInput)
 {
     AudioRanker* obj = Nan::ObjectWrap::Unwrap<AudioRanker>(info.Holder());
-    owt_base::AudioRanker* me = obj->me;
+    infraframe::AudioRanker* me = obj->me;
 
     FrameSource* param = node::ObjectWrap::Unwrap<FrameSource>(
         Nan::To<v8::Object>(info[0]).ToLocalChecked());
-    owt_base::FrameSource* src = param->src;
+    infraframe::FrameSource* src = param->src;
 
     Nan::Utf8String streamIdPara(Nan::To<v8::String>(info[1]).ToLocalChecked());
     std::string streamId = std::string(*streamIdPara);
@@ -104,7 +104,7 @@ NAN_METHOD(AudioRanker::addInput)
 NAN_METHOD(AudioRanker::removeInput)
 {
     AudioRanker* obj = Nan::ObjectWrap::Unwrap<AudioRanker>(info.Holder());
-    owt_base::AudioRanker* me = obj->me;
+    infraframe::AudioRanker* me = obj->me;
 
     Nan::Utf8String streamIdPara(Nan::To<v8::String>(info[0]).ToLocalChecked());
     std::string streamId = std::string(*streamIdPara);

@@ -56,7 +56,7 @@ NAN_METHOD(QuicTransportServer::newInstance)
     Nan::Utf8String pfxPath(Nan::To<v8::String>(info[1]).ToLocalChecked());
     Nan::Utf8String password(Nan::To<v8::String>(info[2]).ToLocalChecked());
     QuicTransportServer* obj = new QuicTransportServer(port, *pfxPath, *password);
-    owt_base::Utils::ZeroMemory(*password, password.length());
+    infraframe::Utils::ZeroMemory(*password, password.length());
     obj->Wrap(info.This());
     uv_async_init(uv_default_loop(), &obj->m_asyncOnConnection, &QuicTransportServer::onConnectionCallback);
     info.GetReturnValue().Set(info.This());

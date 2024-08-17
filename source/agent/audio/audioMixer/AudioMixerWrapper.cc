@@ -114,7 +114,7 @@ void AudioMixer::addInput(const v8::FunctionCallbackInfo<v8::Value>& args)
     Nan::Utf8String param2(Nan::To<v8::String>(args[2]).ToLocalChecked());
     std::string codec = std::string(*param2);
     FrameSource* param3 = ObjectWrap::Unwrap<FrameSource>(args[3]->ToObject(Nan::GetCurrentContext()).ToLocalChecked());
-    owt_base::FrameSource* src = param3->src;
+    infraframe::FrameSource* src = param3->src;
 
     bool r = me->addInput(endpointID, streamID, codec, src);
 
@@ -170,7 +170,7 @@ void AudioMixer::addOutput(const v8::FunctionCallbackInfo<v8::Value>& args)
     std::string codec = std::string(*param2);
     FrameDestination* param3 = ObjectWrap::Unwrap<FrameDestination>(
         args[3]->ToObject(Nan::GetCurrentContext()).ToLocalChecked());
-    owt_base::FrameDestination* dest = param3->dest;
+    infraframe::FrameDestination* dest = param3->dest;
 
     bool r = me->addOutput(endpointID, streamID, codec, dest);
 

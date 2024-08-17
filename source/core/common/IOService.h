@@ -11,7 +11,7 @@
 #include <logger.h>
 #include <memory>
 
-namespace owt_base {
+namespace infraframe {
 
 // Wrapped io_service for transport usage
 class IOService {
@@ -36,6 +36,6 @@ private:
 // Get a IOService from service pool
 std::shared_ptr<IOService> getIOService();
 
-} /* namespace owt_base */
+} /* namespace infraframe */
 
 #endif /* IOService_h */

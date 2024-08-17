@@ -69,7 +69,7 @@ NAN_METHOD(InternalServer::New)
         unsigned int maxPort = Nan::To<unsigned int>(info[2]).FromJust();
 
         InternalServer* obj = new InternalServer();
-        obj->me = new owt_base::InternalServer(
+        obj->me = new infraframe::InternalServer(
             protocol, minPort, maxPort, obj);
         if (info.Length() > 3 && info[3]->IsFunction()) {
             obj->stats_callback_ = new Nan::Callback(info[3].As<Function>());
@@ -84,7 +84,7 @@ NAN_METHOD(InternalServer::New)
 NAN_METHOD(InternalServer::close)
 {
     InternalServer* obj = ObjectWrap::Unwrap<InternalServer>(info.Holder());
-    owt_base::InternalServer* me = obj->me;
+    infraframe::InternalServer* me = obj->me;
     delete me;
     obj->me = nullptr;
 }
@@ -92,7 +92,7 @@ NAN_METHOD(InternalServer::close)
 NAN_METHOD(InternalServer::getListeningPort)
 {
     InternalServer* obj = ObjectWrap::Unwrap<InternalServer>(info.Holder());
-    owt_base::InternalServer* me = obj->me;
+    infraframe::InternalServer* me = obj->me;
 
     uint32_t port = me->getListeningPort();
 
@@ -102,7 +102,7 @@ NAN_METHOD(InternalServer::getListeningPort)
 NAN_METHOD(InternalServer::addSource)
 {
     InternalServer* obj = ObjectWrap::Unwrap<InternalServer>(info.Holder());
-    owt_base::InternalServer* me = obj->me;
+    infraframe::InternalServer* me = obj->me;
 
     Nan::Utf8String param0(Nan::To<v8::String>(info[0]).ToLocalChecked());
     std::string streamId = std::string(*param0);
@@ -112,7 +112,7 @@ NAN_METHOD(InternalServer::addSource)
         isNanSource = Nan::To<bool>(info[2]).FromJust();
     }
 
-    owt_base::FrameSource* src(nullptr);
+    infraframe::FrameSource* src(nullptr);
     if (isNanSource) {
         NanFrameNode* param = Nan::ObjectWrap::Unwrap<NanFrameNode>(
             Nan::To<v8::Object>(info[1]).ToLocalChecked());
@@ -129,7 +129,7 @@ NAN_METHOD(InternalServer::addSource)
 NAN_METHOD(InternalServer::removeSource)
 {
     InternalServer* obj = ObjectWrap::Unwrap<InternalServer>(info.Holder());
-    owt_base::InternalServer* me = obj->me;
+    infraframe::InternalServer* me = obj->me;
 
     Nan::Utf8String param0(Nan::To<v8::String>(info[0]).ToLocalChecked());
     std::string streamId = std::string(*param0);

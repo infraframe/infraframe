@@ -11,12 +11,12 @@
 #include <node_object_wrap.h>
 
 /*
- * Wrapper class of owt_base::InternalIn
+ * Wrapper class of infraframe::InternalIn
  */
 class InternalIn : public FrameSource {
 public:
     static void Init(v8::Local<v8::Object> exports);
-    owt_base::InternalIn* me;
+    infraframe::InternalIn* me;
 
 private:
     InternalIn();

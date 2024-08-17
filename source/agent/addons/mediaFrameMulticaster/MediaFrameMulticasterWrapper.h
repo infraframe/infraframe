@@ -13,12 +13,12 @@
 #include <nan.h>
 
 /*
- * Wrapper class of owt_base::MediaFrameMulticaster
+ * Wrapper class of infraframe::MediaFrameMulticaster
  */
 class MediaFrameMulticaster : public FrameDestination {
 public:
     static void Init(v8::Local<v8::Object>, v8::Local<v8::Object>);
-    owt_base::MediaFrameMulticaster* me;
+    infraframe::MediaFrameMulticaster* me;
 
 private:
     MediaFrameMulticaster();
@@ -37,7 +37,7 @@ private:
 class MulticasterSource : public FrameSource {
 public:
     static void Init(v8::Local<v8::Object>, v8::Local<v8::Object>);
-    owt_base::MediaFrameMulticaster* me;
+    infraframe::MediaFrameMulticaster* me;
 
 private:
     MulticasterSource();

@@ -12,7 +12,7 @@
 #include <rtputils.h>
 
 // using namespace webrtc;
-using namespace owt_base;
+using namespace infraframe;
 
 namespace rtc_adapter {
 
@@ -54,7 +54,7 @@ int32_t VideoReceiveAdapterImpl::AdapterDecoder::Decode(const webrtc::EncodedIma
     int64_t render_time_ms)
 {
     RTC_DLOG(LS_VERBOSE) << "AdapterDecoder Decode";
-    owt_base::FrameFormat format = FRAME_FORMAT_UNKNOWN;
+    infraframe::FrameFormat format = FRAME_FORMAT_UNKNOWN;
 
     switch (m_codec) {
     case webrtc::VideoCodecType::kVideoCodecVP8:
@@ -143,7 +143,7 @@ int32_t VideoReceiveAdapterImpl::AdapterDecoder::Decode(const webrtc::EncodedIma
 VideoReceiveAdapterImpl::VideoReceiveAdapterImpl(CallOwner* owner, const RtcAdapter::Config& config)
     : m_enableDump(false)
     , m_config(config)
-    , m_format(owt_base::FRAME_FORMAT_UNKNOWN)
+    , m_format(infraframe::FRAME_FORMAT_UNKNOWN)
     , m_width(0)
     , m_height(0)
     , m_frameListener(config.frame_listener)

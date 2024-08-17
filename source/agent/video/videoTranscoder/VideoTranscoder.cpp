@@ -9,7 +9,7 @@
 #include "VideoTranscoder.h"
 
 using namespace webrtc;
-using namespace owt_base;
+using namespace infraframe;
 
 namespace mcu {
 
@@ -64,14 +64,14 @@ int VideoTranscoder::useAFreeInputIndex()
     return -1;
 }
 
-bool VideoTranscoder::setInput(const std::string& inStreamID, const std::string& codec, owt_base::FrameSource* source)
+bool VideoTranscoder::setInput(const std::string& inStreamID, const std::string& codec, infraframe::FrameSource* source)
 {
     if (m_inputCount == m_maxInputCount) {
         ELOG_WARN("Exceeding maximum number of sources (%u), ignoring the addSource request", m_maxInputCount);
         return false;
     }
 
-    owt_base::FrameFormat format = getFormat(codec);
+    infraframe::FrameFormat format = getFormat(codec);
 
     boost::upgrade_lock<boost::shared_mutex> lock(m_inputsMutex);
     auto it = m_inputs.find(inStreamID);
@@ -109,9 +109,9 @@ void VideoTranscoder::unsetInput(const std::string& inStreamID)
 
 #ifndef BUILD_FOR_ANALYTICS
 bool VideoTranscoder::addOutput(
-    const std::string& outStreamID, const std::string& codec, const owt_base::VideoCodecProfile profile, const std::string& resolution, const unsigned int framerateFPS, const unsigned int bitrateKbps, const unsigned int keyFrameIntervalSeconds, owt_base::FrameDestination* dest)
+    const std::string& outStreamID, const std::string& codec, const infraframe::VideoCodecProfile profile, const std::string& resolution, const unsigned int framerateFPS, const unsigned int bitrateKbps, const unsigned int keyFrameIntervalSeconds, infraframe::FrameDestination* dest)
 {
-    owt_base::FrameFormat format = getFormat(codec);
+    infraframe::FrameFormat format = getFormat(codec);
     VideoSize vSize { 0, 0 };
     VideoResolutionHelper::getVideoSize(resolution, vSize);
     if (m_frameTranscoder->addOutput(m_nextOutputIndex, format, profile, vSize, framerateFPS, bitrateKbps, keyFrameIntervalSeconds, dest)) {
@@ -123,9 +123,9 @@ bool VideoTranscoder::addOutput(
 }
 #else
 bool VideoTranscoder::addOutput(
-    const std::string& outStreamID, const std::string& codec, const owt_base::VideoCodecProfile profile, const std::string& resolution, const unsigned int framerateFPS, const unsigned int bitrateKbps, const unsigned int keyFrameIntervalSeconds, const std::string& algorithm, const std::string& pluginName, owt_base::FrameDestination* dest)
+    const std::string& outStreamID, const std::string& codec, const infraframe::VideoCodecProfile profile, const std::string& resolution, const unsigned int framerateFPS, const unsigned int bitrateKbps, const unsigned int keyFrameIntervalSeconds, const std::string& algorithm, const std::string& pluginName, infraframe::FrameDestination* dest)
 {
-    owt_base::FrameFormat format = getFormat(codec);
+    infraframe::FrameFormat format = getFormat(codec);
     VideoSize vSize { 0, 0 };
     VideoResolutionHelper::getVideoSize(resolution, vSize);
     if (m_frameTranscoder->addOutput(m_nextOutputIndex, format, profile, vSize, framerateFPS, bitrateKbps, keyFrameIntervalSeconds, algorithm, pluginName, dest)) {

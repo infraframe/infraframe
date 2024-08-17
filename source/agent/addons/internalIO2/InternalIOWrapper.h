@@ -12,7 +12,7 @@
 #include <node_object_wrap.h>
 
 /*
- * Wrapper class of owt_base::InternalSctp
+ * Wrapper class of infraframe::InternalSctp
  * In fact, class SctpIn & class SctpOut are same,
  * but we cannot extends to FrameSource and FrameDestination both
  */
@@ -21,7 +21,7 @@ class SctpIn : public FrameSource {
 
 public:
     static void Init(v8::Local<v8::Object> exports);
-    owt_base::InternalSctp* me;
+    infraframe::InternalSctp* me;
 
 private:
     SctpIn();
@@ -43,7 +43,7 @@ class SctpOut : public FrameDestination {
 
 public:
     static void Init(v8::Local<v8::Object> exports);
-    owt_base::InternalSctp* me;
+    infraframe::InternalSctp* me;
 
 private:
     SctpOut();

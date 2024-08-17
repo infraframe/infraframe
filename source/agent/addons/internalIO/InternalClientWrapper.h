@@ -11,19 +11,19 @@
 #include <nan.h>
 
 /*
- * Wrapper class of owt_base::InternalClient
+ * Wrapper class of infraframe::InternalClient
  */
 class InternalClient : public FrameSource,
-                       public owt_base::InternalClient::Listener {
+                       public infraframe::InternalClient::Listener {
 public:
     DECLARE_LOGGER();
     static NAN_MODULE_INIT(Init);
 
-    owt_base::InternalClient* me;
+    infraframe::InternalClient* me;
     boost::mutex stats_lock;
     std::queue<std::string> stats_messages;
 
-    // Implements owt_base::InternalClient::Listener
+    // Implements infraframe::InternalClient::Listener
     void onConnected() override;
     void onDisconnected() override;
 

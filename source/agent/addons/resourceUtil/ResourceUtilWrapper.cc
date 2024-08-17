@@ -11,7 +11,7 @@
 #include <iostream>
 
 using namespace v8;
-using namespace owt_base;
+using namespace infraframe;
 
 Persistent<Function> ResourceUtil::constructor;
 ResourceUtil::ResourceUtil() {};

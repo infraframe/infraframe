@@ -11,12 +11,12 @@
 #include <node_object_wrap.h>
 
 /*
- * Wrapper class of owt_base::InternalOut
+ * Wrapper class of infraframe::InternalOut
  */
 class InternalOut : public FrameDestination {
 public:
     static void Init(v8::Local<v8::Object> exports);
-    owt_base::InternalOut* me;
+    infraframe::InternalOut* me;
 
 private:
     InternalOut();

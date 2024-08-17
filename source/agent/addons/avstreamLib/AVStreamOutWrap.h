@@ -11,13 +11,13 @@
 #include <nan.h>
 
 /*
- * Wrapper class of owt_base::AVStreamOut
+ * Wrapper class of infraframe::AVStreamOut
  */
 class AVStreamOutWrap : public FrameDestination, public NodeEventRegistry {
 public:
     static void Init(v8::Local<v8::Object>);
     static void Init(v8::Local<v8::Object>, v8::Local<v8::Object>);
-    owt_base::AVStreamOut* me;
+    infraframe::AVStreamOut* me;
 
 private:
     AVStreamOutWrap();

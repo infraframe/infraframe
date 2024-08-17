@@ -10,7 +10,7 @@
 namespace mcu {
 
 using namespace webrtc;
-using namespace owt_base;
+using namespace infraframe;
 
 DEFINE_LOGGER(FfDecoder, "mcu.media.FfDecoder");
 

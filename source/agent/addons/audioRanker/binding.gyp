@@ -5,16 +5,16 @@
             "sources": [
                 "addon.cc",
                 "AudioRankerWrapper.cc",
-                "../../../core/owt_base/selector/AudioRanker.cpp",
-                "../../../core/owt_base/MediaFramePipeline.cpp",
+                "../../../core/infraframe/selector/AudioRanker.cpp",
+                "../../../core/infraframe/MediaFramePipeline.cpp",
                 "../../../core/common/IOService.cpp",
             ],
             "include_dirs": [
                 "<!(node -e \"require('nan')\")",
                 "../common",
                 "../../../core/common/",
-                "../../../core/owt_base/",
-                "../../../core/owt_base/selector/",
+                "../../../core/infraframe/",
+                "../../../core/infraframe/selector/",
             ],
             "libraries": [
                 "-lboost_thread",

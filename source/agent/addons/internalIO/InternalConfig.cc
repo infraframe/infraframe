@@ -16,7 +16,7 @@ void setPassphrase(const Nan::FunctionCallbackInfo<v8::Value>& info)
 {
     Nan::Utf8String param0(Nan::To<v8::String>(info[0]).ToLocalChecked());
     std::string p = std::string(*param0);
-    owt_base::TransportSecret::setPassphrase(p);
+    infraframe::TransportSecret::setPassphrase(p);
 }
 
 void InitInternalConfig(v8::Local<v8::Object> exports)

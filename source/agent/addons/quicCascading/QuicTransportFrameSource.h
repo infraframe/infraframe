@@ -10,12 +10,12 @@
 #include <logger.h>
 #include <nan.h>
 
-#include "../../core/owt_base/MediaFramePipeline.h"
+#include "../../core/infraframe/MediaFramePipeline.h"
 #include "../common/MediaFramePipelineWrapper.h"
 #include "owt/quic/quic_transport_stream_interface.h"
 
 // A QuicTransportFrameSource is a hub for multiple QuicTransport inputs to a single InternalIO output.
-class QuicTransportFrameSource : public owt_base::FrameSource, public owt_base::FrameDestination, public NanFrameNode {
+class QuicTransportFrameSource : public infraframe::FrameSource, public infraframe::FrameDestination, public NanFrameNode {
     DECLARE_LOGGER();
 
 public:
@@ -24,16 +24,16 @@ public:
 
     static NAN_MODULE_INIT(init);
 
-    // Overrides owt_base::FrameSource.
-    void onFeedback(const owt_base::FeedbackMsg&) override;
+    // Overrides infraframe::FrameSource.
+    void onFeedback(const infraframe::FeedbackMsg&) override;
 
-    // Overrides owt_base::FrameDestination.
-    void onFrame(const owt_base::Frame&) override;
+    // Overrides infraframe::FrameDestination.
+    void onFrame(const infraframe::Frame&) override;
     void onVideoSourceChanged() override;
 
     // Overrides NanFrameNode.
-    owt_base::FrameSource* FrameSource() override { return this; }
-    owt_base::FrameDestination* FrameDestination() override { return this; }
+    infraframe::FrameSource* FrameSource() override { return this; }
+    infraframe::FrameDestination* FrameDestination() override { return this; }
 
 private:
     // new QuicTransportFrameSource(contentSessionId, options)

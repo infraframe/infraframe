@@ -31,7 +31,7 @@ public:
     ~AudioSendAdapterImpl();
 
     // Implement AudioSendAdapter
-    void onFrame(const owt_base::Frame&) override;
+    void onFrame(const infraframe::Frame&) override;
     int onRtcpData(const char* data, int len) override;
     uint32_t ssrc() override { return m_ssrc; }
 
@@ -43,21 +43,21 @@ public:
 
 private:
     bool init();
-    bool setSendCodec(owt_base::FrameFormat format);
+    bool setSendCodec(infraframe::FrameFormat format);
     void close();
     void updateSeqNo(uint8_t* rtp);
 
     boost::shared_mutex m_rtpRtcpMutex;
     std::unique_ptr<webrtc::RtpRtcp> m_rtpRtcp;
 
-    boost::shared_ptr<owt_base::WebRTCTaskRunner> m_taskRunner;
-    owt_base::FrameFormat m_frameFormat;
+    boost::shared_ptr<infraframe::WebRTCTaskRunner> m_taskRunner;
+    infraframe::FrameFormat m_frameFormat;
     boost::shared_mutex m_transport_mutex;
 
     uint16_t m_lastOriginSeqNo;
     uint16_t m_seqNo;
     uint32_t m_ssrc;
-    owt_base::SsrcGenerator* const m_ssrc_generator;
+    infraframe::SsrcGenerator* const m_ssrc_generator;
 
     webrtc::Clock* m_clock;
     std::unique_ptr<webrtc::RtcEventLog> m_eventLog;

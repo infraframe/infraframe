@@ -6,11 +6,11 @@
                 "addon.cc",
                 "QuicTransport.cc",
                 "InternalQuic.cc",
-                "../../../core/owt_base/MediaFramePipeline.cpp",
+                "../../../core/infraframe/MediaFramePipeline.cpp",
             ],
             "include_dirs": [
                 "<!(node -e \"require('nan')\")",
-                "../../../core/owt_base",
+                "../../../core/infraframe",
                 "../../../agent/addons/common",
                 "../../../../third_party/quic-lib/dist/include",
             ],

@@ -63,7 +63,7 @@
                 "erizo/src/erizo/thread",
                 "erizo/src/erizo/stats",
                 "<(source_rel_dir)/core/common",
-                "<(source_rel_dir)/core/owt_base",
+                "<(source_rel_dir)/core/infraframe",
                 "$(DEFAULT_DEPENDENCY_PATH)/include",
                 "$(CUSTOM_INCLUDE_PATH)",
                 "<!@(pkg-config glib-2.0 --cflags-only-I | sed s/-I//g)",

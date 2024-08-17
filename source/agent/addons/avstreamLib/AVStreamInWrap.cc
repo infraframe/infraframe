@@ -72,7 +72,7 @@ void AVStreamInWrap::New(const FunctionCallbackInfo<Value>& args)
     Local<String> keyBufferSize = Nan::New("buffer_size").ToLocalChecked();
     Local<String> keyAudio = Nan::New("has_audio").ToLocalChecked();
     Local<String> keyVideo = Nan::New("has_video").ToLocalChecked();
-    owt_base::LiveStreamIn::Options param {};
+    infraframe::LiveStreamIn::Options param {};
     Local<Object> options = Nan::To<v8::Object>(args[0]).ToLocalChecked();
     if (Nan::Has(options, keyUrl).FromMaybe(false))
         param.url = getString(Nan::Get(options, keyUrl).ToLocalChecked());
@@ -90,9 +90,9 @@ void AVStreamInWrap::New(const FunctionCallbackInfo<Value>& args)
     std::string type = getString(Nan::Get(options, Nan::New("type").ToLocalChecked())
                                      .ToLocalChecked());
     if (type.compare("streaming") == 0)
-        obj->me = new owt_base::LiveStreamIn(param, obj);
+        obj->me = new infraframe::LiveStreamIn(param, obj);
     else if (type.compare("file") == 0)
-        obj->me = new owt_base::MediaFileIn();
+        obj->me = new infraframe::MediaFileIn();
     else {
         Nan::ThrowError("Unsupported AVStreamIn type");
         return;
@@ -130,7 +130,7 @@ void AVStreamInWrap::addDestination(const FunctionCallbackInfo<Value>& args)
     std::string track = getString(args[0]);
     FrameDestination* param = ObjectWrap::Unwrap<FrameDestination>(
         Nan::To<v8::Object>(args[1]).ToLocalChecked());
-    owt_base::FrameDestination* dest = param->dest;
+    infraframe::FrameDestination* dest = param->dest;
 
     if (track == "audio")
         obj->me->addAudioDestination(dest);
@@ -149,7 +149,7 @@ void AVStreamInWrap::removeDestination(const FunctionCallbackInfo<Value>& args)
     std::string track = getString(args[0]);
     FrameDestination* param = ObjectWrap::Unwrap<FrameDestination>(
         Nan::To<v8::Object>(args[1]).ToLocalChecked());
-    owt_base::FrameDestination* dest = param->dest;
+    infraframe::FrameDestination* dest = param->dest;
 
     if (track == "audio")
         obj->me->removeAudioDestination(dest);

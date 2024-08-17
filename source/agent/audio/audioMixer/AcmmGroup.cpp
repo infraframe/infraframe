@@ -7,7 +7,7 @@
 namespace mcu {
 
 using namespace webrtc;
-using namespace owt_base;
+using namespace infraframe;
 
 DEFINE_LOGGER(AcmmGroup, "mcu.media.AcmmGroup");
 

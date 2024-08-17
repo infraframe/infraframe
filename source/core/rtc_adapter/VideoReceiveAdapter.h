@@ -85,7 +85,7 @@ private:
     bool m_enableDump;
     RtcAdapter::Config m_config;
     // Video Statistics collected in decoder thread
-    owt_base::FrameFormat m_format;
+    infraframe::FrameFormat m_format;
     uint16_t m_width;
     uint16_t m_height;
     // Listeners

@@ -14,19 +14,19 @@
 #include <string>
 
 /*
- * Wrapper class of owt_base::InternalServer
+ * Wrapper class of infraframe::InternalServer
  */
 class InternalServer : public node::ObjectWrap,
-                       public owt_base::InternalServer::Listener {
+                       public infraframe::InternalServer::Listener {
 public:
     DECLARE_LOGGER();
     static NAN_MODULE_INIT(Init);
 
-    owt_base::InternalServer* me;
+    infraframe::InternalServer* me;
     boost::mutex stats_lock;
     std::queue<std::pair<std::string, std::string>> stats_messages;
 
-    // Implements owt_base::InternalServer::Listener
+    // Implements infraframe::InternalServer::Listener
     void onConnected(const std::string& id) override;
     void onDisconnected(const std::string& id) override;
 

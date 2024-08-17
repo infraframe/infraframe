@@ -10,7 +10,7 @@
 
 namespace mcu {
 
-class AudioEncoder : public owt_base::FrameSource {
+class AudioEncoder : public infraframe::FrameSource {
 public:
     virtual ~AudioEncoder() { }
 

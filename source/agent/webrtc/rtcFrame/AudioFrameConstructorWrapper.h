@@ -13,13 +13,13 @@
 #include <node_object_wrap.h>
 
 /*
- * Wrapper class of owt_base::AudioFrameConstructor
+ * Wrapper class of infraframe::AudioFrameConstructor
  */
 class AudioFrameConstructor : public MediaSink {
 public:
     static NAN_MODULE_INIT(Init);
-    owt_base::AudioFrameConstructor* me;
-    owt_base::FrameSource* src;
+    infraframe::AudioFrameConstructor* me;
+    infraframe::FrameSource* src;
 
 private:
     AudioFrameConstructor();
@@ -45,7 +45,7 @@ private:
 class AudioFrameSource : public FrameSource {
 public:
     static NAN_MODULE_INIT(Init);
-    owt_base::AudioFrameConstructor* me;
+    infraframe::AudioFrameConstructor* me;
 
 private:
     AudioFrameSource() {};

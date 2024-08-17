@@ -25,7 +25,7 @@ VideoRtpPacketizer::VideoRtpPacketizer()
 
 VideoRtpPacketizer::~VideoRtpPacketizer() { }
 
-void VideoRtpPacketizer::onFrame(const owt_base::Frame& frame)
+void VideoRtpPacketizer::onFrame(const infraframe::Frame& frame)
 {
     if (m_videoSend) {
         m_videoSend->onFrame(frame);
@@ -34,9 +34,9 @@ void VideoRtpPacketizer::onFrame(const owt_base::Frame& frame)
 
 void VideoRtpPacketizer::onVideoSourceChanged() { }
 
-void VideoRtpPacketizer::onFeedback(const owt_base::FeedbackMsg& msg)
+void VideoRtpPacketizer::onFeedback(const infraframe::FeedbackMsg& msg)
 {
-    if (msg.cmd == owt_base::RTCP_PACKET) {
+    if (msg.cmd == infraframe::RTCP_PACKET) {
         if (m_videoSend) {
             m_videoSend->onRtcpData(msg.buffer.data, msg.buffer.len);
         }
@@ -52,8 +52,8 @@ void VideoRtpPacketizer::onAdapterStats(const rtc_adapter::AdapterStats& stats)
 
 void VideoRtpPacketizer::onAdapterData(char* data, int len)
 {
-    owt_base::Frame frame;
-    frame.format = owt_base::FRAME_FORMAT_RTP;
+    infraframe::Frame frame;
+    frame.format = infraframe::FRAME_FORMAT_RTP;
     frame.length = len;
     frame.payload = reinterpret_cast<uint8_t*>(data);
     deliverFrame(frame);

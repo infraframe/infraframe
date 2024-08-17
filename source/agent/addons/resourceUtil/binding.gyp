@@ -10,11 +10,11 @@
             "include_dirs": [
                 "/opt/intel/openvino/deployment_tools/inference_engine/include",
                 "$(CORE_HOME)/common",
-                "$(CORE_HOME)/owt_base",
+                "$(CORE_HOME)/infraframe",
             ],
             # 'include_dirs': [ '..',
             #                   '$(CORE_HOME)/common',
-            #                   '$(CORE_HOME)/owt_base',
+            #                   '$(CORE_HOME)/infraframe',
             #                   '$(CORE_HOME)/../../third_party/webrtc/src',
             #                   '$(CORE_HOME)/../../third_party/webrtc/src/third_party/libyuv/include',
             #                   '$(CORE_HOME)/../../build/libdeps/build/include',
@@ -62,13 +62,13 @@
         #    'target_name': 'SctpTest',
         #    'type' : 'executable',
         #    'sources': [
-        #      '../../../core/owt_base/RawTransport.cpp',
-        #      '../../../core/owt_base/SctpTransport.cpp',
-        #      '../../../core/owt_base/SctpTransportTest.cpp',
+        #      '../../../core/infraframe/RawTransport.cpp',
+        #      '../../../core/infraframe/SctpTransport.cpp',
+        #      '../../../core/infraframe/SctpTransportTest.cpp',
         #    ],
         #    'include_dirs': [
         #      '$(CORE_HOME)/common',
-        #      '$(CORE_HOME)/owt_base',
+        #      '$(CORE_HOME)/infraframe',
         #      '$(CORE_HOME)/../../third_party/usrsctp/usrsctplib'
         #    ],
         #    'libraries': [

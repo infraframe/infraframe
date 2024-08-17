@@ -12,7 +12,7 @@
 #include <rtputils.h>
 
 using namespace webrtc;
-using namespace owt_base;
+using namespace infraframe;
 
 namespace rtc_adapter {
 

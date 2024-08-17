@@ -59,11 +59,11 @@ NAN_METHOD(VideoFrameConstructor::New)
                 ? Nan::ObjectWrap::Unwrap<CallBase>(Nan::To<v8::Object>(info[2]).ToLocalChecked())
                 : nullptr;
             if (baseWrapper) {
-                obj->me = new owt_base::VideoFrameConstructor(baseWrapper->rtcAdapter, obj, transportccExt);
+                obj->me = new infraframe::VideoFrameConstructor(baseWrapper->rtcAdapter, obj, transportccExt);
             } else if (transportccExt > 0) {
-                obj->me = new owt_base::VideoFrameConstructor(obj, transportccExt);
+                obj->me = new infraframe::VideoFrameConstructor(obj, transportccExt);
             } else {
-                obj->me = new owt_base::VideoFrameConstructor(obj);
+                obj->me = new infraframe::VideoFrameConstructor(obj);
             }
         } else {
             VideoFrameConstructor* parent = Nan::ObjectWrap::Unwrap<VideoFrameConstructor>(
@@ -73,7 +73,7 @@ NAN_METHOD(VideoFrameConstructor::New)
             int spatialId = info[3]->IntegerValue(Nan::GetCurrentContext()).ToChecked();
             int temporalId = info[4]->IntegerValue(Nan::GetCurrentContext()).ToChecked();
 
-            obj->me = new owt_base::VideoFrameConstructor(parent->me);
+            obj->me = new infraframe::VideoFrameConstructor(parent->me);
             obj->me->setPreferredLayers(spatialId, temporalId);
             obj->layerId = layerId;
             obj->parent = parent->me;
@@ -99,7 +99,7 @@ NAN_METHOD(VideoFrameConstructor::New)
 NAN_METHOD(VideoFrameConstructor::close)
 {
     VideoFrameConstructor* obj = Nan::ObjectWrap::Unwrap<VideoFrameConstructor>(info.Holder());
-    owt_base::VideoFrameConstructor* me = obj->me;
+    infraframe::VideoFrameConstructor* me = obj->me;
 
     if (obj->parent) {
         obj->parent->removeChildProcessor(obj->layerId);
@@ -114,7 +114,7 @@ NAN_METHOD(VideoFrameConstructor::close)
 NAN_METHOD(VideoFrameConstructor::bindTransport)
 {
     VideoFrameConstructor* obj = Nan::ObjectWrap::Unwrap<VideoFrameConstructor>(info.Holder());
-    owt_base::VideoFrameConstructor* me = obj->me;
+    infraframe::VideoFrameConstructor* me = obj->me;
 
     MediaFilter* param = Nan::ObjectWrap::Unwrap<MediaFilter>(Nan::To<v8::Object>(info[0]).ToLocalChecked());
     erizo::MediaSource* source = param->msource;
@@ -125,7 +125,7 @@ NAN_METHOD(VideoFrameConstructor::bindTransport)
 NAN_METHOD(VideoFrameConstructor::unbindTransport)
 {
     VideoFrameConstructor* obj = Nan::ObjectWrap::Unwrap<VideoFrameConstructor>(info.Holder());
-    owt_base::VideoFrameConstructor* me = obj->me;
+    infraframe::VideoFrameConstructor* me = obj->me;
 
     me->unbindTransport();
 }
@@ -133,11 +133,11 @@ NAN_METHOD(VideoFrameConstructor::unbindTransport)
 NAN_METHOD(VideoFrameConstructor::addDestination)
 {
     VideoFrameConstructor* obj = Nan::ObjectWrap::Unwrap<VideoFrameConstructor>(info.Holder());
-    owt_base::VideoFrameConstructor* me = obj->me;
+    infraframe::VideoFrameConstructor* me = obj->me;
 
     FrameDestination* param = node::ObjectWrap::Unwrap<FrameDestination>(
         Nan::To<v8::Object>(info[0]).ToLocalChecked());
-    owt_base::FrameDestination* dest = param->dest;
+    infraframe::FrameDestination* dest = param->dest;
 
     me->addVideoDestination(dest);
 }
@@ -145,11 +145,11 @@ NAN_METHOD(VideoFrameConstructor::addDestination)
 NAN_METHOD(VideoFrameConstructor::removeDestination)
 {
     VideoFrameConstructor* obj = Nan::ObjectWrap::Unwrap<VideoFrameConstructor>(info.Holder());
-    owt_base::VideoFrameConstructor* me = obj->me;
+    infraframe::VideoFrameConstructor* me = obj->me;
 
     FrameDestination* param = node::ObjectWrap::Unwrap<FrameDestination>(
         Nan::To<v8::Object>(info[0]).ToLocalChecked());
-    owt_base::FrameDestination* dest = param->dest;
+    infraframe::FrameDestination* dest = param->dest;
 
     me->removeVideoDestination(dest);
 }
@@ -157,7 +157,7 @@ NAN_METHOD(VideoFrameConstructor::removeDestination)
 NAN_METHOD(VideoFrameConstructor::setBitrate)
 {
     VideoFrameConstructor* obj = Nan::ObjectWrap::Unwrap<VideoFrameConstructor>(info.Holder());
-    owt_base::VideoFrameConstructor* me = obj->me;
+    infraframe::VideoFrameConstructor* me = obj->me;
 
     int bitrate = Nan::To<int32_t>(info[0]).FromJust();
 
@@ -167,7 +167,7 @@ NAN_METHOD(VideoFrameConstructor::setBitrate)
 NAN_METHOD(VideoFrameConstructor::setPreferredLayers)
 {
     VideoFrameConstructor* obj = Nan::ObjectWrap::Unwrap<VideoFrameConstructor>(info.Holder());
-    owt_base::VideoFrameConstructor* me = obj->me;
+    infraframe::VideoFrameConstructor* me = obj->me;
 
     if (info.Length() >= 2) {
         int spatialId = info[0]->IntegerValue(Nan::GetCurrentContext()).ToChecked();
@@ -179,7 +179,7 @@ NAN_METHOD(VideoFrameConstructor::setPreferredLayers)
 NAN_METHOD(VideoFrameConstructor::requestKeyFrame)
 {
     VideoFrameConstructor* obj = Nan::ObjectWrap::Unwrap<VideoFrameConstructor>(info.Holder());
-    owt_base::VideoFrameConstructor* me = obj->me;
+    infraframe::VideoFrameConstructor* me = obj->me;
 
     me->RequestKeyFrame();
 }
@@ -187,7 +187,7 @@ NAN_METHOD(VideoFrameConstructor::requestKeyFrame)
 NAN_METHOD(VideoFrameConstructor::enable)
 {
     VideoFrameConstructor* obj = Nan::ObjectWrap::Unwrap<VideoFrameConstructor>(info.Holder());
-    owt_base::VideoFrameConstructor* me = obj->me;
+    infraframe::VideoFrameConstructor* me = obj->me;
 
     bool b = Nan::To<bool>(info[0]).FromMaybe(true);
     me->enable(b);
