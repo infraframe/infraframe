@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "FrameProcesser.h"
+#include "FrameProcessor.h"
 
 using namespace webrtc;
 
 namespace infraframe {
 
-DEFINE_LOGGER(FrameProcesser, "owt.FrameProcesser");
+DEFINE_LOGGER(FrameProcessor, "infraframe.FrameProcessor");
 
-FrameProcesser::FrameProcesser()
+FrameProcessor::FrameProcessor()
     : m_lastWidth(0)
     , m_lastHeight(0)
     , m_format(FRAME_FORMAT_UNKNOWN)
@@ -21,14 +21,14 @@ FrameProcesser::FrameProcesser()
 {
 }
 
-FrameProcesser::~FrameProcesser()
+FrameProcessor::~FrameProcessor()
 {
     if (m_outFrameRate > 0) {
         m_jobTimer->stop();
     }
 }
 
-bool FrameProcesser::init(FrameFormat format, const uint32_t width, const uint32_t height, const uint32_t frameRate)
+bool FrameProcessor::init(FrameFormat format, const uint32_t width, const uint32_t height, const uint32_t frameRate)
 {
     ELOG_DEBUG_T("format(%s), size(%dx%d), frameRate(%d)", getFormatStr(format), width, height, frameRate);
 
@@ -59,7 +59,7 @@ bool FrameProcesser::init(FrameFormat format, const uint32_t width, const uint32
     return true;
 }
 
-bool FrameProcesser::filterFrame(const Frame& frame)
+bool FrameProcessor::filterFrame(const Frame& frame)
 {
     if (m_lastWidth != frame.additionalInfo.video.width
         || m_lastHeight != frame.additionalInfo.video.height) {
@@ -72,7 +72,7 @@ bool FrameProcesser::filterFrame(const Frame& frame)
     return false;
 }
 
-void FrameProcesser::onFrame(const Frame& frame)
+void FrameProcessor::onFrame(const Frame& frame)
 {
     if (filterFrame(frame))
         return;
@@ -122,7 +122,7 @@ void FrameProcesser::onFrame(const Frame& frame)
     return;
 }
 
-void FrameProcesser::SendFrame(rtc::scoped_refptr<webrtc::I420Buffer> i420Buffer, uint32_t timeStamp)
+void FrameProcessor::SendFrame(rtc::scoped_refptr<webrtc::I420Buffer> i420Buffer, uint32_t timeStamp)
 {
     infraframe::Frame outFrame;
     memset(&outFrame, 0, sizeof(outFrame));
@@ -145,18 +145,18 @@ void FrameProcesser::SendFrame(rtc::scoped_refptr<webrtc::I420Buffer> i420Buffer
     deliverFrame(outFrame);
 }
 
-void FrameProcesser::drawText(const std::string& textSpec)
+void FrameProcessor::drawText(const std::string& textSpec)
 {
     m_textDrawer->setText(textSpec);
     m_textDrawer->enable(true);
 }
 
-void FrameProcesser::clearText()
+void FrameProcessor::clearText()
 {
     m_textDrawer->enable(false);
 }
 
-void FrameProcesser::onTimeout()
+void FrameProcessor::onTimeout()
 {
     uint32_t timeStamp = kMsToRtpTimestamp * m_clock->TimeInMilliseconds();
     ;

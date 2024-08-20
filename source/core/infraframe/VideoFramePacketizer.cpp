@@ -17,7 +17,7 @@ static const int TRANSMISSION_MAXBITRATE_MULTIPLIER = 2;
 // Interval for getting send-side estimated bandwidth
 static const int kBitrateEstimationInterval = 5;
 
-DEFINE_LOGGER(VideoFramePacketizer, "owt.VideoFramePacketizer");
+DEFINE_LOGGER(VideoFramePacketizer, "infraframe.VideoFramePacketizer");
 
 VideoFramePacketizer::VideoFramePacketizer(VideoFramePacketizer::Config& config)
     : m_enabled(true)

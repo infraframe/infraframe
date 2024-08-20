@@ -10,7 +10,7 @@ namespace infraframe {
 
 using boost::asio::ip::tcp;
 
-DEFINE_LOGGER(TransportSession, "owt.TransportSession");
+DEFINE_LOGGER(TransportSession, "infraframe.TransportSession");
 
 static const int kHeaderSize = 4;
 static const int kInitalBufferSize = 1600;

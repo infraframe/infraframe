@@ -1,17 +1,24 @@
 
 
-#ifndef H264_VIDEO_DECODER_FACTORY_H
-#define H264_VIDEO_DECODER_FACTORY_H
+#ifndef H264_VIDEO_ENCODERS_H
+#define H264_VIDEO_ENCODERS_H
 
 #include "VideoEncoder.h"
 
+#include <logger.h>
+
+#include <map>
+#include <string>
+
+using Parameters = std::map<std::string, std::string>;
 namespace infraframe {
 class H264GStreamerVideoEncoder : public GStreamerVideoEncoder {
+    DECLARE_LOGGER();
     webrtc::H264PacketizationMode _packetizationMode;
 
 public:
     H264GStreamerVideoEncoder(
-        const webrtc::SdpVideoFormat::Parameters& parameters,
+        const Parameters& parameters,
         std::string encoderPipeline,
         std::string encoderBitratePropertyName,
         BitRateUnit bitRatePropertyUnit,
@@ -20,13 +27,13 @@ public:
     ~H264GStreamerVideoEncoder() override = default;
 
     static std::string
-    mediaTypeCaps(const webrtc::SdpVideoFormat::Parameters& parameters);
+    mediaTypeCaps(const Parameters& parameters);
     static const char* codecName();
 
     static bool
-    isProfileBaselineOrMain(const webrtc::SdpVideoFormat::Parameters& parameters);
+    isProfileBaselineOrMain(const Parameters& parameters);
     static bool isProfileBaselineOrMainOrHigh444(
-        const webrtc::SdpVideoFormat::Parameters& parameters);
+        const Parameters& parameters);
 
 protected:
     int getKeyframeInterval(const webrtc::VideoCodec& codecSettings) override;
@@ -36,23 +43,23 @@ protected:
         const webrtc::EncodedImage& encodedFrame) override;
 };
 
-class NVENCH264GStreamerVideoEncoder : public H264GStreamerVideoEncoder {
+class NVH264GStreamerVideoEncoder : public H264GStreamerVideoEncoder {
 public:
-    explicit NVENCH264GStreamerVideoEncoder(
-        const webrtc::SdpVideoFormat::Parameters& parameters);
-    ~NVENCH264GStreamerVideoEncoder() override = default;
+    explicit NVH264GStreamerVideoEncoder(
+        const Parameters& parameters);
+    ~NVH264GStreamerVideoEncoder() override = default;
 
-    [[nodiscard]] webrtc::VideoEncoder::EncoderInfo
-    GetEncoderInfo() const override;
+    // [[nodiscard]] webrtc::VideoEncoder::EncoderInfo
+    // GetEncoderInfo() const override;
 
     static bool isSupported();
     static bool isHardwareAccelerated();
     static bool
-    areParametersSupported(const webrtc::SdpVideoFormat::Parameters& parameters);
+    areParametersSupported(const Parameters& parameters);
 
 private:
     static std::string
-    profileFromParameters(const webrtc::SdpVideoFormat::Parameters& parameters);
+    profileFromParameters(const Parameters& parameters);
 };
 
 } // namespace infraframe

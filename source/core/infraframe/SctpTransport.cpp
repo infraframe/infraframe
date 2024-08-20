@@ -9,7 +9,7 @@
 
 namespace infraframe {
 
-DEFINE_LOGGER(SctpTransport, "owt.SctpTransport");
+DEFINE_LOGGER(SctpTransport, "infraframe.SctpTransport");
 
 namespace {
 

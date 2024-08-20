@@ -29,7 +29,7 @@ inline AVCodecID frameFormat2AVCodecID(int frameFormat)
     }
 }
 
-DEFINE_LOGGER(AudioFrameWriter, "owt.AudioFrameWriter");
+DEFINE_LOGGER(AudioFrameWriter, "infraframe.AudioFrameWriter");
 
 AudioFrameWriter::AudioFrameWriter(const std::string& name)
     : m_name(name)

@@ -36,7 +36,7 @@ public:
 
     void onTimeout();
 
-    void OnPluginFrame(std::unique_ptr<owt::analytics::AnalyticsBuffer> buffer);
+    void OnPluginFrame(std::unique_ptr<infraframe::analytics::AnalyticsBuffer> buffer);
 
 protected:
     bool filterFrame(const Frame& frame);

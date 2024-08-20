@@ -10,7 +10,7 @@
 
 namespace infraframe {
 
-DEFINE_LOGGER(FrameConverter, "owt.FrameConverter");
+DEFINE_LOGGER(FrameConverter, "infraframe.FrameConverter");
 
 FrameConverter::FrameConverter()
 {

@@ -15,8 +15,10 @@
                 "../../../core/common/",
                 "../../../core/infraframe/",
                 "../../../core/infraframe/selector/",
+                "$(CORE_HOME)/../../build/libdeps/build/include",
             ],
             "libraries": [
+                "-L$(CORE_HOME)/../../build/libdeps/build/lib",
                 "-lboost_thread",
                 "-llog4cxx",
             ],

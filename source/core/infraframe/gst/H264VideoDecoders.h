@@ -1,12 +1,16 @@
 
 
-#ifndef H265_VIDEO_DECODER_FACTORY_H
-#define H265_VIDEO_DECODER_FACTORY_H
+#ifndef H264_VIDEO_DECODERS_H
+#define H264_VIDEO_DECODERS_H
 
 #include "VideoDecoder.h"
 
+#include <logger.h>
+
 namespace infraframe {
 class H264GStreamerVideoDecoder : public GStreamerVideoDecoder {
+    DECLARE_LOGGER();
+
 public:
     explicit H264GStreamerVideoDecoder(std::string decoderPipeline,
         bool resetPipelineOnSizeChanges = false);
@@ -16,18 +20,17 @@ public:
     static const char* codecName();
 };
 
-class NVENCH265GStreamerVideoDecoder : public H264GStreamerVideoDecoder {
+class NVH264GStreamerVideoDecoder : public H264GStreamerVideoDecoder {
 public:
-    NVENCH265GStreamerVideoDecoder();
-    ~NVENCH265GStreamerVideoDecoder() override = default;
+    NVH264GStreamerVideoDecoder();
+    ~NVH264GStreamerVideoDecoder() override = default;
 
-    [[nodiscard]] webrtc::VideoDecoder::DecoderInfo
-    GetDecoderInfo() const override;
+    // [[nodiscard]] webrtc::VideoDecoder::DecoderInfo
+    // GetDecoderInfo() const override;
 
     static bool isSupported();
     static bool isHardwareAccelerated();
 };
-
 } // namespace infraframe
 
 #endif

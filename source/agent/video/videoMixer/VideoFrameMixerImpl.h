@@ -8,13 +8,12 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/shared_mutex.hpp>
-
 #include <map>
 
-#include <GstreamerFrameDecoder.h>
-#include <GstreamerFrameEncoder.h>
 #include <MediaFramePipeline.h>
 #include <MediaUtilities.h>
+#include <VCMFrameDecoder.h>
+#include <VCMFrameEncoder.h>
 
 #include "SoftVideoCompositor.h"
 
@@ -76,6 +75,7 @@ private:
     struct Input {
         infraframe::FrameSource* source;
         boost::shared_ptr<infraframe::VideoFrameDecoder> decoder;
+        // 共享boost::shared_ptr<VideoFrameCompositor> m_compositor
         boost::shared_ptr<CompositeIn> compositorIn;
     };
 
@@ -98,6 +98,11 @@ private:
 VideoFrameMixerImpl::VideoFrameMixerImpl(uint32_t maxInput, infraframe::VideoSize rootSize, infraframe::YUVColor bgColor, bool useSimulcast, bool crop)
     : m_useSimulcast(useSimulcast)
 {
+#ifdef ENABLE_MSDK
+    if (!m_compositor)
+        m_compositor.reset(new MsdkVideoCompositor(maxInput, rootSize, bgColor, crop));
+#endif
+
     if (!m_compositor)
         m_compositor.reset(new SoftVideoCompositor(maxInput, rootSize, bgColor, crop));
 }
@@ -139,9 +144,6 @@ inline bool VideoFrameMixerImpl::addInput(int input, infraframe::FrameFormat for
 
     if (!decoder && infraframe::VCMFrameDecoder::supportFormat(format))
         decoder.reset(new infraframe::VCMFrameDecoder(format));
-
-    if (!decoder && infraframe::FFmpegFrameDecoder::supportFormat(format))
-        decoder.reset(new infraframe::FFmpegFrameDecoder());
 
     if (!decoder)
         return false;
@@ -234,9 +236,8 @@ inline bool VideoFrameMixerImpl::addOutput(int output,
         if (streamId < 0)
             return false;
     } else { // Never found a reusable encoder.
-
-        if (!encoder && infraframe::GStreamerFrameEncoder::supportFormat(format))
-            encoder.reset(new infraframe::GStreamerFrameEncoder(format, profile, m_useSimulcast));
+        if (!encoder && infraframe::VCMFrameEncoder::supportFormat(format))
+            encoder.reset(new infraframe::VCMFrameEncoder(format, profile, m_useSimulcast));
 
         if (!encoder)
             return false;

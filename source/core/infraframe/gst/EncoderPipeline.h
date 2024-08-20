@@ -6,6 +6,8 @@
 #include "Helpers.h"
 #include "OutPtr.h"
 
+#include <logger.h>
+
 #include <string_view>
 
 namespace infraframe {
@@ -13,6 +15,7 @@ enum class BitRateUnit { BitPerSec,
     KBitPerSec };
 
 class GStreamerEncoderPipeline {
+    DECLARE_LOGGER();
     std::string _encoderBitRatePropertyName;
     BitRateUnit _encoderBitRatePropertyUnit;
     std::string _encoderKeyframeIntervalPropertyName;

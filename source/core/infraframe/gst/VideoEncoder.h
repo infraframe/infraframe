@@ -1,22 +1,28 @@
 
 
-#ifndef VIDEO_ENCODER_FACTORY_H
-#define VIDEO_ENCODER_FACTORY_H
+#ifndef VIDEO_ENCODER_H
+#define VIDEO_ENCODER_H
 
 #include "BufferPool.h"
 #include "ClassMacro.h"
 #include "EncoderPipeline.h"
 #include "Helpers.h"
 
-#include <api/video_codecs/video_encoder.h>
-#include <common_video/include/video_frame_buffer_pool.h>
-#include <media/base/codec.h>
-#include <modules/video_coding/include/video_codec_interface.h>
+#include <I420BufferManager.h>
+#include <logger.h>
+
+#include <webrtc/api/video_codecs/video_encoder.h>
+#include <webrtc/media/base/codec.h>
+#include <webrtc/modules/video_coding/include/video_codec_interface.h>
 
 #include <atomic>
+#include <optional>
+
+#include <boost/scoped_ptr.hpp>
 
 namespace infraframe {
 class GStreamerVideoEncoder : public webrtc::VideoEncoder {
+    DECLARE_LOGGER();
     std::string _mediaTypeCaps;
     std::string _encoderPipeline;
     std::string _encoderBitRatePropertyName;
@@ -36,7 +42,7 @@ class GStreamerVideoEncoder : public webrtc::VideoEncoder {
     webrtc::EncodedImageCallback* _imageReadyCb;
 
     bool _dropNextFrame;
-    std::atomic<absl::optional<uint32_t>> _newBitRate;
+    // std::atomic<std::optional<uint32_t>> _newBitRate;
 
 public:
     GStreamerVideoEncoder(std::string mediaTypeCaps,
@@ -49,21 +55,26 @@ public:
     DECLARE_NOT_COPYABLE(GStreamerVideoEncoder);
     DECLARE_NOT_MOVABLE(GStreamerVideoEncoder);
 
-    int32_t Release() override;
-
-    int InitEncode(const webrtc::VideoCodec* codecSettings,
-        const VideoEncoder::Settings& settings) override;
+    // int InitEncode(const webrtc::VideoCodec* codecSettings,
+    //     const VideoEncoder::Settings& settings) override;
+    int32_t InitEncode(const webrtc::VideoCodec* codec_settings, int32_t number_of_cores, size_t max_payload_size) override;
 
     int32_t RegisterEncodeCompleteCallback(
         webrtc::EncodedImageCallback* callback) override;
 
-    int32_t
-    Encode(const webrtc::VideoFrame& frame,
-        const std::vector<webrtc::VideoFrameType>* frameTypes) override;
+    int32_t Release() override;
 
-    void SetRates(const RateControlParameters& parameters) override;
+    // int32_t Encode(const webrtc::VideoFrame& frame,
+    //     const std::vector<webrtc::VideoFrameType>* frameTypes) override;
+    int32_t Encode(const webrtc::VideoFrame& frame,
+        const webrtc::CodecSpecificInfo* codec_specific_info,
+        const std::vector<webrtc::FrameType>* frame_types) override;
 
-    webrtc::VideoEncoder::EncoderInfo GetEncoderInfo() const override;
+    int32_t SetChannelParameters(uint32_t packet_loss, int64_t rtt) override;
+    // SetRate(uint32_t, uint32_t) is deprecated
+    // void SetRates(const RateControlParameters& parameters) override;
+
+    // webrtc::VideoEncoder::EncoderInfo GetEncoderInfo() const override;
 
 protected:
     virtual int getKeyframeInterval(const webrtc::VideoCodec& codecSettings) = 0;
@@ -81,7 +92,7 @@ private:
     gst::unique_ptr<GstSample> toGstSample(const webrtc::VideoFrame& frame);
     bool updateEncodedFrame(const webrtc::VideoFrame& frame,
         gst::unique_ptr<GstSample>& encodedSample);
-    webrtc::VideoFrameType
+    webrtc::FrameType
     getWebrtcFrameType(gst::unique_ptr<GstSample>& encodedSample);
 };
 } // namespace infraframe

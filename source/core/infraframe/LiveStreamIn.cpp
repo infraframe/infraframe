@@ -155,7 +155,7 @@ void FramePacketBuffer::clear()
     return;
 }
 
-DEFINE_LOGGER(JitterBuffer, "owt.LiveStreamIn.JitterBuffer");
+DEFINE_LOGGER(JitterBuffer, "infraframe.LiveStreamIn.JitterBuffer");
 
 JitterBuffer::JitterBuffer(std::string name, SyncMode syncMode, JitterBufferListener* listener, int64_t maxBufferingMs)
     : m_name(name)
@@ -399,7 +399,7 @@ void JitterBuffer::handleJob()
     m_timer->async_wait(boost::bind(&JitterBuffer::onTimeout, this, boost::asio::placeholders::error));
 }
 
-DEFINE_LOGGER(LiveStreamIn, "owt.LiveStreamIn");
+DEFINE_LOGGER(LiveStreamIn, "infraframe.LiveStreamIn");
 
 LiveStreamIn::LiveStreamIn(const Options& options, EventRegistry* handle)
     : m_url(options.url)

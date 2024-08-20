@@ -16,7 +16,7 @@ class rvaFrameCallback {
 public:
     virtual ~rvaFrameCallback() { }
     /// Frame callback to send back VideoFrame to MCU
-    virtual void OnPluginFrame(std::unique_ptr<owt::analytics::AnalyticsBuffer> buffer) {};
+    virtual void OnPluginFrame(std::unique_ptr<infraframe::analytics::AnalyticsBuffer> buffer) {};
 };
 
 class rvaEventCallback {
@@ -63,7 +63,7 @@ public:
    @param frame the video frame for processing
    @return RVA_ERR_OK if no issue. Other return code if any failure.
   */
-    virtual rvaStatus ProcessFrameAsync(std::unique_ptr<owt::analytics::AnalyticsBuffer> buffer) = 0;
+    virtual rvaStatus ProcessFrameAsync(std::unique_ptr<infraframe::analytics::AnalyticsBuffer> buffer) = 0;
     /**
    @brief Register a callback on the plugin for receiving frames from the plugin.
    @param pCallback the frame callback function registered by MCU.

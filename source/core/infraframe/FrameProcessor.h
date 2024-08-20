@@ -23,14 +23,14 @@
 
 namespace infraframe {
 
-class FrameProcesser : public VideoFrameProcesser, public JobTimerListener {
+class FrameProcessor : public VideoFrameProcessor, public JobTimerListener {
     DECLARE_LOGGER();
 
     const uint32_t kMsToRtpTimestamp = 90;
 
 public:
-    FrameProcesser();
-    ~FrameProcesser();
+    FrameProcessor();
+    ~FrameProcessor();
 
     void onFrame(const Frame&);
     bool init(FrameFormat format, const uint32_t width, const uint32_t height, const uint32_t frameRate);

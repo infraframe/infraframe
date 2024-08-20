@@ -12,7 +12,7 @@ using namespace webrtc;
 
 namespace infraframe {
 
-DEFINE_LOGGER(FrameAnalyzer, "owt.FrameAnalyzer");
+DEFINE_LOGGER(FrameAnalyzer, "infraframe.FrameAnalyzer");
 
 FrameAnalyzer::FrameAnalyzer()
     : m_lastWidth(0)
@@ -130,7 +130,7 @@ void FrameAnalyzer::onFrame(const Frame& frame)
     if (m_format == FRAME_FORMAT_I420) {
         if (frame.format == FRAME_FORMAT_I420) {
             VideoFrame* srcFrame = (reinterpret_cast<VideoFrame*>(frame.payload));
-            std::unique_ptr<owt::analytics::AnalyticsBuffer> newFrame(new owt::analytics::AnalyticsBuffer());
+            std::unique_ptr<infraframe::analytics::AnalyticsBuffer> newFrame(new infraframe::analytics::AnalyticsBuffer());
             newFrame->buffer = new uint8_t[width * height * 3 / 2 + 1];
             memset(newFrame->buffer, 0, width * height * 3 / 2 + 1);
             newFrame->width = width;
@@ -152,7 +152,7 @@ void FrameAnalyzer::onFrame(const Frame& frame)
     return;
 }
 
-void FrameAnalyzer::OnPluginFrame(std::unique_ptr<owt::analytics::AnalyticsBuffer> pluginFrame)
+void FrameAnalyzer::OnPluginFrame(std::unique_ptr<infraframe::analytics::AnalyticsBuffer> pluginFrame)
 {
     int width = pluginFrame->width;
     int height = pluginFrame->height;

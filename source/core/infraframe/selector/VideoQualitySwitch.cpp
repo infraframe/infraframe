@@ -19,7 +19,7 @@ static constexpr uint64_t kActiveTimeout = 2000;
 // Only change source when difference exceed threshold
 static constexpr double kBitrateChangeThreshold = 0.1;
 
-DEFINE_LOGGER(VideoQualitySwitch, "owt.VideoQualitySwitch");
+DEFINE_LOGGER(VideoQualitySwitch, "infraframe.VideoQualitySwitch");
 
 VideoQualitySwitch::VideoQualitySwitch(std::vector<FrameSource*> sources)
     : m_sources(sources)

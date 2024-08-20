@@ -9,6 +9,7 @@
 namespace infraframe {
 
 class GstMappedBuffer {
+    DECLARE_LOGGER();
     GstBuffer* _buffer;
     GstMapInfo _bufferInfo;
     bool _isValid = false;

@@ -9,7 +9,7 @@ using namespace rtc_adapter;
 
 namespace infraframe {
 
-DEFINE_LOGGER(AudioFramePacketizer, "owt.AudioFramePacketizer");
+DEFINE_LOGGER(AudioFramePacketizer, "infraframe.AudioFramePacketizer");
 
 AudioFramePacketizer::AudioFramePacketizer(AudioFramePacketizer::Config& config)
     : m_enabled(true)

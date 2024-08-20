@@ -11,7 +11,7 @@ extern "C" {
 
 namespace infraframe {
 
-DEFINE_LOGGER(LiveStreamOut, "owt.LiveStreamOut");
+DEFINE_LOGGER(LiveStreamOut, "infraframe.LiveStreamOut");
 
 LiveStreamOut::LiveStreamOut(const std::string& url, bool hasAudio, bool hasVideo, EventRegistry* handle, int streamingTimeout, StreamingOptions& options)
     : AVStreamOut(url, hasAudio, hasVideo, handle, streamingTimeout)

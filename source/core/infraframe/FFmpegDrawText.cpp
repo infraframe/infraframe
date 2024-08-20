@@ -12,7 +12,7 @@ using namespace webrtc;
 
 namespace infraframe {
 
-DEFINE_LOGGER(FFmpegDrawText, "owt.FFmpegDrawText");
+DEFINE_LOGGER(FFmpegDrawText, "infraframe.FFmpegDrawText");
 
 FFmpegDrawText::FFmpegDrawText()
     : m_filter_graph(NULL)

@@ -15,10 +15,12 @@
                 "<!(node -e \"require('nan')\")",
                 "../../../core/common",
                 "../../../core/infraframe",
+                "$(CORE_HOME)/../../build/libdeps/build/include",
                 "../../../../third_party/licode/erizo/src/erizo",
             ],
             "libraries": [
                 "-llog4cxx",
+                "-L$(CORE_HOME)/../../build/libdeps/build/lib",
                 "-lboost_thread",
                 "-lboost_system",
                 # Add following arguments to help ldd find libraries during packing

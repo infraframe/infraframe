@@ -8,15 +8,13 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/shared_mutex.hpp>
-
 #include <map>
 
-#include <GstreamerFrameDecoder.h>
-#include <GstreamerFrameEncoder.h>
-
-#include <FrameProcesser.h>
+#include <FrameProcessor.h>
 #include <MediaFramePipeline.h>
 #include <MediaUtilities.h>
+#include <VCMFrameDecoder.h>
+#include <VCMFrameEncoder.h>
 #include <VideoFrameTranscoder.h>
 #ifdef BUILD_FOR_ANALYTICS
 #include <FrameAnalyzer.h>
@@ -73,7 +71,7 @@ private:
     };
 
     struct Output {
-        boost::shared_ptr<infraframe::VideoFrameProcesser> processer;
+        boost::shared_ptr<infraframe::VideoFrameProcessor> processor;
 #ifdef BUILD_FOR_ANALYTICS
         boost::shared_ptr<infraframe::VideoFrameAnalyzer> analyzer;
 #endif
@@ -97,12 +95,12 @@ VideoFrameTranscoderImpl::~VideoFrameTranscoderImpl()
     {
         boost::unique_lock<boost::shared_mutex> lock(m_outputMutex);
         for (auto it = m_outputs.begin(); it != m_outputs.end(); ++it) {
-            this->removeVideoDestination(it->second.processer.get());
+            this->removeVideoDestination(it->second.processor.get());
 #ifdef BUILD_FOR_ANALYTICS
-            it->second.processer->removeVideoDestination(it->second.analyzer.get());
+            it->second.processor->removeVideoDestination(it->second.analyzer.get());
             it->second.analyzer->removeVideoDestination(it->second.encoder.get());
 #else
-            it->second.processer->removeVideoDestination(it->second.encoder.get());
+            it->second.processor->removeVideoDestination(it->second.encoder.get());
 #endif
             it->second.encoder->degenerateStream(it->second.streamId);
         }
@@ -133,9 +131,6 @@ inline bool VideoFrameTranscoderImpl::setInput(int input, infraframe::FrameForma
 
     if (!decoder && infraframe::VCMFrameDecoder::supportFormat(format))
         decoder.reset(new infraframe::VCMFrameDecoder(format));
-
-    if (!decoder && infraframe::FFmpegFrameDecoder::supportFormat(format))
-        decoder.reset(new infraframe::FFmpegFrameDecoder());
 
     if (!decoder)
         return false;
@@ -186,19 +181,14 @@ inline bool VideoFrameTranscoderImpl::addOutput(int output,
 #endif
 {
     boost::shared_ptr<infraframe::VideoFrameEncoder> encoder;
-    boost::shared_ptr<infraframe::VideoFrameProcesser> processer;
+    boost::shared_ptr<infraframe::VideoFrameProcessor> processor;
 #ifdef BUILD_FOR_ANALYTICS
     boost::shared_ptr<infraframe::VideoFrameAnalyzer> analyzer;
 #endif
     boost::upgrade_lock<boost::shared_mutex> lock(m_outputMutex);
     int32_t streamId = -1;
 
-#if ENABLE_SVT_HEVC_ENCODER
-    if (!encoder && format == infraframe::FRAME_FORMAT_H265)
-        encoder.reset(new infraframe::SVTHEVCEncoder(format, profile));
-#endif
-
-    if (!encoder && infraframe::GStreamerVideoEncoder::supportFormat(format))
+    if (!encoder && infraframe::VCMFrameEncoder::supportFormat(format))
         encoder.reset(new infraframe::VCMFrameEncoder(format, profile, false));
 
     if (!encoder)
@@ -208,31 +198,31 @@ inline bool VideoFrameTranscoderImpl::addOutput(int output,
     if (streamId < 0)
         return false;
 
-    if (!processer) {
-        processer.reset(new infraframe::FrameProcesser());
+    if (!processor) {
+        processor.reset(new infraframe::FrameProcessor());
     }
 
-    if (!processer->init(encoder->getInputFormat(), rootSize.width, rootSize.height, framerateFPS))
+    if (!processor->init(encoder->getInputFormat(), rootSize.width, rootSize.height, framerateFPS))
         return false;
 
-    this->addVideoDestination(processer.get());
+    this->addVideoDestination(processor.get());
 #ifdef BUILD_FOR_ANALYTICS
     if (!analyzer) {
         analyzer.reset(new infraframe::FrameAnalyzer());
     }
     if (!analyzer->init(encoder->getInputFormat(), rootSize.width, rootSize.height, framerateFPS, pluginName))
         return false;
-    processer->addVideoDestination(analyzer.get());
+    processor->addVideoDestination(analyzer.get());
     analyzer->addVideoDestination(encoder.get());
 #else
-    processer->addVideoDestination(encoder.get());
+    processor->addVideoDestination(encoder.get());
 #endif
 
     boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
 #ifdef BUILD_FOR_ANALYTICS
-    Output out { .processer = processer, .analyzer = analyzer, .encoder = encoder, .streamId = streamId };
+    Output out { .processor = processor, .analyzer = analyzer, .encoder = encoder, .streamId = streamId };
 #else
-    Output out { .processer = processer, .encoder = encoder, .streamId = streamId };
+    Output out { .processor = processor, .encoder = encoder, .streamId = streamId };
 #endif
     m_outputs[output] = out;
     return true;
@@ -245,12 +235,12 @@ inline void VideoFrameTranscoderImpl::removeOutput(int32_t output)
     if (it != m_outputs.end()) {
         it->second.encoder->degenerateStream(it->second.streamId);
         if (it->second.encoder->isIdle()) {
-            this->removeVideoDestination(it->second.processer.get());
+            this->removeVideoDestination(it->second.processor.get());
 #ifdef BUILD_FOR_ANALYTICS
-            it->second.processer->removeVideoDestination(it->second.analyzer.get());
+            it->second.processor->removeVideoDestination(it->second.analyzer.get());
             it->second.analyzer->removeVideoDestination(it->second.encoder.get());
 #else
-            it->second.processer->removeVideoDestination(it->second.encoder.get());
+            it->second.processor->removeVideoDestination(it->second.encoder.get());
 #endif
         }
         boost::upgrade_to_unique_lock<boost::shared_mutex> ulock(lock);
@@ -271,14 +261,14 @@ inline void VideoFrameTranscoderImpl::drawText(const std::string& textSpec)
 {
     boost::shared_lock<boost::shared_mutex> lock(m_outputMutex);
     for (auto it = m_outputs.begin(); it != m_outputs.end(); ++it)
-        it->second.processer->drawText(textSpec);
+        it->second.processor->drawText(textSpec);
 }
 
 inline void VideoFrameTranscoderImpl::clearText()
 {
     boost::shared_lock<boost::shared_mutex> lock(m_outputMutex);
     for (auto it = m_outputs.begin(); it != m_outputs.end(); ++it)
-        it->second.processer->clearText();
+        it->second.processor->clearText();
 }
 #endif
 

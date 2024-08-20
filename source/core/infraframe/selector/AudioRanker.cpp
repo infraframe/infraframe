@@ -15,7 +15,7 @@ using std::vector;
 static constexpr uint64_t kNoFrameThresholdMs = 600;
 static constexpr int kRankChangeInterval = 200;
 
-DEFINE_LOGGER(AudioRanker, "owt.AudioRanker");
+DEFINE_LOGGER(AudioRanker, "infraframe.AudioRanker");
 
 AudioRanker::AudioRanker(AudioRanker::Visitor* visitor, bool detectMute, uint32_t minChangeInterval)
     : m_detectMute(detectMute)

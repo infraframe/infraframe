@@ -1,13 +1,14 @@
-
-
 #ifndef BUFFER_POOL_H
 #define BUFFER_POOL_H
 
 #include "Helpers.h"
 #include "OutPtr.h"
 
+#include <logger.h>
+
 namespace infraframe {
 class GStreamerBufferPool {
+    DECLARE_LOGGER();
     gst::unique_ptr<GstBufferPool> _bufferPool;
 
 public:

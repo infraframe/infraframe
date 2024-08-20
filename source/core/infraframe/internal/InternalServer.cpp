@@ -7,7 +7,7 @@
 
 namespace infraframe {
 
-DEFINE_LOGGER(InternalServer, "owt.InternalServer");
+DEFINE_LOGGER(InternalServer, "infraframe.InternalServer");
 
 InternalServer::InternalServer(
     const std::string& protocol,

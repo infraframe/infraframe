@@ -10,7 +10,7 @@
 
 namespace infraframe {
 
-DEFINE_LOGGER(AudioFrameConstructor, "owt.AudioFrameConstructor");
+DEFINE_LOGGER(AudioFrameConstructor, "infraframe.AudioFrameConstructor");
 
 // TODO: Get the extension ID from SDP
 constexpr uint8_t kAudioLevelExtensionId = 1;

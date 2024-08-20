@@ -6,7 +6,7 @@
 
 namespace infraframe {
 
-DEFINE_LOGGER(I420BufferManager, "owt.I420BufferManager");
+DEFINE_LOGGER(I420BufferManager, "infraframe.I420BufferManager");
 
 I420BufferManager::I420BufferManager(uint32_t maxFrames)
 {

@@ -12,9 +12,11 @@
             "include_dirs": [
                 "$(CORE_HOME)/common",
                 "$(CORE_HOME)/infraframe",
+                "$(CORE_HOME)/../../build/libdeps/build/include",
                 "<!(node -e \"require('nan')\")",
             ],
             "libraries": [
+                "-L$(CORE_HOME)/../../build/libdeps/build/lib",
                 "-lboost_thread",
             ],
             "conditions": [

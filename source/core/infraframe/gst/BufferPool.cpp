@@ -1,6 +1,7 @@
 #include "BufferPool.h"
 
 using namespace infraframe;
+DEFINE_LOGGER(GStreamerBufferPool, "infraframe.GStreamerBufferPool");
 
 GStreamerBufferPool::GStreamerBufferPool() = default;
 

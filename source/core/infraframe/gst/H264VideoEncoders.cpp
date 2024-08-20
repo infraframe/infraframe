@@ -1,16 +1,18 @@
 
-#include "H265VideoEncoders.h"
+#include "H264VideoEncoders.h"
 #include "Support.h"
 
 using namespace infraframe;
 using namespace std;
 
+DEFINE_LOGGER(H264GStreamerVideoEncoder, "infraframe.H264GStreamerVideoEncoder");
+
 constexpr const char* BaselineProfileLevelIdPrefix = "42";
 constexpr const char* MainProfileLevelIdPrefix = "4f";
 constexpr const char* High444ProfileLevelIdPrefix = "f4";
 
-H265GStreamerVideoEncoder::H265GStreamerVideoEncoder(
-    const webrtc::SdpVideoFormat::Parameters& parameters,
+H264GStreamerVideoEncoder::H264GStreamerVideoEncoder(
+    const Parameters& parameters,
     string encoderPipeline,
     string encoderBitratePropertyName,
     BitRateUnit bitRatePropertyUnit,
@@ -31,8 +33,8 @@ H265GStreamerVideoEncoder::H265GStreamerVideoEncoder(
     }
 }
 
-string H265GStreamerVideoEncoder::mediaTypeCaps(
-    const webrtc::SdpVideoFormat::Parameters& parameters)
+string H264GStreamerVideoEncoder::mediaTypeCaps(
+    const Parameters& parameters)
 {
     auto it = parameters.find(cricket::kH264FmtpProfileLevelId);
     if (it == parameters.end() || it->second.find(BaselineProfileLevelIdPrefix) == 0) {
@@ -48,13 +50,13 @@ string H265GStreamerVideoEncoder::mediaTypeCaps(
     }
 }
 
-const char* H265GStreamerVideoEncoder::codecName()
+const char* H264GStreamerVideoEncoder::codecName()
 {
     return cricket::kH264CodecName;
 }
 
-bool H265GStreamerVideoEncoder::isProfileBaselineOrMain(
-    const webrtc::SdpVideoFormat::Parameters& parameters)
+bool H264GStreamerVideoEncoder::isProfileBaselineOrMain(
+    const Parameters& parameters)
 {
     auto it = parameters.find(cricket::kH264FmtpProfileLevelId);
     if (it == parameters.end()) {
@@ -64,8 +66,8 @@ bool H265GStreamerVideoEncoder::isProfileBaselineOrMain(
     }
 }
 
-bool H265GStreamerVideoEncoder::isProfileBaselineOrMainOrHigh444(
-    const webrtc::SdpVideoFormat::Parameters& parameters)
+bool H264GStreamerVideoEncoder::isProfileBaselineOrMainOrHigh444(
+    const Parameters& parameters)
 {
     auto it = parameters.find(cricket::kH264FmtpProfileLevelId);
     if (it == parameters.end()) {
@@ -75,13 +77,13 @@ bool H265GStreamerVideoEncoder::isProfileBaselineOrMainOrHigh444(
     }
 }
 
-int H265GStreamerVideoEncoder::getKeyframeInterval(
+int H264GStreamerVideoEncoder::getKeyframeInterval(
     const webrtc::VideoCodec& codecSettings)
 {
     return codecSettings.H264().keyFrameInterval;
 }
 
-void H265GStreamerVideoEncoder::populateCodecSpecificInfo(
+void H264GStreamerVideoEncoder::populateCodecSpecificInfo(
     webrtc::CodecSpecificInfo& codecSpecificInfo,
     const webrtc::EncodedImage& encodedFrame)
 {
@@ -89,11 +91,11 @@ void H265GStreamerVideoEncoder::populateCodecSpecificInfo(
     codecSpecificInfo.codecSpecific.H264.packetization_mode = _packetizationMode;
 }
 
-NVENCH265GStreamerVideoEncoder::NVENCH265GStreamerVideoEncoder(
-    const webrtc::SdpVideoFormat::Parameters& parameters)
-    : H265GStreamerVideoEncoder(
+NVH264GStreamerVideoEncoder::NVH264GStreamerVideoEncoder(
+    const Parameters& parameters)
+    : H264GStreamerVideoEncoder(
         parameters,
-        "nvvideoconvert ! 'video/x-raw(memory:NVMM),format=I420' ! "
+        "nvvideoconvert ! video/x-raw(memory:NVMM),format=I420 ! "
         "nvv4l2h264enc name=encoder profile="
             + profileFromParameters(parameters) + " ! h264parse",
         "bitrate",
@@ -102,32 +104,32 @@ NVENCH265GStreamerVideoEncoder::NVENCH265GStreamerVideoEncoder(
 {
 }
 
-webrtc::VideoEncoder::EncoderInfo
-NVENCH265GStreamerVideoEncoder::GetEncoderInfo() const
-{
-    webrtc::VideoEncoder::EncoderInfo info(
-        GStreamerVideoEncoder::GetEncoderInfo());
-    info.implementation_name = "GStreamer - nvv4l2h264enc";
-    info.is_hardware_accelerated = false;
+// webrtc::VideoEncoder::EncoderInfo
+// NVH264GStreamerVideoEncoder::GetEncoderInfo() const
+// {
+//     webrtc::VideoEncoder::EncoderInfo info(
+//         GStreamerVideoEncoder::GetEncoderInfo());
+//     info.implementation_name = "GStreamer - nvv4l2h264enc";
+//     info.is_hardware_accelerated = false;
 
-    return info;
-}
+//     return info;
+// }
 
-bool NVENCH265GStreamerVideoEncoder::isSupported()
+bool NVH264GStreamerVideoEncoder::isSupported()
 {
     return gst::elementFactoryExists("nvvideoconvert") && gst::elementFactoryExists("nvv4l2h264enc") && gst::testEncoderDecoderPipeline("nvvideoconvert ! nvv4l2h264enc");
 }
 
-bool NVENCH265GStreamerVideoEncoder::isHardwareAccelerated() { return true; }
+bool NVH264GStreamerVideoEncoder::isHardwareAccelerated() { return true; }
 
-bool NVENCH265GStreamerVideoEncoder::areParametersSupported(
-    const webrtc::SdpVideoFormat::Parameters& parameters)
+bool NVH264GStreamerVideoEncoder::areParametersSupported(
+    const Parameters& parameters)
 {
     return isProfileBaselineOrMain(parameters);
 }
 
-string NVENCH265GStreamerVideoEncoder::profileFromParameters(
-    const webrtc::SdpVideoFormat::Parameters& parameters)
+string NVH264GStreamerVideoEncoder::profileFromParameters(
+    const Parameters& parameters)
 {
     auto it = parameters.find(cricket::kH264FmtpProfileLevelId);
     if (it != parameters.end() && it->second.find(MainProfileLevelIdPrefix) == 0) {

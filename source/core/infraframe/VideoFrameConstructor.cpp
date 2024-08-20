@@ -12,7 +12,7 @@ using namespace rtc_adapter;
 
 namespace infraframe {
 
-DEFINE_LOGGER(VideoFrameConstructor, "owt.VideoFrameConstructor");
+DEFINE_LOGGER(VideoFrameConstructor, "infraframe.VideoFrameConstructor");
 
 VideoFrameConstructor::VideoFrameConstructor(VideoInfoListener* vil, uint32_t transportccExtId)
     : m_enabled(true)

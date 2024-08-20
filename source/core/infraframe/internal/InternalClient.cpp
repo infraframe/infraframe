@@ -7,7 +7,7 @@
 
 namespace infraframe {
 
-DEFINE_LOGGER(InternalClient, "owt.InternalClient");
+DEFINE_LOGGER(InternalClient, "infraframe.InternalClient");
 
 InternalClient::InternalClient(
     const std::string& streamId,

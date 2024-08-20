@@ -7,8 +7,11 @@
 
 #include <string_view>
 
+#include <logger.h>
+
 namespace infraframe {
 class GStreamerDecoderPipeline {
+    DECLARE_LOGGER();
     gst::unique_ptr<GstPipeline> _pipeline;
     gst::unique_ptr<GstElement> _src;
     gst::unique_ptr<GstElement> _sink;

@@ -11,7 +11,7 @@ namespace infraframe {
 using boost::asio::ip::tcp;
 using boost::asio::ip::udp;
 
-DEFINE_TEMPLATE_LOGGER(template <Protocol prot>, RawTransport<prot>, "owt.RawTransport");
+DEFINE_TEMPLATE_LOGGER(template <Protocol prot>, RawTransport<prot>, "infraframe.RawTransport");
 
 static constexpr const uint32_t kMaxTicketLen = 64;
 static constexpr const char kServerCrt[] = "cert/server.crt";

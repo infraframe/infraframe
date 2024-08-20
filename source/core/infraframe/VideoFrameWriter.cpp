@@ -8,7 +8,7 @@ using namespace webrtc;
 
 namespace infraframe {
 
-DEFINE_LOGGER(VideoFrameWriter, "owt.VideoFrameWriter");
+DEFINE_LOGGER(VideoFrameWriter, "infraframe.VideoFrameWriter");
 
 VideoFrameWriter::VideoFrameWriter(const std::string& name)
     : m_name(name)

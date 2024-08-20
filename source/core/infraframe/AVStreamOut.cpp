@@ -30,7 +30,7 @@ inline AVCodecID frameFormat2AVCodecID(int frameFormat)
     }
 }
 
-DEFINE_LOGGER(AVStreamOut, "owt.AVStreamOut");
+DEFINE_LOGGER(AVStreamOut, "infraframe.AVStreamOut");
 
 AVStreamOut::AVStreamOut(const std::string& url, bool hasAudio, bool hasVideo, EventRegistry* handle, int timeout)
     : m_status(Context_EMPTY)

@@ -6,7 +6,7 @@
 
 namespace infraframe {
 
-DEFINE_LOGGER(MediaFileOut, "owt.media.MediaFileOut");
+DEFINE_LOGGER(MediaFileOut, "infraframe.media.MediaFileOut");
 
 MediaFileOut::MediaFileOut(const std::string& url, bool hasAudio, bool hasVideo, EventRegistry* handle, int recordingTimeout)
     : AVStreamOut(url, hasAudio, hasVideo, handle, recordingTimeout)

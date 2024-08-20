@@ -1,18 +1,24 @@
-#ifndef VIDEO_DECODER_FACTORY_H
-#define VIDEO_DECODER_FACTORY_H
+#ifndef VIDEO_DECODER_H
+#define VIDEO_DECODER_H
 
 #include "BufferPool.h"
 #include "ClassMacro.h"
 #include "DecoderPipeline.h"
 #include "Helpers.h"
 
-#include <api/video_codecs/video_decoder.h>
-#include <common_video/include/video_frame_buffer_pool.h>
-#include <media/base/codec.h>
-#include <modules/video_coding/include/video_codec_interface.h>
+// #include <I420BufferManager.h>
+#include <logger.h>
+
+#include <webrtc/api/video_codecs/video_decoder.h>
+#include <webrtc/common_video/include/i420_buffer_pool.h>
+#include <webrtc/media/base/codec.h>
+#include <webrtc/modules/video_coding/include/video_codec_interface.h>
+
+#include <boost/scoped_ptr.hpp>
 
 namespace infraframe {
 class GStreamerVideoDecoder : public webrtc::VideoDecoder {
+    DECLARE_LOGGER();
     std::string _mediaTypeCaps;
     std::string _decoderPipeline;
     bool _resetPipelineOnSizeChanges;
@@ -27,7 +33,8 @@ class GStreamerVideoDecoder : public webrtc::VideoDecoder {
     gst::unique_ptr<GstCaps> _caps;
 
     webrtc::DecodedImageCallback* _imageReadyCb;
-    webrtc::VideoFrameBufferPool _webrtcBufferPool;
+    // boost::scoped_ptr<I420BufferManager> m_bufferManager;
+    webrtc::I420BufferPool _bufferManager;
 
 public:
     GStreamerVideoDecoder(std::string mediaTypeCaps,
@@ -40,11 +47,17 @@ public:
 
     int32_t Release() override;
 
-    int32_t Decode(const webrtc::EncodedImage& inputImage,
-        bool missingFrames,
-        int64_t renderTimeMs) override;
+    // int32_t Decode(const webrtc::EncodedImage& inputImage,
+    // bool missingFrames,
+    // int64_t renderTimeMs) override;
+    int32_t Decode(const webrtc::EncodedImage& input_image,
+        bool missing_frames,
+        const webrtc::RTPFragmentationHeader* fragmentation,
+        const webrtc::CodecSpecificInfo* codec_specific_info = NULL,
+        int64_t render_time_ms = -1) override;
 
-    bool Configure(const webrtc::VideoDecoder::Settings& settings) override;
+    // bool Configure(const webrtc::VideoDecoder::Settings& settings) override;
+    int32_t InitDecode(const webrtc::VideoCodec* codec_settings, int32_t number_of_cores);
 
     int32_t RegisterDecodeCompleteCallback(
         webrtc::DecodedImageCallback* callback) override;

@@ -47,7 +47,7 @@ typedef enum {
 } // extern "C"
 #endif /*__cplusplus */
 
-namespace owt {
+namespace infraframe {
 namespace analytics {
 
     struct AnalyticsBuffer {

@@ -6,9 +6,12 @@
 #include <gst/gst.h>
 #include <gst/video/video.h>
 
+#include <logger.h>
+
 namespace infraframe {
 
 class GstMappedFrame {
+    DECLARE_LOGGER();
     GstVideoFrame _frame;
     bool _isValid = false;
 

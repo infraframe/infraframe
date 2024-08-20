@@ -9,7 +9,7 @@ namespace infraframe {
 
 using boost::asio::ip::tcp;
 
-DEFINE_LOGGER(TransportServer, "owt.TransportServer");
+DEFINE_LOGGER(TransportServer, "infraframe.TransportServer");
 
 static constexpr const char kServerCrt[] = "cert/server.crt";
 static constexpr const char kServerKey[] = "cert/server.key";
