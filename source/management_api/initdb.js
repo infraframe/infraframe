@@ -197,6 +197,7 @@ async function prepareService(serviceName, next) {
     };
     let result = await db.collection('services').insertOne(service);
     result.key = key;
+    result._id = result.insertedId;
     next(result);
   } else {
     if (service.encrypted === true) {

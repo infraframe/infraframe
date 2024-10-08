@@ -32,14 +32,12 @@ const DEFAULT_AUDIO_OUT = [
 ];
 const DEFAULT_VIDEO_IN = [
   { codec: "h264" },
-  { codec: "vp8" },
-  { codec: "vp9" },
+  { codec: "h265" },
 ];
 const DEFAULT_VIDEO_OUT = [
-  { codec: "vp8" },
-  { codec: "h264", profile: "CB" },
-  { codec: "h264", profile: "B" },
-  { codec: "vp9" },
+  { codec: 'h264', profile: 'CB' },
+  { codec: 'h264', profile: 'B' },
+  { codec: 'h265' },
 ];
 const DEFAULT_VIDEO_PARA = {
   resolution: [

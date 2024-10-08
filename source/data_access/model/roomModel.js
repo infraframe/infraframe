@@ -154,14 +154,14 @@ var RoomSchema = new Schema({
     },
   },
   transcoding: {
-    audio: { type: Boolean, default: true },
+    audio: { type: Boolean, default: false },
     video: {
-      format: { type: Boolean, default: true },
+      format: { type: Boolean, default: false },
       parameters: {
-        resolution: { type: Boolean, default: true },
-        framerate: { type: Boolean, default: true },
-        bitrate: { type: Boolean, default: true },
-        keyFrameInterval: { type: Boolean, default: true },
+        resolution: { type: Boolean, default: false },
+        framerate: { type: Boolean, default: false },
+        bitrate: { type: Boolean, default: false },
+        keyFrameInterval: { type: Boolean, default: false },
       },
     },
   },

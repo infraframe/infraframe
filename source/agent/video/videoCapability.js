@@ -4,12 +4,12 @@
 
 const isHWAccAppliable = () => {
   // Query the hardware capability only if we want to try it.
-  var info = "";
+  var info = '';
   try {
-    info = require("child_process")
-      .execSync("vainfo", {
+    info = require('child_process')
+      .execSync('gst-inspect-1.0', {
         env: process.env,
-        stdio: ["ignore", "pipe", "pipe"],
+        stdio: ['ignore', 'pipe', 'pipe'],
       })
       .toString();
   } catch (error) {
@@ -19,42 +19,22 @@ const isHWAccAppliable = () => {
       info = error.stderr.toString();
     }
   }
-  return info.indexOf("VA-API version") != -1 ? true : false;
+  return info.indexOf('nvvideo4linux2') != -1 ? true : false;
 };
 
 module.exports.detected = (requireHWAcc) => {
-  /*FIXME: should be double checked whether hardware acceleration is actually running*/
   var useHW = false;
-  // TODO: support av1x.
   var codecs = {
-    decode: ["vp8", "vp9", "h264", "h265", "av1"],
-    encode: ["vp8", "vp9", "av1"],
+    decode: ['vp8', 'vp9', 'av1', 'h265', 'h264'],
+    encode: ['vp8', 'vp9', 'av1'],
   };
 
-  if (requireHWAcc && isHWAccAppliable()) {
-    useHW = true;
-    codecs.encode.push("h265");
-    codecs.encode.push("h264_CB");
-    codecs.encode.push("h264_B");
-    codecs.encode.push("h264_M");
-    codecs.encode.push("h264_H");
-  } else {
-    const fs = require("fs");
-    if (
-      fs.existsSync("./lib/libopenh264.so.4") &&
-      fs.statSync("./lib/libopenh264.so.4").size > 100000
-    ) {
-      //FIXME: The detection of installation of openh264 is not accurate here.
-      codecs.encode.push("h264_CB");
-      codecs.encode.push("h264_B"); //FIXME: This is a workround for the profile compability issue, should be removed and fix it by adding accurate profile selecting logic in conference controller.
-    }
-
-    if (
-      fs.existsSync("./lib/libSvtHevcEnc.so.1") &&
-      fs.statSync("./lib/libSvtHevcEnc.so.1").size > 100000
-    ) {
-      codecs.encode.push("h265");
-    }
+  if (isHWAccAppliable()) {
+    // TODO: 设置为true会加载MSDK相关的内容。使用NV硬编解码器替代MSDK后，再设置为true
+    // useHW = true;
+    codecs.encode.push('h265');
+    codecs.encode.push('h264_CB');
+    codecs.encode.push('h264_B');
   }
 
   return {
