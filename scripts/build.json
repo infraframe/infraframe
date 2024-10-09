@@ -10,8 +10,7 @@
       "audio-ranker",
       "video-switch",
       "webrtc",
-      "avstream",
-      "sip"
+      "avstream"
     ]
   },
   "mcu-all": {
@@ -60,10 +59,6 @@
   },
   "webrtc-frame": {
     "path": "source/agent/webrtc/rtcFrame"
-  },
-  "sip": {
-    "path": "source/agent/sip/sipIn",
-    "gyp": "binding.sip.gyp"
   },
   "logger": {
     "path": "source/agent/addons/logger"
