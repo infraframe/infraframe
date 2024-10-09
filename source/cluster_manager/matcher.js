@@ -172,8 +172,6 @@ exports.create = function (purpose) {
       return new generalMatcher();
     case "streaming":
       return new streamingMatcher();
-    case "sip":
-      return new generalMatcher();
     case "audio":
       return new audioMatcher();
     case "video":
@@ -181,10 +179,6 @@ exports.create = function (purpose) {
     case "analytics":
       return new analyticsMatcher();
     case "quic":
-      return new generalMatcher();
-    case "mediabridge":
-      return new generalMatcher();
-    case "eventbridge":
       return new generalMatcher();
     default:
       log.warn(

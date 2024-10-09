@@ -69,7 +69,7 @@ module.exports.create = function (spec, on_init_ok, on_init_failed) {
   /*
     Since there is no definition for `terminal`. (https://github.com/open-webrtc-toolkit/owt-server/issues/469) I guess a terminal is a node that connects an input with one or many outputs.
     terminals = {terminalID: {owner: ParticipantID | Room's mix stream Id(for amixer and vmixer),
-                  type: 'webrtc' | 'streaming' | 'recording' | 'sip' | 'amixer' | 'axcoder' | 'vmixer' | 'vxcoder',
+                  type: 'webrtc' | 'streaming' | 'recording' | 'amixer' | 'axcoder' | 'vmixer' | 'vxcoder',
                   locality: {agent: AgentRpcID, node: NodeRpcID, ip: agentIP, port: internalPort},
                   published: [StreamID],
                   subscribed: {SubscriptionID: {audio: StreamID, video: StreamID}}
@@ -591,7 +591,6 @@ module.exports.create = function (spec, on_init_ok, on_init_failed) {
       (terminals[terminal_id].type === "webrtc" ||
         terminals[terminal_id].type === "streaming" ||
         terminals[terminal_id].type === "recording" ||
-        terminals[terminal_id].type === "sip" ||
         terminals[terminal_id].type === "aselect")
     );
   };
@@ -2086,7 +2085,7 @@ module.exports.create = function (spec, on_init_ok, on_init_failed) {
     if (streams[streamId] === undefined) {
       var terminal_id = pubTermId(participantId, streamId);
       var terminal_owner =
-        streamType === "webrtc" || streamType === "sip" || streamType === "quic"
+        streamType === "webrtc" || streamType === "quic"
           ? participantId
           : room_id + "-" + randomId();
       newTerminal(
@@ -2478,9 +2477,7 @@ module.exports.create = function (spec, on_init_ok, on_init_failed) {
       };
 
       var terminal_owner =
-        (subType === "webrtc" ||
-          subType === "sip" ||
-          subType === "mediabridge") &&
+        (subType === "webrtc") &&
         isAudioPubPermitted
           ? participantId
           : room_id;

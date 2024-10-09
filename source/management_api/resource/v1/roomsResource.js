@@ -66,12 +66,6 @@ exports.createRoom = function (req, res, next) {
         authData.service.name
       );
       res.send(result);
-
-      // Notify SIP portal if SIP room created
-      if (result && result.sip) {
-        log.info("Notify SIP Portal on create Room");
-        requestHandler.notifySipPortal("create", result, function () {});
-      }
     } else {
       log.info("Room creation failed", err ? err.message : options);
       next(err || new e.AppError("Create room failed"));

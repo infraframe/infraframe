@@ -18,7 +18,7 @@
  *   },
  *   info: object(SubscriptionInfo):: {
  *     owner: string(ParticipantId),
- *     type: 'webrtc' | 'streaming' | 'recording' | 'sip' | 'analytics' | 'quic',
+ *     type: 'webrtc' | 'streaming' | 'recording' | 'analytics' | 'quic',
  *     location: {host: string(HostIPorDN), path: string(FileFullPath)} | undefined,
  *     url: string(URLofStreamingOut) | undefined
  *   }

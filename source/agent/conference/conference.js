@@ -177,12 +177,7 @@ var Conference = function (rpcClient, selfRpcId) {
    *  notifying: {
    *    participantActivities: true | false,
    *    streamChange: true | false
-   *  },
-   *  sip: {
-   *    sipServer: string(SipServerURL),
-   *    username: string(SipUserID),
-   *    password: string(SipUserPassword)
-   *  } | false
+   *  }
    * }
    */
   var room_config;
@@ -250,7 +245,7 @@ var Conference = function (rpcClient, selfRpcId) {
    *     },
    *     info: object(SubscriptionInfo):: {
    *       owner: string(ParticipantId),
-   *       type: 'webrtc' | 'streaming' | 'recording' | 'sip' | 'analytics',
+   *       type: 'webrtc' | 'streaming' | 'recording' | 'analytics',
    *       location: {host: string(HostIPorDN), path: string(FileFullPath)} | undefined,
    *       url: string(URLofStreamingOut) | undefined
    *     }
@@ -1373,10 +1368,7 @@ var Conference = function (rpcClient, selfRpcId) {
 
   const doUnpublish = (streamId) => {
     if (streams[streamId]) {
-      if (
-        streams[streamId].info.type === "sip" ||
-        streams[streamId].info.type === "analytics"
-      ) {
+      if (streams[streamId].info.type === "analytics") {
         return removeStream(streamId);
       } else {
         return accessController.terminate(
@@ -1392,15 +1384,11 @@ var Conference = function (rpcClient, selfRpcId) {
 
   const doUnsubscribe = (subId) => {
     if (subscriptions[subId]) {
-      if (subscriptions[subId].info.type === "sip") {
-        return removeSubscription(subId);
-      } else {
-        return accessController.terminate(
-          subId,
-          "out",
-          "Participant terminate"
-        );
-      }
+      return accessController.terminate(
+        subId,
+        "out",
+        "Participant terminate"
+      );
     } else {
       return Promise.reject("Subscription does NOT exist");
     }
@@ -1692,25 +1680,7 @@ var Conference = function (rpcClient, selfRpcId) {
       return callback("callback", "error", "Video is forbiden");
     }
 
-    if (pubInfo.type === "sip") {
-      pubInfo.media.tracks = null;
-      rpcReq.addSipNode(pubInfo.locality.node);
-      return addStream(
-        streamId,
-        pubInfo.locality,
-        pubInfo.transport,
-        pubInfo.media,
-        pubInfo.data,
-        { owner: participantId, type: pubInfo.type }
-      )
-        .then((result) => {
-          callback("callback", result);
-        })
-        .catch((e) => {
-          log.warn("Add stream failed", e);
-          callback("callback", "error", e.message ? e.message : e);
-        });
-    } else if (pubInfo.type === "analytics") {
+    if (pubInfo.type === "analytics") {
       return addStream(
         streamId,
         pubInfo.locality,
@@ -2152,194 +2122,177 @@ var Conference = function (rpcClient, selfRpcId) {
     callback
   ) => {
     log.debug("startSubscribe with type:", subDesc.type);
-    if (subDesc.type === "sip") {
-      return addSubscription(
-        subscriptionId,
-        subDesc.locality,
-        subDesc.media,
-        subDesc.data,
-        { owner: participantId, type: "sip" },
-        subDesc.transport
-      )
-        .then((result) => {
-          callback("callback", result);
-        })
-        .catch((e) => {
-          callback("callback", "error", e.message ? e.message : e);
-        });
-    } else {
-      var format_preference;
-      if (subDesc.type === "webrtc" || subDesc.type === "quic") {
-        const controller =
-          subDesc.type === "webrtc" ? rtcController : quicController;
-        const rtcSubInfo = translateRtcSubIfNeeded(subDesc);
-        if (rtcSubInfo.tracks) {
-          // Set formatPreference
-          rtcSubInfo.tracks.forEach((track) => {
-            const streamId = streams[track.from]
-              ? track.from
-              : trackOwners[track.from];
-            const source = getStreamTrack(track.from, track.type);
-            const formatPreference = {};
-            if (streams[streamId].type === "forward") {
-              formatPreference.preferred = source.format;
-              source.optional &&
-                source.optional.format &&
-                (formatPreference.optional = source.optional.format);
-            } else {
-              formatPreference.optional = [source.format];
-              source.optional &&
-                source.optional.format &&
-                (formatPreference.optional = formatPreference.optional.concat(
-                  source.optional.format
-                ));
-            }
-            track.formatPreference = formatPreference;
-            log.debug(
-              "startSubscribe with formatPreference:",
-              formatPreference
-            );
-          });
-        }
-
-        initiateSubscription(subscriptionId, subDesc, {
-          owner: participantId,
-          type: subDesc.type,
-        });
-        return controller
-          .initiate(
-            participantId,
-            subscriptionId,
-            "out",
-            participants[participantId].getOrigin(),
-            rtcSubInfo
-          )
-          .then((result) => {
-            const releasedSource = rtcSubInfo.tracks
-              ? rtcSubInfo.tracks.find((track) => {
-                  const sourceStreamId = trackOwners[track.from] || track.from;
-                  return !streams[sourceStreamId];
-                })
-              : undefined;
-            if (releasedSource) {
-              controller.terminate(
-                participantId,
-                subscriptionId,
-                "Participant terminate"
-              );
-              return Promise.reject("Target audio/video stream early released");
-            }
-            callback("callback", result);
-          })
-          .catch((e) => {
-            removeSubscription(subscriptionId);
-            callback("callback", "error", e.message ? e.message : e);
-          });
-      }
-
-      if (subDesc.type === "recording") {
-        var audio_codec = "none-aac",
-          video_codec;
-        if (subDesc.media.audio) {
-          if (subDesc.media.audio.format) {
-            audio_codec = subDesc.media.audio.format.codec;
+    var format_preference;
+    if (subDesc.type === "webrtc" || subDesc.type === "quic") {
+      const controller =
+        subDesc.type === "webrtc" ? rtcController : quicController;
+      const rtcSubInfo = translateRtcSubIfNeeded(subDesc);
+      if (rtcSubInfo.tracks) {
+        // Set formatPreference
+        rtcSubInfo.tracks.forEach((track) => {
+          const streamId = streams[track.from]
+            ? track.from
+            : trackOwners[track.from];
+          const source = getStreamTrack(track.from, track.type);
+          const formatPreference = {};
+          if (streams[streamId].type === "forward") {
+            formatPreference.preferred = source.format;
+            source.optional &&
+              source.optional.format &&
+              (formatPreference.optional = source.optional.format);
           } else {
-            let track = getStreamTrack(subDesc.media.audio.from, "audio");
-            audio_codec = track.format.codec;
+            formatPreference.optional = [source.format];
+            source.optional &&
+              source.optional.format &&
+              (formatPreference.optional = formatPreference.optional.concat(
+                source.optional.format
+              ));
           }
-
-          //FIXME: To support codecs other than those in the following list.
-          if (
-            audio_codec !== "pcmu" &&
-            audio_codec !== "pcma" &&
-            audio_codec !== "opus" &&
-            audio_codec !== "aac"
-          ) {
-            return Promise.reject("Audio codec invalid");
-          }
-        }
-
-        if (subDesc.media.video) {
-          let track = getStreamTrack(subDesc.media.video.from, "video");
-          video_codec =
-            (subDesc.media.video.format && subDesc.media.video.format.codec) ||
-            track.format.codec;
-        }
-
-        if (
-          !subDesc.connection.container ||
-          subDesc.connection.container === "auto"
-        ) {
-          subDesc.connection.container =
-            audio_codec === "aac" &&
-            (!video_codec || video_codec === "h264" || video_codec === "h265")
-              ? "mp4"
-              : "mkv";
-        }
-      }
-
-      if (subDesc.type === "streaming") {
-        if (subDesc.media.audio && !subDesc.media.audio.format) {
-          var aacFmt = room_config.mediaOut.audio.find(
-            (a) => a.codec === "aac"
+          track.formatPreference = formatPreference;
+          log.debug(
+            "startSubscribe with formatPreference:",
+            formatPreference
           );
-          if (!aacFmt) {
-            return Promise.reject("Audio codec aac not enabled");
-          }
-          subDesc.media.audio.format = aacFmt;
-        }
-
-        //FIXME: To support codecs other than those in the following list.
-        if (subDesc.media.audio && subDesc.media.audio.format.codec !== "aac") {
-          return Promise.reject("Audio codec invalid");
-        }
-
-        if (subDesc.media.video && !subDesc.media.video.format) {
-          subDesc.media.video.format = { codec: "h264" };
-        }
-
-        //FIXME: To support codecs other than those in the following list.
-        if (
-          subDesc.media.video &&
-          subDesc.media.video.format.codec !== "h264"
-        ) {
-          return Promise.reject("Video codec invalid");
-        }
+        });
       }
 
       initiateSubscription(subscriptionId, subDesc, {
         owner: participantId,
         type: subDesc.type,
       });
-      return accessController
+      return controller
         .initiate(
           participantId,
           subscriptionId,
           "out",
           participants[participantId].getOrigin(),
-          subDesc,
-          format_preference
+          rtcSubInfo
         )
         .then((result) => {
-          if (
-            (subDesc.media.audio && !streams[subDesc.media.audio.from]) ||
-            (subDesc.media.video && !streams[subDesc.media.video.from])
-          ) {
-            accessController.terminate(
+          const releasedSource = rtcSubInfo.tracks
+            ? rtcSubInfo.tracks.find((track) => {
+                const sourceStreamId = trackOwners[track.from] || track.from;
+                return !streams[sourceStreamId];
+              })
+            : undefined;
+          if (releasedSource) {
+            controller.terminate(
               participantId,
               subscriptionId,
               "Participant terminate"
             );
             return Promise.reject("Target audio/video stream early released");
           }
-
-          return Promise.resolve(result);
+          callback("callback", result);
         })
         .catch((e) => {
           removeSubscription(subscriptionId);
           callback("callback", "error", e.message ? e.message : e);
         });
     }
+
+    if (subDesc.type === "recording") {
+      var audio_codec = "none-aac",
+        video_codec;
+      if (subDesc.media.audio) {
+        if (subDesc.media.audio.format) {
+          audio_codec = subDesc.media.audio.format.codec;
+        } else {
+          let track = getStreamTrack(subDesc.media.audio.from, "audio");
+          audio_codec = track.format.codec;
+        }
+
+        //FIXME: To support codecs other than those in the following list.
+        if (
+          audio_codec !== "pcmu" &&
+          audio_codec !== "pcma" &&
+          audio_codec !== "opus" &&
+          audio_codec !== "aac"
+        ) {
+          return Promise.reject("Audio codec invalid");
+        }
+      }
+
+      if (subDesc.media.video) {
+        let track = getStreamTrack(subDesc.media.video.from, "video");
+        video_codec =
+          (subDesc.media.video.format && subDesc.media.video.format.codec) ||
+          track.format.codec;
+      }
+
+      if (
+        !subDesc.connection.container ||
+        subDesc.connection.container === "auto"
+      ) {
+        subDesc.connection.container =
+          audio_codec === "aac" &&
+          (!video_codec || video_codec === "h264" || video_codec === "h265")
+            ? "mp4"
+            : "mkv";
+      }
+    }
+
+    if (subDesc.type === "streaming") {
+      if (subDesc.media.audio && !subDesc.media.audio.format) {
+        var aacFmt = room_config.mediaOut.audio.find(
+          (a) => a.codec === "aac"
+        );
+        if (!aacFmt) {
+          return Promise.reject("Audio codec aac not enabled");
+        }
+        subDesc.media.audio.format = aacFmt;
+      }
+
+      //FIXME: To support codecs other than those in the following list.
+      if (subDesc.media.audio && subDesc.media.audio.format.codec !== "aac") {
+        return Promise.reject("Audio codec invalid");
+      }
+
+      if (subDesc.media.video && !subDesc.media.video.format) {
+        subDesc.media.video.format = { codec: "h264" };
+      }
+
+      //FIXME: To support codecs other than those in the following list.
+      if (
+        subDesc.media.video &&
+        subDesc.media.video.format.codec !== "h264"
+      ) {
+        return Promise.reject("Video codec invalid");
+      }
+    }
+
+    initiateSubscription(subscriptionId, subDesc, {
+      owner: participantId,
+      type: subDesc.type,
+    });
+    return accessController
+      .initiate(
+        participantId,
+        subscriptionId,
+        "out",
+        participants[participantId].getOrigin(),
+        subDesc,
+        format_preference
+      )
+      .then((result) => {
+        if (
+          (subDesc.media.audio && !streams[subDesc.media.audio.from]) ||
+          (subDesc.media.video && !streams[subDesc.media.video.from])
+        ) {
+          accessController.terminate(
+            participantId,
+            subscriptionId,
+            "Participant terminate"
+          );
+          return Promise.reject("Target audio/video stream early released");
+        }
+
+        return Promise.resolve(result);
+      })
+      .catch((e) => {
+        removeSubscription(subscriptionId);
+        callback("callback", "error", e.message ? e.message : e);
+      });
   };
 
   that.subscribe = function (participantId, subscriptionId, subDesc, callback) {
@@ -2458,204 +2411,61 @@ var Conference = function (rpcClient, selfRpcId) {
         });
     }
 
-    if (subDesc.type === "sip") {
-      subDesc.media.tracks = null;
-      return addSubscription(
-        subscriptionId,
-        subDesc.locality,
-        subDesc.media,
-        subDesc.data,
-        { owner: participantId, type: "sip" },
-        subDesc.transport
-      )
-        .then((result) => {
-          callback("callback", result);
-        })
-        .catch((e) => {
-          log.warn("Add subscription failed", e);
-          callback("callback", "error", e.message ? e.message : e);
-        });
-    } else if (subDesc.type === "mediabridge") {
-      if (subDesc.originType) {
-        subDesc.media.tracks.forEach((track) => {
-          track.id = subscriptionId;
-        });
+    var format_preference;
+    if (subDesc.type === "webrtc" || subDesc.type === "quic") {
+      const controller =
+        subDesc.type === "webrtc" ? rtcController : quicController;
+      const rtcSubInfo = translateRtcSubIfNeeded(subDesc);
+      // Check bandwidth estimation
+      if (room_config.enableBandwidthAdaptation) {
+        rtcSubInfo.enableBWE = true;
       }
-
-      log.debug("mediabridge addSubscription with media:", subDesc.media);
-      return addSubscription(
-        subscriptionId,
-        subDesc.locality,
-        subDesc.media,
-        subDesc.data,
-        { owner: participantId, type: subDesc.originType, mediabridge: true },
-        subDesc.transport
-      )
-        .then((result) => {
-          callback("callback", result);
-        })
-        .catch((e) => {
-          callback("callback", "error", e.message ? e.message : e);
-        });
-    } else {
-      var format_preference;
-      if (subDesc.type === "webrtc" || subDesc.type === "quic") {
-        const controller =
-          subDesc.type === "webrtc" ? rtcController : quicController;
-        const rtcSubInfo = translateRtcSubIfNeeded(subDesc);
-        // Check bandwidth estimation
-        if (room_config.enableBandwidthAdaptation) {
-          rtcSubInfo.enableBWE = true;
-        }
-        if (rtcSubInfo.tracks) {
-          // Set formatPreference
-          rtcSubInfo.tracks.forEach((track) => {
-            const streamId = streams[track.from]
-              ? track.from
-              : trackOwners[track.from];
-            const source = getStreamTrack(track.from, track.type);
-            const formatPreference = {};
-            if (streams[streamId].type === "forward") {
-              formatPreference.preferred = source.format;
-              source.optional &&
-                source.optional.format &&
-                (formatPreference.optional = source.optional.format);
-            } else {
-              formatPreference.optional = [source.format];
-              source.optional &&
-                source.optional.format &&
-                (formatPreference.optional = formatPreference.optional.concat(
-                  source.optional.format
-                ));
-            }
-            track.formatPreference = formatPreference;
-          });
-        }
-
-        initiateSubscription(subscriptionId, subDesc, {
-          owner: participantId,
-          type: subDesc.type,
-        });
-        return controller
-          .initiate(
-            participantId,
-            subscriptionId,
-            "out",
-            participants[participantId].getOrigin(),
-            rtcSubInfo
-          )
-          .then((result) => {
-            const releasedSource = rtcSubInfo.tracks
-              ? rtcSubInfo.tracks.find((track) => {
-                  const sourceStreamId = trackOwners[track.from] || track.from;
-                  return !streams[sourceStreamId];
-                })
-              : undefined;
-            if (releasedSource) {
-              controller.terminate(
-                participantId,
-                subscriptionId,
-                "Participant terminate"
-              );
-              return Promise.reject("Target audio/video stream early released");
-            }
-            callback("callback", result);
-          })
-          .catch((e) => {
-            removeSubscription(subscriptionId);
-            callback("callback", "error", e.message ? e.message : e);
-          });
-      }
-
-      if (subDesc.type === "recording") {
-        var audio_codec = "none-aac",
-          video_codec;
-        if (subDesc.media.audio) {
-          if (subDesc.media.audio.format) {
-            audio_codec = subDesc.media.audio.format.codec;
+      if (rtcSubInfo.tracks) {
+        // Set formatPreference
+        rtcSubInfo.tracks.forEach((track) => {
+          const streamId = streams[track.from]
+            ? track.from
+            : trackOwners[track.from];
+          const source = getStreamTrack(track.from, track.type);
+          const formatPreference = {};
+          if (streams[streamId].type === "forward") {
+            formatPreference.preferred = source.format;
+            source.optional &&
+              source.optional.format &&
+              (formatPreference.optional = source.optional.format);
           } else {
-            let track = getStreamTrack(subDesc.media.audio.from, "audio");
-            audio_codec = track.format.codec;
+            formatPreference.optional = [source.format];
+            source.optional &&
+              source.optional.format &&
+              (formatPreference.optional = formatPreference.optional.concat(
+                source.optional.format
+              ));
           }
-
-          //FIXME: To support codecs other than those in the following list.
-          if (
-            audio_codec !== "pcmu" &&
-            audio_codec !== "pcma" &&
-            audio_codec !== "opus" &&
-            audio_codec !== "aac"
-          ) {
-            return Promise.reject("Audio codec invalid");
-          }
-        }
-
-        if (subDesc.media.video) {
-          let track = getStreamTrack(subDesc.media.video.from, "video");
-          video_codec =
-            (subDesc.media.video.format && subDesc.media.video.format.codec) ||
-            track.format.codec;
-        }
-
-        if (
-          !subDesc.connection.container ||
-          subDesc.connection.container === "auto"
-        ) {
-          subDesc.connection.container =
-            audio_codec === "aac" &&
-            (!video_codec || video_codec === "h264" || video_codec === "h265")
-              ? "mp4"
-              : "mkv";
-        }
-      }
-
-      if (subDesc.type === "streaming") {
-        if (subDesc.media.audio && !subDesc.media.audio.format) {
-          var aacFmt = room_config.mediaOut.audio.find(
-            (a) => a.codec === "aac"
-          );
-          if (!aacFmt) {
-            return Promise.reject("Audio codec aac not enabled");
-          }
-          subDesc.media.audio.format = aacFmt;
-        }
-
-        //FIXME: To support codecs other than those in the following list.
-        if (subDesc.media.audio && subDesc.media.audio.format.codec !== "aac") {
-          return Promise.reject("Audio codec invalid");
-        }
-
-        if (subDesc.media.video && !subDesc.media.video.format) {
-          subDesc.media.video.format = { codec: "h264" };
-        }
-
-        //FIXME: To support codecs other than those in the following list.
-        if (
-          subDesc.media.video &&
-          subDesc.media.video.format.codec !== "h264"
-        ) {
-          return Promise.reject("Video codec invalid");
-        }
+          track.formatPreference = formatPreference;
+        });
       }
 
       initiateSubscription(subscriptionId, subDesc, {
         owner: participantId,
         type: subDesc.type,
       });
-      return accessController
+      return controller
         .initiate(
           participantId,
           subscriptionId,
           "out",
           participants[participantId].getOrigin(),
-          subDesc,
-          format_preference
+          rtcSubInfo
         )
         .then((result) => {
-          if (
-            (subDesc.media.audio && !streams[subDesc.media.audio.from]) ||
-            (subDesc.media.video && !streams[subDesc.media.video.from])
-          ) {
-            accessController.terminate(
+          const releasedSource = rtcSubInfo.tracks
+            ? rtcSubInfo.tracks.find((track) => {
+                const sourceStreamId = trackOwners[track.from] || track.from;
+                return !streams[sourceStreamId];
+              })
+            : undefined;
+          if (releasedSource) {
+            controller.terminate(
               participantId,
               subscriptionId,
               "Participant terminate"
@@ -2669,6 +2479,108 @@ var Conference = function (rpcClient, selfRpcId) {
           callback("callback", "error", e.message ? e.message : e);
         });
     }
+
+    if (subDesc.type === "recording") {
+      var audio_codec = "none-aac",
+        video_codec;
+      if (subDesc.media.audio) {
+        if (subDesc.media.audio.format) {
+          audio_codec = subDesc.media.audio.format.codec;
+        } else {
+          let track = getStreamTrack(subDesc.media.audio.from, "audio");
+          audio_codec = track.format.codec;
+        }
+
+        //FIXME: To support codecs other than those in the following list.
+        if (
+          audio_codec !== "pcmu" &&
+          audio_codec !== "pcma" &&
+          audio_codec !== "opus" &&
+          audio_codec !== "aac"
+        ) {
+          return Promise.reject("Audio codec invalid");
+        }
+      }
+
+      if (subDesc.media.video) {
+        let track = getStreamTrack(subDesc.media.video.from, "video");
+        video_codec =
+          (subDesc.media.video.format && subDesc.media.video.format.codec) ||
+          track.format.codec;
+      }
+
+      if (
+        !subDesc.connection.container ||
+        subDesc.connection.container === "auto"
+      ) {
+        subDesc.connection.container =
+          audio_codec === "aac" &&
+          (!video_codec || video_codec === "h264" || video_codec === "h265")
+            ? "mp4"
+            : "mkv";
+      }
+    }
+
+    if (subDesc.type === "streaming") {
+      if (subDesc.media.audio && !subDesc.media.audio.format) {
+        var aacFmt = room_config.mediaOut.audio.find(
+          (a) => a.codec === "aac"
+        );
+        if (!aacFmt) {
+          return Promise.reject("Audio codec aac not enabled");
+        }
+        subDesc.media.audio.format = aacFmt;
+      }
+
+      //FIXME: To support codecs other than those in the following list.
+      if (subDesc.media.audio && subDesc.media.audio.format.codec !== "aac") {
+        return Promise.reject("Audio codec invalid");
+      }
+
+      if (subDesc.media.video && !subDesc.media.video.format) {
+        subDesc.media.video.format = { codec: "h264" };
+      }
+
+      //FIXME: To support codecs other than those in the following list.
+      if (
+        subDesc.media.video &&
+        subDesc.media.video.format.codec !== "h264"
+      ) {
+        return Promise.reject("Video codec invalid");
+      }
+    }
+
+    initiateSubscription(subscriptionId, subDesc, {
+      owner: participantId,
+      type: subDesc.type,
+    });
+    return accessController
+      .initiate(
+        participantId,
+        subscriptionId,
+        "out",
+        participants[participantId].getOrigin(),
+        subDesc,
+        format_preference
+      )
+      .then((result) => {
+        if (
+          (subDesc.media.audio && !streams[subDesc.media.audio.from]) ||
+          (subDesc.media.video && !streams[subDesc.media.video.from])
+        ) {
+          accessController.terminate(
+            participantId,
+            subscriptionId,
+            "Participant terminate"
+          );
+          return Promise.reject("Target audio/video stream early released");
+        }
+        callback("callback", result);
+      })
+      .catch((e) => {
+        removeSubscription(subscriptionId);
+        callback("callback", "error", e.message ? e.message : e);
+      });
   };
 
   that.unsubscribe = function (participantId, subscriptionId, callback) {
@@ -3269,7 +3181,7 @@ var Conference = function (rpcClient, selfRpcId) {
         updateStreamInfo(track.operationId, mediaUpdate);
         roomController && roomController.updateStreamInfo(trackId, mediaUpdate);
       } else if (streams[trackId] && streams[trackId].type === "forward") {
-        // Update from others e.g SIP
+        // Update from others
         const sessionId = trackId;
         updateStreamInfo(sessionId, mediaUpdate);
         roomController &&
@@ -4271,148 +4183,6 @@ var Conference = function (rpcClient, selfRpcId) {
       });
   };
 
-  var getSipCallInfo = function (sipCallId) {
-    var pInfo = participants[sipCallId].getInfo();
-    var sipcall = { id: pInfo.id, peer: pInfo.user };
-    sipcall.type = pInfo.id.startsWith("SipIn") ? "dial-in" : "dial-out";
-
-    for (var stream_id in streams) {
-      if (streams[stream_id].info.owner === pInfo.id) {
-        sipcall.input = streams[stream_id];
-        break;
-      }
-    }
-
-    for (var subscription_id in subscriptions) {
-      if (subscriptions[subscription_id].info.owner === pInfo.id) {
-        sipcall.output = subscriptionAbstract(subscription_id);
-        break;
-      }
-    }
-
-    return sipcall;
-  };
-
-  that.getSipCalls = function (callback) {
-    var result = [];
-    log.debug("getSipCalls: ", participants);
-    for (var pid in participants) {
-      if (participants[pid].getInfo().role === "sip") {
-        result.push(getSipCallInfo(pid));
-      }
-    }
-    callback("callback", result);
-  };
-
-  that.getSipCall = function (participantId, callback) {
-    if (participants[participantId]) {
-      if (participants[participantId].getInfo().role === "sip") {
-        callback("callback", getSipCallInfo(participantId));
-      } else {
-        callback("callback", "error", "Not a sip call");
-      }
-    } else {
-      callback("callback", "error", "Sip call does NOT exist");
-    }
-  };
-
-  that.makeSipCall = function (roomId, options, callback) {
-    return rpcReq
-      .getSipConnectivity("sip-portal", roomId)
-      .then((sipNode) => {
-        return rpcReq.makeSipCall(
-          sipNode,
-          options.peerURI,
-          options.mediaIn,
-          options.mediaOut,
-          selfRpcId
-        );
-      })
-      .then((sipCallId) => {
-        return new Promise((resolve, reject) => {
-          var count = 0,
-            wait = 880;
-          var interval = setInterval(() => {
-            if (count > wait || !participants[sipCallId]) {
-              clearInterval(interval);
-              rpcReq.endSipCall(sipCallId);
-              reject("No answer timeout");
-            } else {
-              if (participants[sipCallId]) {
-                clearInterval(interval);
-                resolve(sipCallId);
-              } else {
-                count = count + 1;
-              }
-            }
-          }, 100);
-        });
-      })
-      .then((sipCallId) => {
-        callback("callback", getSipCallInfo(sipCallId));
-      })
-      .catch((err) => {
-        var reason = err.message || err;
-        log.error("makeSipCall failed, reason:", reason);
-        callback("callback", "error", reason);
-      });
-  };
-
-  that.controlSipCall = function (sipCallId, cmds, callback) {
-    log.debug(
-      "controlSipCall, sipCallId:",
-      sipCallId,
-      "cmds:",
-      JSON.stringify(cmds)
-    );
-    if (
-      participants[sipCallId] &&
-      participants[sipCallId].getInfo().role === "sip"
-    ) {
-      var subscription_id;
-      for (var sub_id in subscriptions) {
-        if (subscriptions[sub_id].info.owner === sipCallId) {
-          subscription_id = sub_id;
-          break;
-        }
-      }
-
-      if (!subscription_id) {
-        return callback("callback", "error", "Sip call has no output");
-      }
-
-      cmds = cmds.map((cmd) => {
-        cmd.path = cmd.path.replace(/^(\/output)/, "");
-        return cmd;
-      });
-      return doControlSubscription(subscription_id, cmds)
-        .then(() => {
-          callback("callback", getSipCallInfo(sipCallId));
-        })
-        .catch((err) => {
-          var reason = err.message || err;
-          log.error("controlSipCall failed, reason:", reason);
-          callback("callback", "error", reason);
-        });
-    } else {
-      callback("callback", "error", "Sip call does NOT exist");
-    }
-  };
-
-  that.endSipCall = function (sipCallId, callback) {
-    log.debug("endSipCall, sipCallId:", sipCallId);
-    if (
-      participants[sipCallId] &&
-      participants[sipCallId].getInfo().role === "sip"
-    ) {
-      rpcReq.endSipCall(participants[sipCallId].getPortal(), sipCallId);
-      removeParticipant(sipCallId);
-      callback("callback", "ok");
-    } else {
-      callback("callback", "error", "Sip call does NOT exist");
-    }
-  };
-
   that.drawText = function (streamId, textSpec, duration, callback) {
     if (roomController) {
       roomController.drawText(streamId, textSpec, duration);
@@ -4450,7 +4220,7 @@ var Conference = function (rpcClient, selfRpcId) {
 
   //This interface is for fault tolerance.
   that.onFaultDetected = function (message) {
-    if (message.purpose === "portal" || message.purpose === "sip") {
+    if (message.purpose === "portal") {
       dropParticipants(message.id);
     } else if (message.purpose === "webrtc") {
       rtcController &&
@@ -4785,7 +4555,7 @@ module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
   var conference = Conference(rpcClient, selfRpcId);
 
   that.rpcAPI = {
-    // rpc from Portal and sip-node.
+    // rpc from Portal.
     join: conference.join,
     leave: conference.leave,
     text: conference.text,
@@ -4824,11 +4594,6 @@ module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
     addServerSideSubscription: conference.addServerSideSubscription,
     controlSubscription: conference.controlSubscription,
     deleteSubscription: conference.deleteSubscription,
-    getSipCalls: conference.getSipCalls,
-    getSipCall: conference.getSipCall,
-    makeSipCall: conference.makeSipCall,
-    controlSipCall: conference.controlSipCall,
-    endSipCall: conference.endSipCall,
     drawText: conference.drawText,
     destroy: conference.destroy,
 
@@ -4936,7 +4701,7 @@ module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
   };
 
   that.grpcInterface = {
-    // rpc from Portal and sip-node.
+    // rpc from Portal.
     join: function (call, callback) {
       const req = call.request;
       conference.join(req.roomId, req.participant, grpcCb(callback));
@@ -5186,63 +4951,6 @@ module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
       });
     },
 
-    getSipCalls: function (call, callback) {
-      conference.getSipCalls((n, code, data) => {
-        if (code === "error") {
-          callback(new Error(data), null);
-        } else {
-          callback(null, { result: code });
-        }
-      });
-    },
-    getSipCall: function (call, callback) {
-      const req = call.request;
-      conference.getSipCall(req.id, (n, code, data) => {
-        if (code === "error") {
-          callback(new Error(data), null);
-        } else {
-          callback(null, code);
-        }
-      });
-    },
-    makeSipCall: function (call, callback) {
-      const req = call.request;
-      const options = {
-        peerURI: req.peer,
-        mediaIn: req.mediaIn,
-        mediaOut: req.mediaOut,
-      };
-      conference.makeSipCall(req.id, options, (n, code, data) => {
-        if (code === "error") {
-          callback(new Error(data), null);
-        } else {
-          callback(null, code);
-        }
-      });
-    },
-    controlSipCall: function (call, callback) {
-      const req = call.request;
-      req.commands = req.commands.map((command) => {
-        return JSON.parse(command);
-      });
-      conference.controlSipCall(req.id, req.commands, (n, code, data) => {
-        if (code === "error") {
-          callback(new Error(data), null);
-        } else {
-          callback(null, code);
-        }
-      });
-    },
-    endSipCall: function (call, callback) {
-      const req = call.request;
-      conference.endSipCall(req.id, (n, code, data) => {
-        if (code === "error") {
-          callback(new Error(data), null);
-        } else {
-          callback(null, code);
-        }
-      });
-    },
     drawText: function (call, callback) {
       // No export
     },

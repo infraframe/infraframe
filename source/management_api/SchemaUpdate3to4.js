@@ -133,7 +133,6 @@ function upgradeRoom(oldConfig) {
     publish: { audio: true, video: true },
     subscribe: { audio: true, video: true },
   });
-  config.sip = oldConfig.sip ? oldConfig.sip : config.sip;
   if (oldConfig.mediaMixing && !oldConfig.views) {
     oldConfig.views = { common: { mediaMixing: oldConfig.mediaMixing } };
   }

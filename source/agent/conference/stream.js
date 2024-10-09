@@ -30,7 +30,7 @@
  *   },
  *   info: object(PublicationInfo):: {
  *     owner: string(ParticipantId),
- *     type: 'webrtc' | 'streaming' | 'sip' | 'selecting',
+ *     type: 'webrtc' | 'streaming' | 'selecting',
  *     inViews: [string(ViewLabel)],
  *     attributes: object(ExternalDefinedObj)
  *   } | object(ViewInfo):: {

@@ -15,7 +15,6 @@ var participantsResource = require("./participantsResource");
 var streamsResource = require("./streamsResource");
 var streamingOutsResource = require("./streamingOutsResource");
 var recordingsResource = require("./recordingsResource");
-var sipcallsResource = require("./sipcallsResource");
 var analyticsResource = require("./analyticsResource");
 var cascadingResource = require("./cascadingResource");
 
@@ -63,12 +62,6 @@ router.get("/rooms/:room/recordings", recordingsResource.getList);
 router.post("/rooms/:room/recordings", recordingsResource.add); //FIXME: Validation on body.type === 'recording' is needed.
 router.patch("/rooms/:room/recordings/:id", recordingsResource.patch);
 router.delete("/rooms/:room/recordings/:id", recordingsResource.delete);
-
-//Sip call management
-router.get("/rooms/:room/sipcalls", sipcallsResource.getList);
-router.post("/rooms/:room/sipcalls", sipcallsResource.add);
-router.patch("/rooms/:room/sipcalls/:id", sipcallsResource.patch);
-router.delete("/rooms/:room/sipcalls/:id", sipcallsResource.delete);
 
 //Analytic management
 router.get("/rooms/:room/analytics", analyticsResource.getList);

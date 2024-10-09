@@ -82,9 +82,6 @@ function toGrpc(to, method, args, callbacks, timeout) {
     type = "clusterManager";
   } else if (nodeManagerMethods.includes(method)) {
     type = "nodeManager";
-  } else if (method === "handleSipUpdate") {
-    type = "sipPortal";
-    to = global.config.cluster.sip_portal || "localhost:9090";
   }
   if (!grpcNode[to]) {
     log.debug("Start gRPC client:", type, to);
@@ -318,78 +315,6 @@ function toGrpc(to, method, args, callbacks, timeout) {
         cb("error");
       } else {
         cb(result);
-      }
-    });
-  } else if (method === "getSipCalls") {
-    grpcNode[to].getSipCalls({}, opt(), (err, result) => {
-      if (err) {
-        log.info("getSipCalls error:", err);
-        cb("error");
-      } else {
-        cb(result.result);
-      }
-    });
-  } else if (method === "getSipCall") {
-    grpcNode[to].getSipCall({ id: args[0] }, opt(), (err, result) => {
-      if (err) {
-        log.info("getSipCall error:", err);
-        cb("error");
-      } else {
-        cb(result);
-      }
-    });
-  } else if (method === "makeSipCall") {
-    const req = {
-      id: args[0],
-      peer: args[1].peerURI,
-      mediaIn: args[1].mediaIn,
-      mediaOut: args[1].mediaOut,
-    };
-    grpcNode[to].makeSipCall(req, opt(), (err, result) => {
-      if (err) {
-        log.info("makeSipCall error:", err);
-        cb("error");
-      } else {
-        cb(result);
-      }
-    });
-  } else if (method === "controlSipCall") {
-    const req = {
-      id: args[0],
-      commands: args[1],
-    };
-    req.commands = req.commands.map((command) => {
-      return JSON.stringify(command);
-    });
-    grpcNode[to].controlSipCall(req, opt(), (err, result) => {
-      if (err) {
-        log.info("controlSipCall error:", err);
-        cb("error");
-      } else {
-        cb(result);
-      }
-    });
-  } else if (method === "endSipCall") {
-    grpcNode[to].endSipCall({ id: args[0] }, opt(), (err, result) => {
-      if (err) {
-        log.info("endSipCall error:", err);
-        cb("error");
-      } else {
-        cb(result);
-      }
-    });
-  } else if (method === "handleSipUpdate") {
-    const req = {
-      type: args[0].type,
-      roomId: args[0].room_id,
-      sip: args[0].sip,
-    };
-    grpcNode[to].handleSipUpdate(req, opt(), (err, result) => {
-      if (err) {
-        log.info("handleSipUpdate error:", err);
-        cb("error");
-      } else {
-        cb(result.message);
       }
     });
   } else {

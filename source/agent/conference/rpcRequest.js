@@ -20,7 +20,6 @@ const RpcRequest = function (rpcChannel, listener) {
   const grpcNode = {}; // workerNode => grpcClient
   const nodeType = {}; // NodeId => Type
   let clusterClient;
-  let sipPortalClient;
   const opt = () => ({ deadline: new Date(Date.now() + GRPC_TIMEOUT) });
 
   that.getRoomConfig = function (configServer, sessionId) {
@@ -355,84 +354,6 @@ const RpcRequest = function (rpcChannel, listener) {
     return rpcChannel.makeRPC(portal, "drop", [participantId]);
   };
 
-  that.getSipConnectivity = function (sipPortal, roomId) {
-    if (enableGrpc) {
-      if (!sipPortalClient) {
-        const sipPortal = global.config.cluster.sip_portal || "localhost:9090";
-        sipPortalClient = startClient("sipPortal", sipPortal);
-      }
-      return new Promise((resolve, reject) => {
-        sipPortalClient.getSipConnectivity(
-          { id: roomId },
-          opt(),
-          (err, result) => {
-            if (!err) {
-              const sipNode = result.message;
-              grpcNode[sipNode] = grpcTools.startClient("sip", sipNode);
-              resolve(sipNode);
-            } else {
-              reject(err);
-            }
-          }
-        );
-      });
-    }
-    return rpcChannel.makeRPC(sipPortal, "getSipConnectivity", [roomId]);
-  };
-
-  that.makeSipCall = function (
-    sipNode,
-    peerURI,
-    mediaIn,
-    mediaOut,
-    controller
-  ) {
-    if (grpcNode[sipNode]) {
-      // Use GRPC
-      return new Promise((resolve, reject) => {
-        const req = {
-          peerUri: peerURI,
-          mediaIn: mediaIn,
-          mediaOut: mediaOut,
-          controller: controller,
-        };
-        grpcNode[sipNode].makeCall(req, opt(), (err, result) => {
-          if (!err) {
-            resolve(result.message);
-          } else {
-            reject(err);
-          }
-        });
-      });
-    }
-    return rpcChannel.makeRPC(sipNode, "makeCall", [
-      peerURI,
-      mediaIn,
-      mediaOut,
-      controller,
-    ]);
-  };
-
-  that.endSipCall = function (sipNode, sipCallId) {
-    if (grpcNode[sipNode]) {
-      // Use GRPC
-      return new Promise((resolve, reject) => {
-        grpcNode[sipNode].endSipCall(
-          { id: sipCallId },
-          opt(),
-          (err, result) => {
-            if (!err) {
-              resolve(result.message);
-            } else {
-              reject(err);
-            }
-          }
-        );
-      });
-    }
-    return rpcChannel.makeRPC(sipNode, "endCall", [sipCallId]);
-  };
-
   that.createLayerStreams = function (accessNode, trackId, preferredLayers) {
     return rpcChannel.makeRPC(accessNode, "createLayerStreams", [
       trackId,
@@ -658,12 +579,6 @@ const RpcRequest = function (rpcChannel, listener) {
         log.warn("Unknown gRPC node:", remoteNode);
       }
       return makeRPC(_, remoteNode, rpcName, parameters, onOk, onError);
-    }
-  };
-
-  that.addSipNode = function (workerNode) {
-    if (enableGrpc) {
-      grpcNode[workerNode] = grpcTools.startClient("sip", workerNode);
     }
   };
 

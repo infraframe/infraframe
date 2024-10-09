@@ -113,8 +113,7 @@ var init_manager = () => {
     myPurpose === "audio" ||
     myPurpose === "video" ||
     myPurpose === "analytics" ||
-    myPurpose === "conference" ||
-    myPurpose === "sip"
+    myPurpose === "conference"
   );
   var consumeNodeByRoom = !(
     myPurpose === "audio" ||

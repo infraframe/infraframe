@@ -40,7 +40,6 @@ config.strategy.general = config.strategy.general || "round-robin";
 config.strategy.portal = config.strategy.portal || "last-used";
 config.strategy.conference = config.strategy.conference || "last-used";
 config.strategy.webrtc = config.strategy.webrtc || "last-used";
-config.strategy.sip = config.strategy.sip || "round-robin";
 config.strategy.streaming = config.strategy.streaming || "round-robin";
 config.strategy.recording = config.strategy.recording || "randomly-pick";
 config.strategy.audio = config.strategy.audio || "most-used";

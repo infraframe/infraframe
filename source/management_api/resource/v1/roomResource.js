@@ -73,7 +73,6 @@ exports.deleteRoom = function (req, res, next) {
         log.info("Room ", req.params.room, " does not exist");
         next(new e.NotFoundError("Room not found"));
       } else {
-        var sip_info = room.sip;
         dataAccess.room.delete(
           authData.service._id,
           req.params.room,
@@ -90,16 +89,6 @@ exports.deleteRoom = function (req, res, next) {
               );
               requestHandler.deleteRoom(id, function () {});
               res.send("Room deleted");
-
-              // Notify SIP portal if SIP room deleted
-              if (sip_info) {
-                log.debug("Notify SIP Portal on delete Room");
-                requestHandler.notifySipPortal(
-                  "delete",
-                  { _id: id, sip: sip_info },
-                  function () {}
-                );
-              }
             }
           }
         );
@@ -127,32 +116,6 @@ exports.updateRoom = function (req, res, next) {
           function (err, result) {
             if (result) {
               res.send(result);
-
-              // Notify SIP portal if SIP room updated
-              var sipOld = room.sip;
-              var sipNew = result.sip;
-              var changeType;
-              var sipField;
-              if (!sipOld && sipNew) {
-                changeType = "create";
-              } else if (sipOld && !sipNew) {
-                changeType = "delete";
-              } else if (sipOld && sipNew) {
-                for (sipField in sipNew) {
-                  if (sipOld[sipField] !== sipNew[sipField]) {
-                    changeType = "update";
-                    break;
-                  }
-                }
-              }
-              if (changeType) {
-                log.debug("Change type", changeType);
-                requestHandler.notifySipPortal(
-                  changeType,
-                  result,
-                  function () {}
-                );
-              }
             } else {
               next(
                 new e.BadRequestError(
