@@ -142,16 +142,7 @@ async function checkVersion(next) {
       });
     };
     if (service) {
-      if (typeof service.__v !== 'number') {
-        console.log(
-          `The existed service "${service.name}" is not in 4.* format.`
-        );
-        console.log('Preparing to upgrade your database.');
-        require('./SchemaUpdate3to4').update(function () {
-          upgradeNext(next);
-        });
-      } else {
-        var rl = require('readline').createInterface({
+      var rl = require('readline').createInterface({
           input: process.stdin,
           output: process.stdout,
         });
@@ -168,7 +159,6 @@ async function checkVersion(next) {
             }
           }
         );
-      }
     } else {
       upgradeNext(next);
     }
