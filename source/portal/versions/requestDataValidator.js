@@ -11,7 +11,6 @@ const Ajv = require("ajv");
 const ajv = new Ajv({ useDefaults: true });
 
 const ReqType = require("./requestType");
-const formatV1_0 = require("./requestFormatV1-0");
 const formatV1_2 = require("./requestFormatV1-2");
 
 function generateValidator(schema) {
@@ -86,14 +85,7 @@ module.exports = function (version) {
   var SubscriptionRequest;
   var SubscriptionControlInfo;
 
-  if (version === "1.0" || version === "1.1") {
-    ({
-      PublicationRequest,
-      StreamControlInfo,
-      SubscriptionRequest,
-      SubscriptionControlInfo,
-    } = formatV1_0);
-  } else if (version === "1.2") {
+  if (version === "1.2") {
     ({
       PublicationRequest,
       StreamControlInfo,

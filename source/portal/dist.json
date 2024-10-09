@@ -10,7 +10,6 @@
       "portal.toml",
       "rpcRequest.js",
       "socketIOServer.js",
-      "legacyClient.js",
       "client.js",
       "../common/amqpClient.js",
       "../common/cipher.js",
@@ -30,7 +29,6 @@
       "versions": [
         "versions/portalDataAdapter.js",
         "versions/requestDataValidator.js",
-        "versions/requestFormatV1-0.js",
         "versions/requestFormatV1-2.js",
         "versions/requestType.js"
       ],

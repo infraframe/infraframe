@@ -7,11 +7,6 @@
  */
 "use strict";
 
-const {
-  StreamControlInfo,
-  SubscriptionControlInfo,
-} = require("./requestFormatV1-0");
-
 const Resolution = {
   id: "/Resolution",
   type: "object",
@@ -21,6 +16,116 @@ const Resolution = {
   },
   additionalProperties: false,
   required: ["width", "height"],
+};
+
+
+// StreamControlInfo
+const StreamControlInfo = {
+  type: "object",
+  anyOf: [
+    {
+      properties: {
+        id: { type: "string", require: true },
+        operation: { enum: ["mix", "unmix", "get-region"] },
+        data: { type: "string" },
+      },
+      additionalProperties: false,
+    },
+    {
+      properties: {
+        id: { type: "string", require: true },
+        operation: { enum: ["set-region"] },
+        data: { $ref: "#/definitions/RegionSetting" },
+      },
+      additionalProperties: false,
+    },
+    {
+      properties: {
+        id: { type: "string", require: true },
+        operation: { enum: ["pause", "play"] },
+        data: { enum: ["audio", "video", "av"] },
+      },
+      additionalProperties: false,
+    },
+  ],
+  required: ["id", "operation", "data"],
+
+  definitions: {
+    RegionSetting: {
+      type: "object",
+      properties: {
+        view: { type: "string" },
+        region: { type: "string", minLength: 1 },
+      },
+      additionalProperties: false,
+      required: ["view", "region"],
+    },
+  },
+};
+
+
+// SubscriptionControlInfo
+const SubscriptionControlInfo = {
+  type: "object",
+  anyOf: [
+    {
+      properties: {
+        id: { type: "string" },
+        operation: { enum: ["update"] },
+        data: { $ref: "#/definitions/SubscriptionUpdate" },
+      },
+      additionalProperties: false,
+    },
+    {
+      properties: {
+        id: { type: "string" },
+        operation: { enum: ["pause", "play"] },
+        data: { enum: ["audio", "video", "av"] },
+      },
+      additionalProperties: false,
+    },
+  ],
+  required: ["id", "operation", "data"],
+
+  definitions: {
+    SubscriptionUpdate: {
+      type: "object",
+      properties: {
+        audio: { $ref: "#/definitions/AudioUpdate" },
+        video: { $ref: "#/definitions/VideoUpdate" },
+      },
+      additionalProperties: false,
+    },
+
+    AudioUpdate: {
+      type: "object",
+      properties: {
+        from: { type: "string" },
+      },
+      additionalProperties: false,
+      required: ["from"],
+    },
+
+    VideoUpdate: {
+      type: "object",
+      properties: {
+        from: { type: "string" },
+        parameters: { $ref: "#/definitions/VideoUpdateSpecification" },
+      },
+      additionalProperties: false,
+    },
+
+    VideoUpdateSpecification: {
+      type: "object",
+      properties: {
+        resolution: Resolution,
+        framerate: { type: "number" },
+        bitrate: { type: ["number", "string"] },
+        keyFrameInterval: { type: "number" },
+      },
+      additionalProperties: false,
+    },
+  },
 };
 
 const TransportOptions = {

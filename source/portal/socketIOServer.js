@@ -9,7 +9,6 @@ var log = require("./logger").logger.getLogger("SocketIOServer");
 var crypto = require("crypto");
 var vsprintf = require("sprintf-js").vsprintf;
 
-var LegacyClient = require("./legacyClient");
 var Client = require("./client");
 
 function safeCall() {
@@ -150,14 +149,7 @@ var Connection = function (spec, socket, reconnectionKey, portal, dock) {
 
       client_id = socket.id + "";
       var client;
-      if (login_info.protocol === undefined) {
-        protocol_version = "legacy";
-        client = new LegacyClient(client_id, that, portal);
-      } else if (
-        login_info.protocol === "1.0" ||
-        login_info.protocol === "1.1" ||
-        login_info.protocol === "1.2"
-      ) {
+      if (login_info.protocol === "1.2") {
         //FIXME: Reject connection from 3.5 client
         if (
           login_info.userAgent &&
