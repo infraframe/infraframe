@@ -12,8 +12,6 @@
       "../common/cipher.js",
       "../common/amqpClient.js",
       "../common/grpcTools.js",
-      "../protos/protoConfig.json",
-      "../protos/*.proto",
       "../../scripts/release/initauth.js",
       "../../scripts/release/initcert.js",
       "../../scripts/detectOS.sh"
@@ -23,7 +21,10 @@
       "resource": ["resource/*"],
       "rpc": ["rpc/*"],
       "cert": ["../../cert/*.pfx", "../../cert/.owt.keystore"],
-      "data_access": ["../data_access/*"]
+      "data_access": ["../data_access/*"],
+      "protos": [
+        "../protos/protoConfig.json",
+        "../protos/*.proto"]
     }
   },
   "start": "node api.js"

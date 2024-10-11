@@ -20,8 +20,6 @@
       "../../common/logger.js",
       "../../common/makeRPC.js",
       "../../common/grpcTools.js",
-      "../../protos/protoConfig.json",
-      "../../protos/*.proto",
       "../../../scripts/release/initcert.js",
       "../../../scripts/release/initauth.js",
       "../../../scripts/detectOS.sh"
@@ -31,8 +29,6 @@
         "index.js",
         "grpcAdapter.js",
         "../../common/grpcTools.js",
-        "../../protos/protoConfig.json",
-        "../../protos/*.proto",
         "../connections.js",
         "../../common/makeRPC.js",
         "../../common/rpcChannel.js",
@@ -45,7 +41,14 @@
       "quic/webtransport/test": [
         "webtransport/test/quicTransportServerTest.js"
       ],
-      "cert": ["../../../cert/certificate.pfx", "../../../cert/.owt.keystore"]
+      "cert": ["../../../cert/certificate.pfx", "../../../cert/.owt.keystore"],
+      "quic/protos": [
+        "../../protos/protoConfig.json",
+        "../../protos/*.proto"
+      ],
+      "protos": [
+        "../../protos/protoConfig.json",
+        "../../protos/*.proto"]
     }
   },
   "natives": {

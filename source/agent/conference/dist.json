@@ -29,12 +29,13 @@
       "../../common/makeRPC.js",
       "../../common/rpcChannel.js",
       "../../common/grpcTools.js",
-      "../../protos/protoConfig.json",
-      "../../protos/*.proto",
       "../../../scripts/release/initauth.js"
     ],
     "folders": {
-      "data_access": ["../../data_access/*"]
+      "data_access": ["../../data_access/*"],
+      "protos": [
+        "../../protos/protoConfig.json",
+        "../../protos/*.proto"]
     }
   },
   "debug": {

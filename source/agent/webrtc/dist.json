@@ -21,8 +21,6 @@
       "../../common/makeRPC.js",
       "../../common/rpcChannel.js",
       "../../common/grpcTools.js",
-      "../../protos/protoConfig.json",
-      "../../protos/*.proto",
       "../../../scripts/release/initcert.js",
       "../../../scripts/release/initauth.js",
       "../../../scripts/detectOS.sh"
@@ -37,12 +35,17 @@
         "sdpInfo.js",
         "grpcAdapter.js",
         "../../common/grpcTools.js",
-        "../../protos/protoConfig.json",
-        "../../protos/*.proto",
         "../connections.js",
         "../internalConnectionRouter.js"
       ],
-      "cert": ["../../../cert/.owt.keystore"]
+      "cert": ["../../../cert/.owt.keystore"],
+      "webrtc/protos": [
+        "../../protos/protoConfig.json",
+        "../../protos/*.proto"
+      ],
+      "protos": [
+        "../../protos/protoConfig.json",
+        "../../protos/*.proto"]
     }
   },
   "natives": {

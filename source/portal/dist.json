@@ -19,8 +19,6 @@
       "../common/makeRPC.js",
       "../common/rpcChannel.js",
       "../common/grpcTools.js",
-      "../protos/protoConfig.json",
-      "../protos/*.proto",
       "../../scripts/release/initauth.js",
       "../../scripts/release/initcert.js",
       "../../scripts/detectOS.sh"
@@ -33,7 +31,10 @@
         "versions/requestType.js"
       ],
       "cert": ["../../cert/certificate.pfx", "../../cert/.owt.keystore"],
-      "data_access": ["../data_access/*"]
+      "data_access": ["../data_access/*"],
+      "protos": [
+        "../protos/protoConfig.json",
+        "../protos/*.proto"]
     }
   },
   "debug": {

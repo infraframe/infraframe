@@ -15,10 +15,13 @@
       "../common/amqpClient.js",
       "../common/cipher.js",
       "../common/logger.js",
-      "../common/grpcTools.js",
-      "../protos/protoConfig.json",
-      "../protos/*.proto"
-    ]
+      "../common/grpcTools.js"
+    ],
+    "folders": {
+      "protos": [
+        "../protos/protoConfig.json",
+        "../protos/*.proto"]
+    }
   },
   "start": "node ."
 }

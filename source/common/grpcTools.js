@@ -8,7 +8,7 @@ const grpc = require("@grpc/grpc-js");
 const protoLoader = require("@grpc/proto-loader");
 const protobuf = require("protobufjs");
 
-const config = require("./protoConfig.json");
+const config = require("./protos/protoConfig.json");
 
 const notificationTypes = {
   onMediaUpdate: "owt.MediaUpdateData",

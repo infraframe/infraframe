@@ -26,8 +26,6 @@
       "../../common/rpcChannel.js",
       "../../common/mediaUtil.js",
       "../../common/grpcTools.js",
-      "../../protos/protoConfig.json",
-      "../../protos/*.proto",
       "../../../scripts/release/install_ffmpeg.sh",
       "../../../scripts/release/initauth.js",
       "../../../scripts/detectOS.sh",
@@ -42,11 +40,16 @@
         "../connections.js",
         "grpcAdapter.js",
         "../../common/grpcTools.js",
-        "../../protos/protoConfig.json",
-        "../../protos/*.proto",
         "../internalConnectionRouter.js"
       ],
-      "avatars": ["avatars/*"]
+      "avatars": ["avatars/*"],
+      "video/protos": [
+        "../../protos/protoConfig.json",
+        "../../protos/*.proto"
+      ],
+      "protos": [
+        "../../protos/protoConfig.json",
+        "../../protos/*.proto"]
     }
   },
   "natives": {
