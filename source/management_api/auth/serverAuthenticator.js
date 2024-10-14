@@ -35,37 +35,6 @@ var e = require("../errors");
 
 var cache = {};
 
-var checkTimestamp = function (ser, params) {
-  if ((global.config || {}).timestampCheck !== true) {
-    return true;
-  }
-  var serviceId = ser._id + "";
-  var lastParams = cache[serviceId],
-    lastTS,
-    newTS = new Date(parseInt(params.timestamp, 10)).getTime(),
-    lastC,
-    newC = params.cnonce;
-
-  if (isNaN(newTS)) {
-    log.debug("Invalid timestamp:", params.timestamp);
-    return false;
-  }
-
-  if (lastParams === undefined) {
-    return true;
-  }
-
-  lastTS = new Date(parseInt(lastParams.timestamp, 10)).getTime();
-  lastC = lastParams.cnonce;
-
-  if (newTS < lastTS || (lastTS === newTS && lastC === newC)) {
-    log.info("Last timestamp: ", lastTS, " and new: ", newTS);
-    log.info("Last cnonce: ", lastC, " and new: ", newC);
-    return false;
-  }
-  return true;
-};
-
 var checkSignature = function (params, key) {
   if (params.signature_method !== "HMAC_SHA256") {
     return false;
@@ -79,6 +48,8 @@ var checkSignature = function (params, key) {
     return true;
   }
 };
+
+const jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiaW5mcmFmcmFtZSIsInJvbGUiOiJwcmVzZW50ZXIiLCJyb29tIjoiYXNkZmFzZGYiLCJpYXQiOjE3Mjg5MjI5NTh9.9Kqoi_HwS99j3tes1ttReHtEUthzWGke5ZIKK1XiML4";
 
 /*
  * This function has the logic needed for authenticate a request.

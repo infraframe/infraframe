@@ -10,7 +10,6 @@ var router = express.Router();
 
 var roomsResource = require("./roomsResource");
 var roomResource = require("./roomResource");
-var tokensResource = require("./tokensResource");
 var participantsResource = require("./participantsResource");
 var streamsResource = require("./streamsResource");
 var streamingOutsResource = require("./streamingOutsResource");
@@ -67,9 +66,6 @@ router.delete("/rooms/:room/recordings/:id", recordingsResource.delete);
 router.get("/rooms/:room/analytics", analyticsResource.getList);
 router.post("/rooms/:room/analytics", analyticsResource.add);
 router.delete("/rooms/:room/analytics/:id", analyticsResource.delete);
-
-//Create token.
-router.post("/rooms/:room/tokens", tokensResource.create);
 
 //Cluster cascading management
 router.post("/rooms/:room/cascading", cascadingResource.startCascading);

@@ -198,8 +198,8 @@ if (cluster.isMaster) {
   // FIXME: we should check if server key already exists
   // in cache/database before generating a new one when
   // there are multiple machine running server.
-  var dataAccess = require("./data_access");
-  dataAccess.token.genKey();
+  // var dataAccess = require("./data_access");
+  // dataAccess.token.genKey();
 
   if (enableCascading) {
     var registerInfo = undefined;
