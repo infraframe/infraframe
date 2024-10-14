@@ -260,13 +260,6 @@ var startServers = function (id, tokenKey) {
     drop: function (participantId) {
       socketio_server && socketio_server.drop(participantId);
     },
-    validateAndDeleteWebTransportToken: (token, callback) => {
-      if (portal.validateAndDeleteWebTransportToken(token)) {
-        callback(true);
-      } else {
-        callback(false);
-      }
-    },
   };
 
   return socketio_server
@@ -301,13 +294,6 @@ var rpcPublic = {
     socketio_server &&
       socketio_server.notify(participantId, event, data).catch(notifyFail);
     callback("callback", "ok");
-  },
-  validateAndDeleteWebTransportToken: (token, callback) => {
-    if (portal.validateAndDeleteWebTransportToken(token)) {
-      callback("callback", "ok");
-    } else {
-      callback("callback", "error", "Invalid token for WebTransport.");
-    }
   },
   broadcast: function (controller, excludeList, event, data, callback) {
     socketio_server &&

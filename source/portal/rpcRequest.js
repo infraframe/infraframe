@@ -31,12 +31,6 @@ var RpcRequest = function (rpcChannel) {
         log.debug("On notification data:", JSON.stringify(notification));
         if (notification.name === "drop") {
           handler.drop(notification.id);
-        } else if (notification.name === "token") {
-          const token = JSON.parse(notification.data);
-          handler.validateAndDeleteWebTransportToken(token, (ok) => {
-            const req = { id: token.tokenId, validate: ok };
-            grpcNode[node].postWebTransportTokenResult(req, () => {});
-          });
         } else {
           const data = JSON.parse(notification.data);
           if (notification.room) {

@@ -28,54 +28,6 @@ var Portal = function (spec, rpcReq) {
    */
   var participants = {};
 
-  // Key is participantId, value is token ID.
-  const webTransportIds = new Map();
-  const calculateSignatureForWebTransportToken = (token) => {
-    const toSign = vsprintf("%s,%s,%s,%s,%s", [
-      token.tokenId,
-      token.transportId,
-      token.participantId,
-      token.roomId,
-      token.issueTime,
-    ]);
-    const signed = crypto
-      .createHmac("sha256", token_key)
-      .update(toSign)
-      .digest("hex");
-    return Buffer.from(signed).toString("base64");
-  };
-  const generateWebTransportToken = (participantId, roomId) => {
-    const now = Date.now();
-    const token = {
-      tokenId: uuid().replace(/-/g, ""),
-      transportId: uuid().replace(/-/g, ""),
-      participantId: participantId,
-      roomId: roomId,
-      issueTime: now,
-    };
-    token.signature = calculateSignatureForWebTransportToken(token);
-    webTransportIds.set(participantId, token.tokenId);
-    return token;
-  };
-
-  that.validateAndDeleteWebTransportToken = (token) => {
-    // |participants| is better to be a map.
-    if (!participants.hasOwnProperty(token.participantId)) {
-      return false;
-    }
-    if (
-      !webTransportIds.has(token.participantId) ||
-      webTransportIds.get(token.participantId) !== token.tokenId
-    ) {
-      return false;
-    }
-    if (calculateSignatureForWebTransportToken(token) !== token.signature) {
-      return false;
-    }
-    webTransportIds.delete(token.participantId);
-    return true;
-  };
-
   that.updateTokenKey = function (tokenKey) {
     token_key = tokenKey;
   };
@@ -148,12 +100,6 @@ var Portal = function (spec, rpcReq) {
           domain: domain,
         };
 
-        let webTransportToken = undefined;
-        if (token.webTransportUrl) {
-          webTransportToken = Buffer.from(
-            JSON.stringify(generateWebTransportToken(participantId, room_id))
-          ).toString("base64");
-        }
 
         return {
           tokenCode: tokenCode,
@@ -162,7 +108,6 @@ var Portal = function (spec, rpcReq) {
             role: role,
             permission: joinResult.permission,
             room: joinResult.room,
-            webTransportToken: webTransportToken,
           },
         };
       });

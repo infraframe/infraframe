@@ -4511,29 +4511,6 @@ var Conference = function (rpcClient, selfRpcId) {
 
   // Listener callback for GRPC
   const tokens = new Map(); // token => validateCb(bool)
-  that.validateWebTransportToken = (token, callback) => {
-    log.debug("validateWebTransportToken:", token.tokenId);
-    that.getPortal(token.participantId, (n, data) => {
-      if (data === "error") {
-        callback(false);
-      } else {
-        tokens.set(token.tokenId, callback);
-        notificationEmitter.emit("notification", {
-          id: token.tokenId,
-          name: "token",
-          data: JSON.stringify(token),
-        });
-        const WTOKEN_TIMEOUT = 3000;
-        setTimeout(() => {
-          const cb = tokens.get(token.tokenId);
-          if (cb) {
-            tokens.delete(token.tokenId);
-            cb(false);
-          }
-        }, WTOKEN_TIMEOUT);
-      }
-    });
-  };
   that.processTokenResult = (tokenId, validate) => {
     log.debug("processTokenResult:", tokenId, validate);
     if (tokens.has(tokenId)) {
@@ -4670,22 +4647,6 @@ module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
         default:
           break;
       }
-    },
-    processCallback: (token, callback) => {
-      conference.getPortal(token.participantId, (n, data) => {
-        if (data === "error") {
-          callback(false);
-        } else {
-          rpcReq
-            .validateAndDeleteWebTransportToken(data, token)
-            .then(() => {
-              callback(true);
-            })
-            .catch(() => {
-              callback(false);
-            });
-        }
-      });
     },
   };
 
@@ -4953,22 +4914,6 @@ module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
 
     drawText: function (call, callback) {
       // No export
-    },
-
-    validateWebTransportToken: function (call, callback) {
-      try {
-        const token = JSON.parse(call.request.data);
-        conference.validateWebTransportToken(token, (ok) => {
-          callback(null, { validate: ok });
-        });
-      } catch (e) {
-        callback(e, null);
-      }
-    },
-    postWebTransportTokenResult: function (call, callback) {
-      const req = call.request;
-      conference.processTokenResult(req.id, req.validate);
-      callback(null, {});
     },
   };
 

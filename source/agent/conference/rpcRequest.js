@@ -375,14 +375,6 @@ const RpcRequest = function (rpcChannel, listener) {
   that.leaveConference = function (clusterManager, roomId) {
     return rpcChannel.makeRPC(clusterManager, "leaveConference", [roomId]);
   };
-  that.validateAndDeleteWebTransportToken = function (portal, token) {
-    if (enableGrpc) {
-      return Promise.resolve();
-    }
-    return rpcChannel.makeRPC(portal, "validateAndDeleteWebTransportToken", [
-      token,
-    ]);
-  };
 
   that.makeRPC = function (_, remoteNode, rpcName, parameters, onOk, onError) {
     if (grpcNode[remoteNode]) {
