@@ -35,6 +35,7 @@
       "video": [
         "index.js",
         "layout.js",
+        "vanalyzer.js",
         "vmixer.js",
         "vtranscoder.js",
         "../connections.js",
@@ -55,6 +56,10 @@
   "natives": {
     "libdist": "lib",
     "addons": [
+      {
+        "folder": "videoAnalyzer/videoAnalyzer_sw",
+        "name": "videoAnalyzer-sw"
+      },
       {
         "folder": "videoMixer/videoMixer_sw",
         "name": "videoMixer-sw"
