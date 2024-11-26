@@ -100,7 +100,7 @@
                             "-Wall",
                             "-O3",
                             "-g",
-                            "-std=c++11",
+                            "-std=c++17",
                             "-fexceptions",
                         ],
                         "cflags_cc!": ["-fno-exceptions"],

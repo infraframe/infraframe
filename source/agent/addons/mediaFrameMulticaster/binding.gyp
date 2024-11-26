@@ -37,7 +37,7 @@
                             "-Wall",
                             "-O$(OPTIMIZATION_LEVEL)",
                             "-g",
-                            "-std=c++11",
+                            "-std=c++17",
                         ],
                         "cflags_cc!": ["-fno-exceptions"],
                     },
