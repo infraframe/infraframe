@@ -36,7 +36,6 @@ init_software() {
     ${ROOT}/webrtc_agent/install_deps.sh
     ${ROOT}/video_agent/install_deps.sh
     ${ROOT}/video_agent/init.sh
-    ${ROOT}/analytics_agent/install_deps.sh
   else
     ${SUDO} systemctl start mongod
     OWT_UPDATE_DONE=true

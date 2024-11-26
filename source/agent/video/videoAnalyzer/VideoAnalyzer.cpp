@@ -5,17 +5,17 @@
 #include <webrtc/base/logging.h>
 #include <webrtc/system_wrappers/include/trace.h>
 
-#include "VideoFrameTranscoderImpl.h"
-#include "VideoTranscoder.h"
+#include "VideoAnalyzer.h"
+#include "VideoFrameAnalyzerImpl.h"
 
 using namespace webrtc;
-using namespace infraframe;
+using namespace owt_base;
 
 namespace mcu {
 
-DEFINE_LOGGER(VideoTranscoder, "mcu.media.VideoTranscoder");
+DEFINE_LOGGER(VideoAnalyzer, "mcu.media.VideoAnalyzer");
 
-VideoTranscoder::VideoTranscoder(const VideoTranscoderConfig& config)
+VideoAnalyzer::VideoAnalyzer(const VideoAnalyzerConfig& config)
     : m_inputCount(0)
     , m_maxInputCount(1)
     , m_nextOutputIndex(0)
@@ -31,7 +31,10 @@ VideoTranscoder::VideoTranscoder(const VideoTranscoderConfig& config)
         rtc::LogMessage::LogToDebug(rtc::LS_INFO);
         rtc::LogMessage::LogTimestamps(true);
 
-        const int kTraceFilter = webrtc::kTraceNone | webrtc::kTraceTerseInfo | webrtc::kTraceWarning | webrtc::kTraceError | webrtc::kTraceCritical | webrtc::kTraceDebug | webrtc::kTraceInfo;
+        const int kTraceFilter = webrtc::kTraceNone | webrtc::kTraceTerseInfo |
+            webrtc::kTraceWarning | webrtc::kTraceError |
+            webrtc::kTraceCritical | webrtc::kTraceDebug |
+            webrtc::kTraceInfo;
 
         webrtc::Trace::CreateTrace();
         webrtc::Trace::SetTraceFile(NULL, false);
@@ -42,17 +45,25 @@ VideoTranscoder::VideoTranscoder(const VideoTranscoderConfig& config)
     for (size_t i = 0; i < m_maxInputCount; ++i)
         m_freeInputIndexes.push_back(true);
 
+#ifdef ENABLE_MSDK
+    MsdkBase *msdkBase = MsdkBase::get();
+    if(msdkBase != NULL) {
+        msdkBase->setConfigHevcEncoderGaccPlugin(config.useGacc);
+        msdkBase->setConfigMFETimeout(config.MFE_timeout);
+    }
+#endif
+
     ELOG_INFO("Init");
 
-    m_frameTranscoder.reset(new VideoFrameTranscoderImpl());
+    m_frameAnalyzer.reset(new VideoFrameAnalyzerImpl());
 }
 
-VideoTranscoder::~VideoTranscoder()
+VideoAnalyzer::~VideoAnalyzer()
 {
     closeAll();
 }
 
-int VideoTranscoder::useAFreeInputIndex()
+int VideoAnalyzer::useAFreeInputIndex()
 {
     for (size_t i = 0; i < m_freeInputIndexes.size(); ++i) {
         if (m_freeInputIndexes[i]) {
@@ -64,20 +75,20 @@ int VideoTranscoder::useAFreeInputIndex()
     return -1;
 }
 
-bool VideoTranscoder::setInput(const std::string& inStreamID, const std::string& codec, infraframe::FrameSource* source)
+bool VideoAnalyzer::setInput(const std::string& inStreamID, const std::string& codec, owt_base::FrameSource* source)
 {
     if (m_inputCount == m_maxInputCount) {
         ELOG_WARN("Exceeding maximum number of sources (%u), ignoring the addSource request", m_maxInputCount);
         return false;
     }
 
-    infraframe::FrameFormat format = getFormat(codec);
+    owt_base::FrameFormat format = getFormat(codec);
 
     boost::upgrade_lock<boost::shared_mutex> lock(m_inputsMutex);
     auto it = m_inputs.find(inStreamID);
     if (it == m_inputs.end() || !it->second) {
         int index = useAFreeInputIndex();
-        if (m_frameTranscoder->setInput(index, format, source)) {
+        if (m_frameAnalyzer->setInput(index, format, source)) {
             boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
             m_inputs[inStreamID] = index;
         }
@@ -85,11 +96,11 @@ bool VideoTranscoder::setInput(const std::string& inStreamID, const std::string&
         return true;
     }
 
-    assert("new source added with InputProcessor still available"); // should not go there
+    assert("new source added with InputProcessor still available");    // should not go there
     return false;
 }
 
-void VideoTranscoder::unsetInput(const std::string& inStreamID)
+void VideoAnalyzer::unsetInput(const std::string& inStreamID)
 {
     int index = -1;
     boost::unique_lock<boost::shared_mutex> lock(m_inputsMutex);
@@ -101,20 +112,28 @@ void VideoTranscoder::unsetInput(const std::string& inStreamID)
     lock.unlock();
 
     if (index >= 0) {
-        m_frameTranscoder->unsetInput(index);
+        m_frameAnalyzer->unsetInput(index);
         m_freeInputIndexes[index] = true;
         --m_inputCount;
     }
 }
 
-
-bool VideoTranscoder::addOutput(
-    const std::string& outStreamID, const std::string& codec, const infraframe::VideoCodecProfile profile, const std::string& resolution, const unsigned int framerateFPS, const unsigned int bitrateKbps, const unsigned int keyFrameIntervalSeconds, infraframe::FrameDestination* dest)
+bool VideoAnalyzer::addOutput(
+    const std::string& outStreamID
+    , const std::string& codec
+    , const owt_base::VideoCodecProfile profile
+    , const std::string& resolution
+    , const unsigned int framerateFPS
+    , const unsigned int bitrateKbps
+    , const unsigned int keyFrameIntervalSeconds
+    , const std::string& algorithm
+    , const std::string& pluginName
+    , owt_base::FrameDestination* dest)
 {
-    infraframe::FrameFormat format = getFormat(codec);
-    VideoSize vSize { 0, 0 };
+    owt_base::FrameFormat format = getFormat(codec);
+    VideoSize vSize{0, 0};
     VideoResolutionHelper::getVideoSize(resolution, vSize);
-    if (m_frameTranscoder->addOutput(m_nextOutputIndex, format, profile, vSize, framerateFPS, bitrateKbps, keyFrameIntervalSeconds, dest)) {
+    if (m_frameAnalyzer->addOutput(m_nextOutputIndex, format, profile, vSize, framerateFPS, bitrateKbps, keyFrameIntervalSeconds, algorithm, pluginName, dest)) {
         boost::unique_lock<boost::shared_mutex> lock(m_outputsMutex);
         m_outputs[outStreamID] = m_nextOutputIndex++;
         return true;
@@ -122,7 +141,7 @@ bool VideoTranscoder::addOutput(
     return false;
 }
 
-void VideoTranscoder::removeOutput(const std::string& outStreamID)
+void VideoAnalyzer::removeOutput(const std::string& outStreamID)
 {
     int32_t index = -1;
     boost::unique_lock<boost::shared_mutex> lock(m_outputsMutex);
@@ -134,11 +153,11 @@ void VideoTranscoder::removeOutput(const std::string& outStreamID)
     lock.unlock();
 
     if (index != -1) {
-        m_frameTranscoder->removeOutput(index);
+        m_frameAnalyzer->removeOutput(index);
     }
 }
 
-void VideoTranscoder::forceKeyFrame(const std::string& outStreamID)
+void VideoAnalyzer::forceKeyFrame(const std::string& outStreamID)
 {
     int32_t index = -1;
     boost::shared_lock<boost::shared_mutex> lock(m_outputsMutex);
@@ -149,25 +168,15 @@ void VideoTranscoder::forceKeyFrame(const std::string& outStreamID)
     lock.unlock();
 
     if (index != -1) {
-        m_frameTranscoder->requestKeyFrame(index);
+        m_frameAnalyzer->requestKeyFrame(index);
     }
 }
 
-void VideoTranscoder::drawText(const std::string& textSpec)
-{
-    m_frameTranscoder->drawText(textSpec);
-}
-
-void VideoTranscoder::clearText()
-{
-    m_frameTranscoder->clearText();
-}
-
-void VideoTranscoder::closeAll()
+void VideoAnalyzer::closeAll()
 {
     ELOG_DEBUG("CloseAll");
 
-    ELOG_DEBUG("Closed all media in this Transcoder");
+    ELOG_DEBUG("Closed all media in this Analyzer");
 }
 
-} /* namespace mcu */
+}/* namespace mcu */

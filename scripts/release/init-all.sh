@@ -42,7 +42,6 @@ init_software() {
     ${ROOT}/webrtc_agent/install_deps.sh
     ${ROOT}/video_agent/install_deps.sh
     ${ROOT}/video_agent/init.sh
-    ${ROOT}/analytics_agent/install_deps.sh
     copy_video_libs
   else
     ${ROOT}/bin/init-mongodb.sh
@@ -99,7 +98,6 @@ init_auth() {
     cp ${ROOT}/cluster_manager/${AUTH_STORE} ${ROOT}/audio_agent/
     cp ${ROOT}/cluster_manager/${AUTH_STORE} ${ROOT}/streaming_agent/
     cp ${ROOT}/cluster_manager/${AUTH_STORE} ${ROOT}/recording_agent/
-    cp ${ROOT}/cluster_manager/${AUTH_STORE} ${ROOT}/analytics_agent/
     cp ${ROOT}/cluster_manager/${AUTH_STORE} ${ROOT}/sip_agent/
     cp ${ROOT}/cluster_manager/${AUTH_STORE} ${ROOT}/sip_portal/
     cp ${ROOT}/cluster_manager/${AUTH_STORE} ${ROOT}/management_api/

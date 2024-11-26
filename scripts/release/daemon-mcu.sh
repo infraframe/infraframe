@@ -192,14 +192,6 @@ start)
     nohup nice -n ${OWT_NICENESS} node . -U mediabridge >"${stdout}" 2>&1 </dev/null &
     echo $! >${pid}
     ;;
-  analytics-agent)
-    cd ${OWT_HOME}/analytics_agent
-    export LD_LIBRARY_PATH=./lib:${LD_LIBRARY_PATH}
-    export PATH=./bin:/opt/intel/mediasdk/bin:${PATH}
-    export CONFIGFILE_PATH=./plugin.cfg
-    nohup nice -n ${OWT_NICENESS} node . -U analytics >"${stdout}" 2>&1 </dev/null &
-    echo $! >${pid}
-    ;;
   management-console)
     cd ${OWT_HOME}/management_console
     nohup nice -n ${OWT_NICENESS} node . \

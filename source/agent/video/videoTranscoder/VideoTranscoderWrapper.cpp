@@ -34,10 +34,8 @@ void VideoTranscoder::Init(Local<Object> exports, Local<Object> module)
     NODE_SET_PROTOTYPE_METHOD(tpl, "addOutput", addOutput);
     NODE_SET_PROTOTYPE_METHOD(tpl, "removeOutput", removeOutput);
     NODE_SET_PROTOTYPE_METHOD(tpl, "forceKeyFrame", forceKeyFrame);
-#ifndef BUILD_FOR_ANALYTICS
     NODE_SET_PROTOTYPE_METHOD(tpl, "drawText", drawText);
     NODE_SET_PROTOTYPE_METHOD(tpl, "clearText", clearText);
-#endif
 
     constructor.Reset(isolate, Nan::GetFunction(tpl).ToLocalChecked());
     Nan::Set(module, Nan::New("exports").ToLocalChecked(),
@@ -123,18 +121,9 @@ void VideoTranscoder::addOutput(const v8::FunctionCallbackInfo<v8::Value>& args)
     unsigned int framerateFPS = Nan::To<uint32_t>(args[3]).FromJust();
     unsigned int bitrateKbps = Nan::To<uint32_t>(args[4]).FromJust();
     unsigned int keyFrameIntervalSeconds = Nan::To<uint32_t>(args[5]).FromJust();
-#ifdef BUILD_FOR_ANALYTICS
-    std::string algorithm = getString(args[6]);
-    std::string pluginName = getString(args[7]);
-
-    FrameDestination* param8 = ObjectWrap::Unwrap<FrameDestination>(
-        Nan::To<v8::Object>(args[8]).ToLocalChecked());
-    infraframe::FrameDestination* dest = param8->dest;
-#else
     FrameDestination* param6 = ObjectWrap::Unwrap<FrameDestination>(
         Nan::To<v8::Object>(args[6]).ToLocalChecked());
     infraframe::FrameDestination* dest = param6->dest;
-#endif
 
     infraframe::VideoCodecProfile profile = infraframe::PROFILE_UNKNOWN;
     if (codec.find("h264") != std::string::npos) {
@@ -152,12 +141,7 @@ void VideoTranscoder::addOutput(const v8::FunctionCallbackInfo<v8::Value>& args)
         codec = "h264";
     }
 
-#ifdef BUILD_FOR_ANALYTICS
-    bool r = me->addOutput(outStreamID, codec, profile, resolution, framerateFPS, bitrateKbps, keyFrameIntervalSeconds, algorithm, pluginName, dest);
-#else
     bool r = me->addOutput(outStreamID, codec, profile, resolution, framerateFPS, bitrateKbps, keyFrameIntervalSeconds, dest);
-#endif
-
     args.GetReturnValue().Set(Boolean::New(isolate, r));
 }
 
@@ -187,7 +171,6 @@ void VideoTranscoder::forceKeyFrame(const v8::FunctionCallbackInfo<v8::Value>& a
     me->forceKeyFrame(outStreamID);
 }
 
-#ifndef BUILD_FOR_ANALYTICS
 void VideoTranscoder::drawText(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     Isolate* isolate = Isolate::GetCurrent();
@@ -211,4 +194,3 @@ void VideoTranscoder::clearText(const v8::FunctionCallbackInfo<v8::Value>& args)
 
     me->clearText();
 }
-#endif
