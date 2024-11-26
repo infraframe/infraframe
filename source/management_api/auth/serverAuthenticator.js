@@ -27,29 +27,9 @@
 // This file is borrowed from lynckia/licode with some modifications.
 
 "use strict";
-var dataAccess = require("../data_access");
-var mauthParser = require("./mauthParser");
-var cipher = require("../cipher");
 var log = require("./../logger").logger.getLogger("ServerAuthenticator");
 var e = require("../errors");
-
-var cache = {};
-
-var checkSignature = function (params, key) {
-  if (params.signature_method !== "HMAC_SHA256") {
-    return false;
-  }
-
-  var calculatedSignature = mauthParser.calculateClientSignature(params, key);
-
-  if (calculatedSignature !== params.signature) {
-    return false;
-  } else {
-    return true;
-  }
-};
-
-const jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiaW5mcmFmcmFtZSIsInJvbGUiOiJwcmVzZW50ZXIiLCJyb29tIjoiYXNkZmFzZGYiLCJpYXQiOjE3Mjg5MjI5NTh9.9Kqoi_HwS99j3tes1ttReHtEUthzWGke5ZIKK1XiML4";
+const _ = require('lodash');
 
 /*
  * This function has the logic needed for authenticate a request.
@@ -57,65 +37,19 @@ const jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiaW5mcmFmcmFtZSIsIn
  * a response with an authentication request to the client.
  */
 exports.authenticate = function (req, res, next) {
-  var authHeader = req.header("Authorization"),
-    challengeReq = 'MAuth realm="http://marte3.dit.upm.es"',
-    params;
-
-  var authErr = new e.AuthError("WWW-Authenticate: " + challengeReq);
-  var randomDelay = Math.round(Math.random() * 1000);
-  var sendErrorResponse = function () {
+  const randomDelay = Math.round(Math.random() * 1000);
+  const sendErrorResponse = function () {
     next(authErr);
   };
 
-  if (authHeader !== undefined) {
-    params = mauthParser.parseHeader(authHeader);
-
-    // Get the service from the data base.
-    dataAccess.service.get(params.serviceid, function (err, serv) {
-      if (err) return next(err);
-      if (!serv) {
-        log.info("[Auth] Unknow service:", params.serviceid, req.ip);
-        setTimeout(sendErrorResponse, randomDelay);
-        return;
-      }
-
-      var key = serv.key;
-      if (serv.encrypted === true) {
-        key = cipher.decrypt(global.config.spk, key);
-      }
-
-      // Check if timestamp and cnonce are valids in order to avoid duplicate requests.
-      /* This will affact concurrent performance under same service.
-            if (!checkTimestamp(serv, params)) {
-                log.info('[Auth] Invalid timestamp or cnonce');
-                res.status(401).send({'WWW-Authenticate': challengeReq});
-                return;
-            }
-            */
-
-      // Check if the signature is valid.
-      if (checkSignature(params, key)) {
-        var authData = {};
-
-        if (params.username !== undefined && params.role !== undefined) {
-          authData.user = Buffer.from(params.username, "base64").toString(
-            "utf8"
-          );
-          authData.role = params.role;
-        }
-        cache[serv._id + ""] = params;
-        authData.service = serv;
-        // Put auth data into request for further use
-        req.authData = authData;
-        // If everything in the authentication is valid continue with the request.
-        next();
-      } else {
-        log.info("[Auth] Wrong credentials", req.ip);
-        setTimeout(sendErrorResponse, randomDelay);
-      }
-    });
+  if (_.has(req, 'user')) {
+    req.authData = {
+      user: req.user.username,
+      role: req.user.roles[0].name,
+    };
+    next();
   } else {
-    log.info("[Auth] MAuth header not presented", req.ip);
+    log.info('[Auth] bearer token not presented', req.ip);
     setTimeout(sendErrorResponse, randomDelay);
   }
 };
