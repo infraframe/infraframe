@@ -14,7 +14,6 @@
     "ServiceRegistry": { "appenders": ["out"], "level": "info" },
     "RoomRegistry": { "appenders": ["out"], "level": "info" },
     "TokenRegistry": { "appenders": ["out"], "level": "info" },
-    "ServicesResource": { "appenders": ["out"], "level": "info" },
     "ServiceResource": { "appenders": ["out"], "level": "info" },
     "RoomsResource": { "appenders": ["out"], "level": "info" },
     "RoomResource": { "appenders": ["out"], "level": "info" },

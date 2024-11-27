@@ -15,7 +15,6 @@ var streamsResource = require("./streamsResource");
 var streamingOutsResource = require("./streamingOutsResource");
 var recordingsResource = require("./recordingsResource");
 var analyticsResource = require("./analyticsResource");
-var cascadingResource = require("./cascadingResource");
 
 //Room management
 router.post("/rooms", roomsResource.createRoom); //FIXME: The definition of 'options' needs to be refined.
@@ -66,9 +65,5 @@ router.delete("/rooms/:room/recordings/:id", recordingsResource.delete);
 router.get("/rooms/:room/analytics", analyticsResource.getList);
 router.post("/rooms/:room/analytics", analyticsResource.add);
 router.delete("/rooms/:room/analytics/:id", analyticsResource.delete);
-
-//Cluster cascading management
-router.post("/rooms/:room/cascading", cascadingResource.startCascading);
-router.get("/rooms/:room/bridges", cascadingResource.getBridges);
 
 module.exports = router;

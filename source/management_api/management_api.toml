@@ -20,7 +20,3 @@ port = 5672 #default: 5672
 
 [mongo]
 dataBaseURL = "localhost/owtdb" #default: "localhost/owtdb"
-
-[cascading]
-enabled = false # disable cascading feature by default
-servicename = "sampleService" #service name used to register to cascading cloud for accessing to communicate with this cluster

@@ -2,11 +2,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-"use strict";
-var mongoose = require("mongoose");
-var Default = require("./../defaults");
-var Room = require("./../model/roomModel");
-var Service = require("./../model/serviceModel");
+'use strict';
+var mongoose = require('mongoose');
+var Default = require('./../defaults');
+var Room = require('./../model/roomModel');
 
 function getAudioOnlyLabels(roomOption) {
   var labels = [];
@@ -76,7 +75,7 @@ function updateAudioOnlyViews(labels, room, callback) {
 
 const removeNull = (obj) => {
   Object.keys(obj).forEach((key) => {
-    if (obj[key] && typeof obj[key] === "object") removeNull(obj[key]);
+    if (obj[key] && typeof obj[key] === 'object') removeNull(obj[key]);
     else if (obj[key] == null) delete obj[key];
   });
 };
@@ -96,22 +95,17 @@ exports.create = function (serviceId, roomOption, callback) {
   var labels = getAudioOnlyLabels(roomOption);
   var room = new Room(roomOption);
   if (!checkMediaOut(room, roomOption)) {
-    callback(new Error("MediaOut conflicts with View Setting"), null);
+    callback(new Error('MediaOut conflicts with View Setting'), null);
     return;
   }
   room
     .save()
     .then((saved) => {
-      Service.findById(serviceId).then((service) => {
-        service.rooms.push(saved._id);
-        service.save().then(() => {
-          if (labels.length > 0) {
-            updateAudioOnlyViews(labels, saved, callback);
-          } else {
-            callback(null, saved.toObject());
-          }
-        });
-      });
+      if (labels.length > 0) {
+        updateAudioOnlyViews(labels, saved, callback);
+      } else {
+        callback(null, saved.toObject());
+      }
     })
     .catch((err) => {
       callback(err, null);
@@ -122,30 +116,34 @@ exports.create = function (serviceId, roomOption, callback) {
  * List Rooms.
  */
 exports.list = function (serviceId, options, callback) {
-  var popOption = {
-    path: "rooms",
-    options: { sort: { _id: 1 } },
+  let popOption = {
+    options: {
+      sort: { _id: 1 },
+      limit: 20,
+      skip: 0,
+    },
   };
   if (options) {
-    if (typeof options.per_page === "number" && options.per_page > 0) {
+    if (typeof options.per_page === 'number' && options.per_page > 0) {
       popOption.options.limit = options.per_page;
-      if (typeof options.page === "number" && options.page > 0) {
+      if (typeof options.page === 'number' && options.page > 0) {
         popOption.options.skip = (options.page - 1) * options.per_page;
       }
     }
   }
 
-  Service.findById(serviceId)
-    .populate(popOption)
-    .exec(function (err, service) {
+  Room.find({})
+    .sort(popOption.options.sort)
+    .skip(popOption.options.skip)
+    .limit(popOption.options.limit)
+    .exec(function (err, rooms) {
       if (err) {
         callback(err);
         return;
       }
-      // Current mongoose version has problem with lean getters
       callback(
         null,
-        service.rooms.map((room) => room.toObject())
+        rooms.map((room) => room.toObject())
       );
     });
 };
@@ -154,27 +152,10 @@ exports.list = function (serviceId, options, callback) {
  * Get Room. Represents a determined room.
  */
 exports.get = function (serviceId, roomId, callback) {
-  Service.findById(serviceId)
+  Room.findById(roomId)
     .lean()
-    .exec(function (err, service) {
-      if (err) return callback(err, null);
-
-      var i,
-        match = false;
-      for (i = 0; i < service.rooms.length; i++) {
-        if (service.rooms[i].toString() === roomId) {
-          match = true;
-          break;
-        }
-      }
-
-      if (!match) return callback(null, null);
-
-      Room.findById(roomId)
-        .lean()
-        .exec(function (err, room) {
-          return callback(err, room);
-        });
+    .exec(function (err, room) {
+      return callback(err, room);
     });
 };
 
@@ -182,15 +163,8 @@ exports.get = function (serviceId, roomId, callback) {
  * Delete Room. Removes a determined room from the data base.
  */
 exports.delete = function (serviceId, roomId, callback) {
-  Room.deleteOne({ _id: roomId }, function (err0) {
-    Service.findByIdAndUpdate(
-      serviceId,
-      { $pull: { rooms: roomId } },
-      function (err1, service) {
-        if (err1) console.log("Pull rooms fail:", err1.message);
-        callback(err0, roomId);
-      }
-    );
+  Room.deleteOne({ _id: roomId }, function (err) {
+    callback(err, roomId);
   });
 };
 
@@ -204,7 +178,7 @@ exports.update = function (serviceId, roomId, updates, callback) {
     .then((room) => {
       var newRoom = Object.assign(room, updates);
       if (!checkMediaOut(newRoom, updates)) {
-        throw new Error("MediaOut conflicts with View Setting");
+        throw new Error('MediaOut conflicts with View Setting');
       }
       return newRoom.save();
     })
@@ -231,24 +205,6 @@ exports.config = function (roomId) {
       } else {
         var config = Room.processLayout(room.toObject());
         resolve(config);
-      }
-    });
-  });
-};
-
-/*
- * Get sip rooms. Called by sip portal.
- */
-exports.sips = function () {
-  return new Promise((resolve, reject) => {
-    Room.find({ "sip.sipServer": { $ne: null } }, function (err, rooms) {
-      if (err || !rooms) {
-        resolve([]);
-      } else {
-        var result = rooms.map((room) => {
-          return { roomId: room._id.toString(), sip: room.sip };
-        });
-        resolve(result);
       }
     });
   });

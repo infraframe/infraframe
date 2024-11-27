@@ -453,30 +453,12 @@ const SubscriptionUpdate = {
   items: { $ref: "SubscriptionControlInfo.json" },
 };
 
-const CascadingRequest = {
-  type: "object",
-  properties: {
-    type: { const: "cascading" },
-    evIP: { type: "string" },
-    evPort: { type: "number" },
-    mediaIP: { type: "string" },
-    mediaPort: { type: "number" },
-    targetCluster: { type: "string" },
-    selfCluster: { type: "string" },
-    token: { type: "string" },
-    room: { type: "string" },
-  },
-  additionalProperties: false,
-  required: ["type", "evIP", "evPort", "room", "token"],
-};
-
 var validators = {
   "participant-update": generateValidator(ParticipantUpdate),
   "streamingIn-req": generateValidator(StreamingInRequest),
   "stream-update": generateValidator(StreamUpdate),
   "serverSideSub-req": generateValidator(ServerSideSubscriptionRequest),
   "subscription-update": generateValidator(SubscriptionUpdate),
-  "cascading-req": generateValidator(CascadingRequest),
 };
 
 // Export JSON validator functions

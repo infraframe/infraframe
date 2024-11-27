@@ -44,8 +44,8 @@ exports.authenticate = function (req, res, next) {
 
   if (_.has(req, 'user')) {
     req.authData = {
-      user: req.user.username,
-      role: req.user.roles[0].name,
+      user: 'username',
+      role: 'presenter',
     };
     next();
   } else {

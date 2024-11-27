@@ -57,8 +57,6 @@ var bodyParser = require("body-parser");
 var app = express();
 
 var serverAuthenticator = require("./auth/serverAuthenticator");
-var servicesResource = require("./resource/servicesResource");
-var serviceResource = require("./resource/serviceResource");
 var cipher = require("./cipher");
 
 // parse application/x-www-form-urlencoded
@@ -88,9 +86,7 @@ app.options("*", function (req, res) {
 // Only following paths need authentication.
 var authPaths = [
   "/v1/rooms*",
-  "/v1.1/rooms*",
   "/services*",
-  "/v1.1/stream-engine*",
 ];
 app.get(authPaths, serverAuthenticator.authenticate);
 app.post(authPaths, serverAuthenticator.authenticate);
@@ -98,19 +94,9 @@ app.delete(authPaths, serverAuthenticator.authenticate);
 app.put(authPaths, serverAuthenticator.authenticate);
 app.patch(authPaths, serverAuthenticator.authenticate);
 
-app.post("/services", servicesResource.create);
-app.get("/services", servicesResource.represent);
-
-app.get("/services/:service", serviceResource.represent);
-app.delete("/services/:service", serviceResource.deleteService);
-
 // API for version 1.0.
 var routerV1 = require("./resource/v1");
 app.use("/v1", routerV1);
-
-// API for version 1.1.
-var routerV1_1 = require("./resource/v1.1");
-app.use("/v1.1", routerV1_1);
 
 // for path not match
 app.use("*", function (req, res, next) {
@@ -136,10 +122,6 @@ var serverConfig = global.config.server || {};
 var cluster = require("cluster");
 var serverPort = serverConfig.port || 3000;
 var numCPUs = serverConfig.numberOfProcess || 1;
-
-var cascadingConfig = global.config.cascading || {};
-var enableCascading = cascadingConfig.enabled || false;
-var servicename = cascadingConfig.servicename || "sampleService";
 
 var ip_address;
 (function getPublicIP() {
@@ -200,90 +182,6 @@ if (cluster.isMaster) {
   // there are multiple machine running server.
   // var dataAccess = require("./data_access");
   // dataAccess.token.genKey();
-
-  if (enableCascading) {
-    var registerInfo = undefined;
-
-    amqper.connect(
-      global.config.rabbit,
-      function () {
-        amqper.asRpcClient(
-          function (rpcCli) {
-            var keepTrying = true;
-            var trySendInfo = function (attempts) {
-              if (attempts <= 0) {
-                log.info("Send register info to cluster manager timeout");
-                return;
-              }
-              log.info("Send restful info to cluster manager:", registerInfo);
-              rpcCli.remoteCall(
-                cluster_name,
-                "registerInfo",
-                [registerInfo],
-                {
-                  callback: function (result) {
-                    if (result === "timeout") {
-                      if (keepTrying) {
-                        log.info(
-                          "Faild to register restful server info, keep trying."
-                        );
-                        setTimeout(function () {
-                          trySendInfo(
-                            attempts - (result === "timeout" ? 4 : 1)
-                          );
-                        }, 1000);
-                      }
-                    } else {
-                      log.info("Send register info to cluster manager succeed");
-                      keepTrying = false;
-                    }
-                  },
-                },
-                1000
-              );
-            };
-
-            if (registerInfo != undefined) {
-              trySendInfo(5);
-            } else {
-              setTimeout(function () {
-                trySendInfo(5);
-              }, 1000);
-            }
-          },
-          function (reason) {
-            log.error("Initializing as rpc client failed, reason:", reason);
-            process.exit();
-          }
-        );
-      },
-      function (reason) {
-        log.error("Connect to rabbitMQ server failed, reason:", reason);
-        process.exit();
-      }
-    );
-
-    dataAccess.service.list(function (err, sers) {
-      if (err) {
-        log.warn("Failed to get service:", err.message);
-      } else {
-        var serviceToCloud = sers.filter((t) => {
-          return t.name === servicename;
-        });
-        log.info("Representing service ", serviceToCloud);
-        var key = serviceToCloud[0].key;
-        if (serviceToCloud[0].encrypted === true) {
-          key = cipher.decrypt(cipher.k, key);
-        }
-
-        registerInfo = {
-          resturl: url,
-          servicekey: key,
-          serviceid: serviceToCloud[0]._id,
-        };
-      }
-    });
-  }
 
   for (var i = 0; i < numCPUs; i++) {
     cluster.fork();
