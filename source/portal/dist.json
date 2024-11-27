@@ -26,7 +26,7 @@
     "folders": {
       "cert": ["../../cert/certificate.pfx", "../../cert/.owt.keystore"],
       "data_access": ["../data_access/*"],
-      "protos": ["../protos/protoConfig.json", "../protos/*.proto"]
+      "protos": ["../protocol/protos/protoConfig.json", "../protocol/protos/*.proto"]
     }
   },
   "debug": {
