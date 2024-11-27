@@ -8,7 +8,6 @@
       "../workingNode.js",
       "configLoader.js",
       "participant.js",
-      "agent.toml",
       "roomController.js",
       "log4js_configuration.json",
       "rpcRequest.js",
@@ -22,20 +21,18 @@
       "../networkHelper.js",
       "../../common/formatUtil.js",
       "../../common/cipher.js",
-      "../../common/amqpClient.js",
       "../../common/clusterWorker.js",
       "../../common/loadCollector.js",
       "../../common/logger.js",
       "../../common/makeRPC.js",
-      "../../common/rpcChannel.js",
       "../../common/grpcTools.js",
       "../../../scripts/release/initauth.js"
     ],
     "folders": {
       "data_access": ["../../data_access/*"],
       "protos": [
-        "../../protos/protoConfig.json",
-        "../../protos/*.proto"]
+        "../../protocol/protos/protoConfig.json",
+        "../../protocol/protos/*.proto"]
     }
   },
   "debug": {

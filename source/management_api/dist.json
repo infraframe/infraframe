@@ -7,10 +7,8 @@
       "*.js",
       "*.sh",
       "log4js_configuration.json",
-      "management_api.toml",
       "../common/logger.js",
       "../common/cipher.js",
-      "../common/amqpClient.js",
       "../common/grpcTools.js",
       "../../scripts/release/initauth.js",
       "../../scripts/release/initcert.js",
@@ -23,8 +21,8 @@
       "cert": ["../../cert/*.pfx", "../../cert/.owt.keystore"],
       "data_access": ["../data_access/*"],
       "protos": [
-        "../protos/protoConfig.json",
-        "../protos/*.proto"]
+        "../protocol/protos/protoConfig.json",
+        "../protocol/protos/*.proto"]
     }
   },
   "start": "node api.js"

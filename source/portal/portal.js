@@ -1,19 +1,14 @@
 'use strict';
 
-var path = require('path');
-var url = require('url');
 var crypto = require('crypto');
 var log = require('./logger').logger.getLogger('Portal');
-var dataAccess = require('./data_access');
 const { v4: uuid } = require('uuid');
-const vsprintf = require('sprintf-js').vsprintf;
 
 var Portal = function (spec, rpcReq) {
   var that = {},
     token_key = spec.tokenKey,
     cluster_name = spec.clusterName,
-    self_rpc_id = spec.selfRpcId,
-    customized_controller = spec.customized_controller;
+    self_rpc_id = spec.selfRpcId;
 
   /*
    * {participantId: {
@@ -40,42 +35,8 @@ var Portal = function (spec, rpcReq) {
       return Promise.reject('Participant already in room');
     }
 
-    var calculateSignature = function (token) {
-      var toSign = token.tokenId + ',' + token.host,
-        signed = crypto
-          .createHmac('sha256', token_key)
-          .update(toSign)
-          .digest('hex');
-      return Buffer.from(signed).toString('base64');
-    };
-
-    var validateToken = function (token) {
-      var signature = calculateSignature(token);
-
-      if (signature !== token.signature) {
-        return Promise.reject('Invalid token signature');
-      } else {
-        return Promise.resolve(token);
-      }
-    };
-
     var tokenCode, userInfo, role, origin, room_id, room_controller, domain;
 
-    // validateToken (token)
-    //   .then(function(validToken) {
-    //     log.debug('token validation ok.');
-    //     return dataAccess.token.delete(validToken.tokenId);
-    //   })
-    //   .then(function(deleteTokenResult) {
-    //     log.debug('login ok.', deleteTokenResult);
-    //     tokenCode = deleteTokenResult.code;
-    //     userInfo = deleteTokenResult.user;
-    //     role = deleteTokenResult.role;
-    //     origin = deleteTokenResult.origin;
-    //     domain = deleteTokenResult.domain;
-    //     room_id = deleteTokenResult.room || domain;
-    //     return rpcReq.getController(cluster_name, room_id);
-    //   })
     return rpcReq
       .getController(cluster_name, room_id)
       .then(function (controller) {

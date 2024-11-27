@@ -4,7 +4,6 @@
   "common": {
     "package": "../package.json",
     "files": [
-      "agent.toml",
       "log4js_configuration.json",
       "init.sh",
       "install_deps.sh",
@@ -18,12 +17,10 @@
       "../workingNode.js",
       "log4cxx.properties",
       "../../common/cipher.js",
-      "../../common/amqpClient.js",
       "../../common/clusterWorker.js",
       "../../common/loadCollector.js",
       "../../common/logger.js",
       "../../common/makeRPC.js",
-      "../../common/rpcChannel.js",
       "../../common/mediaUtil.js",
       "../../common/grpcTools.js",
       "../../../scripts/release/install_ffmpeg.sh",
@@ -45,12 +42,12 @@
       ],
       "avatars": ["avatars/*"],
       "video/protos": [
-        "../../protos/protoConfig.json",
-        "../../protos/*.proto"
+        "../../protocol/protos/protoConfig.json",
+        "../../protocol/protos/*.proto"
       ],
       "protos": [
-        "../../protos/protoConfig.json",
-        "../../protos/*.proto"]
+        "../../protocol/protos/protoConfig.json",
+        "../../protocol/protos/*.proto"]
     }
   },
   "natives": {
