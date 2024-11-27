@@ -26,164 +26,143 @@
 
 // This file is borrowed from lynckia/licode with some modifications.
 
-"use strict";
-var fs = require("fs");
-var amqper = require("./../amqpClient")();
-var log = require("./../logger").logger.getLogger("RPC");
-var cipher = require("../cipher");
+'use strict';
+var fs = require('fs');
+var log = require('./../logger').logger.getLogger('RPC');
+var cipher = require('../cipher');
 var TIMEOUT = 3000;
-var rpcClient;
 
-const enableGrpc = global.config?.server?.enable_grpc || false;
-const grpcTools = require("../grpcTools");
+const grpcTools = require('../grpcTools');
 const grpcNode = {}; // workerNode => grpcClient
 const GRPC_TIMEOUT = 2000;
 
-exports.connect = function (options) {
-  if (enableGrpc) {
-    return;
-  }
-  amqper.connect(
-    options,
-    function () {
-      amqper.asRpcClient(
-        function (rpcCli) {
-          rpcClient = rpcCli;
-        },
-        function (reason) {
-          log.error("Initializing as rpc client failed, reason:", reason);
-          stopServers();
-          process.exit();
-        }
-      );
-    },
-    function (reason) {
-      log.error("Connect to rabbitMQ server failed, reason:", reason);
-      process.exit();
-    }
-  );
-};
-
-exports.disconnect = function () {
-  if (enableGrpc) {
-    // Clean gRPC clients
-    return;
-  }
-  amqper.disconnect();
-};
-
-function toGrpc(to, method, args, callbacks, timeout) {
-  const clusterMethods = ["schedule", "getScheduled", "getWorkerAttr"];
-  const nodeManagerMethods = ["getNode", "queryNode", "recycleNode"];
+/*
+ * Calls remotely the 'method' function defined in rpcPublic of 'to'.
+ */
+exports.callRpc = function (to, method, args, callbacks, timeout) {
+  const clusterMethods = ['schedule', 'getScheduled', 'getWorkerAttr'];
+  const nodeManagerMethods = ['getNode', 'queryNode', 'recycleNode'];
+  const deviceManagerMethods = [
+    'getDevices',
+    'getDevice',
+    'updateDevice',
+    'deleteDevice',
+    'addDevice',
+    'service',
+    'discovery',
+    'getResults',
+  ];
   const opt = () => ({ deadline: new Date(Date.now() + GRPC_TIMEOUT) });
 
-  let type = "conference";
+  let type = 'conference';
   if (clusterMethods.includes(method)) {
-    type = "clusterManager";
+    type = 'clusterManager';
   } else if (nodeManagerMethods.includes(method)) {
-    type = "nodeManager";
+    type = 'nodeManager';
+  } else if (deviceManagerMethods.includes(method)) {
+    type = 'deviceManager';
   }
   if (!grpcNode[to]) {
-    log.debug("Start gRPC client:", type, to);
+    log.debug('Start gRPC client:', type, to);
     grpcNode[to] = grpcTools.startClient(type, to);
   }
-  const cb = callbacks["callback"] || function () {};
-  if (method === "schedule") {
+  const cb = callbacks['callback'] || function () {};
+  if (method === 'schedule') {
     const req = {
       purpose: args[0],
       task: args[1],
-      preference: typeof args[2] === "object" ? args[2] : {},
+      preference: typeof args[2] === 'object' ? args[2] : {},
       reserveTime: args[3],
     };
     grpcNode[to].schedule(req, opt(), (err, result) => {
       if (err) {
-        log.info("schedule error:", err);
-        cb("error");
+        log.info('schedule error:', err);
+        cb('error');
       } else {
         cb(result);
       }
     });
-  } else if (method === "getScheduled") {
+  } else if (method === 'getScheduled') {
     const req = {
       purpose: args[0],
       task: args[1],
     };
     grpcNode[to].getScheduled(req, opt(), (err, result) => {
-      log.info("getScheduled:", result);
+      log.info('getScheduled:', result);
       if (err) {
-        log.info("getScheduled error:", err);
-        cb("error");
+        log.info('getScheduled error:', err);
+        cb('error');
       } else {
         const workerId = result.message;
         grpcNode[to].getWorkerAttr({ id: workerId }, opt(), (err, result) => {
-          log.info("getWorkerAtt:", result);
+          log.info('getWorkerAtt:', result);
           if (err) {
-            log.info("getWorkerAttr error:", err);
-            cb("error");
+            log.info('getWorkerAttr error:', err);
+            cb('error');
           } else {
-            const addr = result.info.ip + ":" + result.info.grpcPort;
+            const addr = result.info.ip + ':' + result.info.grpcPort;
             cb(addr);
           }
         });
       }
     });
-  } else if (method === "getNode") {
+  } else if (method === 'getNode') {
     const req = { info: args[0] };
     grpcNode[to].getNode(req, opt(), (err, result) => {
       if (err) {
-        log.info("getNode error:", err);
-        cb("error");
+        log.info('getNode error:', err);
+        cb('error');
       } else {
         cb(result.message);
       }
     });
-  } else if (method === "queryNode") {
+  } else if (method === 'queryNode') {
     const req = { info: { task: args[0] } };
     grpcNode[to].queryNode(req, opt(), (err, result) => {
       if (err) {
-        log.info("queryNode error:", err);
-        cb("error");
+        log.info('queryNode error:', err);
+        cb('error');
       } else {
         cb(result.message);
       }
     });
-  } else if (method === "getParticipants") {
+  } else if (method === 'getParticipants') {
     grpcNode[to].getParticipants({}, opt(), (err, result) => {
       if (err) {
-        log.info("getParticipants error:", err);
-        cb("error");
+        log.info('getParticipants error:', err);
+        cb('error');
       } else {
         cb(result.result);
       }
     });
-  } else if (method === "controlParticipant") {
+  } else if (method === 'controlParticipant') {
     const req = {
       participantId: args[0],
       jsonPatch: JSON.stringify(args[1]),
     };
     grpcNode[to].controlParticipant(req, opt(), (err, result) => {
       if (err) {
-        log.info("controlParticipant error:", err);
-        cb("error");
+        log.info('controlParticipant error:', err);
+        cb('error');
       } else {
         cb(result);
       }
     });
-  } else if (method === "dropParticipant") {
+  } else if (method === 'dropParticipant') {
     const req = { id: args[0] };
     grpcNode[to].dropParticipant(req, opt(), (err, result) => {
       if (err) {
-        log.info("dropParticipant error:", err);
-        cb("error");
+        log.info('dropParticipant error:', err);
+        cb('error');
       } else {
         cb(result);
       }
     });
-  } else if (method === "getStreams") {
+  } else if (method === 'getStreams') {
     grpcNode[to].getStreams({}, opt(), (err, result) => {
       if (err) {
-        log.info("getStreams error:", err);
-        cb("error");
+        log.info('getStreams error:', err);
+        cb('error');
       } else {
         const streams = result.result;
         streams.forEach((stream) => {
@@ -194,7 +173,7 @@ function toGrpc(to, method, args, callbacks, timeout) {
         cb(streams);
       }
     });
-  } else if (method === "controlStream") {
+  } else if (method === 'controlStream') {
     const req = {
       id: args[0],
       commands: args[1],
@@ -204,8 +183,8 @@ function toGrpc(to, method, args, callbacks, timeout) {
     });
     grpcNode[to].controlStream(req, opt(), (err, result) => {
       if (err) {
-        log.info("controlStream error:", err);
-        cb("error");
+        log.info('controlStream error:', err);
+        cb('error');
       } else {
         if (result.info.attributes) {
           result.info.attributes = JSON.parse(result.info.attributes);
@@ -213,24 +192,24 @@ function toGrpc(to, method, args, callbacks, timeout) {
         cb(result);
       }
     });
-  } else if (method === "deleteStream") {
+  } else if (method === 'deleteStream') {
     grpcNode[to].deleteStream({ id: args[0] }, opt(), (err, result) => {
       if (err) {
-        log.info("deleteStream error:", err);
-        cb("error");
+        log.info('deleteStream error:', err);
+        cb('error');
       } else {
         cb(result);
       }
     });
-  } else if (method === "addStreamingIn") {
+  } else if (method === 'addStreamingIn') {
     const req = {
       roomId: args[0],
       pubInfo: args[1],
     };
     grpcNode[to].addStreamingIn(req, opt(), (err, result) => {
       if (err) {
-        log.info("addStreamingIn error:", err);
-        cb("error");
+        log.info('addStreamingIn error:', err);
+        cb('error');
       } else {
         if (result.info.attributes) {
           result.info.attributes = JSON.parse(result.info.attributes);
@@ -238,27 +217,27 @@ function toGrpc(to, method, args, callbacks, timeout) {
         cb(result);
       }
     });
-  } else if (method === "getSubscriptions") {
+  } else if (method === 'getSubscriptions') {
     const req = { type: args[0] };
     grpcNode[to].getSubscriptions(req, opt(), (err, result) => {
       if (err) {
-        log.info("getSubscriptions error:", err);
-        cb("error");
+        log.info('getSubscriptions error:', err);
+        cb('error');
       } else {
         cb(result.result);
       }
     });
-  } else if (method === "getSubscriptionInfo") {
+  } else if (method === 'getSubscriptionInfo') {
     const req = { id: args[0] };
     grpcNode[to].getSubscriptionInfo(req, opt(), (err, result) => {
       if (err) {
-        log.info("getSubscriptionInfo error:", err);
-        cb("error");
+        log.info('getSubscriptionInfo error:', err);
+        cb('error');
       } else {
         cb(result);
       }
     });
-  } else if (method === "addServerSideSubscription") {
+  } else if (method === 'addServerSideSubscription') {
     const req = {
       roomId: args[0],
       subInfo: args[1],
@@ -273,13 +252,13 @@ function toGrpc(to, method, args, callbacks, timeout) {
     }
     grpcNode[to].addServerSideSubscription(req, opt(), (err, result) => {
       if (err) {
-        log.info("addServerSideSubscription error:", err);
-        cb("error");
+        log.info('addServerSideSubscription error:', err);
+        cb('error');
       } else {
         cb(result);
       }
     });
-  } else if (method === "controlSubscription") {
+  } else if (method === 'controlSubscription') {
     const req = {
       id: args[0],
       commands: args[1],
@@ -289,47 +268,35 @@ function toGrpc(to, method, args, callbacks, timeout) {
     });
     grpcNode[to].controlSubscription(req, opt(), (err, result) => {
       if (err) {
-        log.info("controlSubscription error:", err);
-        cb("error");
+        log.info('controlSubscription error:', err);
+        cb('error');
       } else {
         cb(result);
       }
     });
-  } else if (method === "deleteSubscription") {
+  } else if (method === 'deleteSubscription') {
     const req = {
       id: args[0],
       type: args[1],
     };
     grpcNode[to].deleteSubscription(req, opt(), (err, result) => {
       if (err) {
-        log.info("deleteSubscription error:", err);
-        cb("error");
+        log.info('deleteSubscription error:', err);
+        cb('error');
       } else {
         cb(result);
       }
     });
-  } else if (method === "destroy") {
+  } else if (method === 'destroy') {
     grpcNode[to].destroy({}, opt(), (err, result) => {
       if (err) {
-        log.info("destroy error:", err);
-        cb("error");
+        log.info('destroy error:', err);
+        cb('error');
       } else {
         cb(result);
       }
     });
   } else {
-    log.warn("Unknown RPC method:", method);
-  }
-}
-
-/*
- * Calls remotely the 'method' function defined in rpcPublic of 'to'.
- */
-exports.callRpc = function (to, method, args, callbacks, timeout) {
-  if (enableGrpc) {
-    toGrpc(to, method, args, callbacks, timeout);
-  }
-  if (rpcClient) {
-    rpcClient.remoteCall(to, method, args, callbacks, timeout);
+    log.warn('Unknown RPC method:', method);
   }
 };
