@@ -72,7 +72,6 @@ if (process.env.owt_via_host !== undefined) {
 }
 
 global.config = config;
-const enableGrpc = config.portal.enable_grpc || false;
 
 var amqper = require("./amqpClient")();
 var rpcClient;
@@ -123,22 +122,6 @@ var dropAll = function () {
   socketio_server && socketio_server.drop("all");
 };
 
-var getTokenKey = function (id, on_key, on_error) {
-  var dataAccess = require("./data_access");
-  dataAccess.token
-    .key(id)
-    .then(function (key) {
-      on_key(key);
-    })
-    .catch(function (err) {
-      log.info(
-        "Failed to get token key. err:",
-        err && err.message ? err.message : err
-      );
-      on_error(err);
-    });
-};
-
 var joinCluster = function (on_ok) {
   var joinOK = on_ok;
 
@@ -171,7 +154,7 @@ var joinCluster = function (on_ok) {
       state: 2,
       maxLoad: config.cluster.max_load,
       capacity: config.capacity,
-      grpcPort: enableGrpc ? 1 : null, // Enable gRPC
+      grpcPort: 1,
     },
     onJoinOK: joinOK,
     onJoinFailed: joinFailed,
@@ -184,26 +167,6 @@ var joinCluster = function (on_ok) {
   };
 
   worker = require("./clusterWorker")(spec);
-};
-
-var refreshTokenKey = function (id, portal, tokenKey) {
-  var interval = setInterval(function () {
-    getTokenKey(
-      id,
-      function (newTokenKey) {
-        socketio_server === undefined && clearInterval(interval);
-        if (newTokenKey !== tokenKey) {
-          log.info("Token key updated!");
-          portal.updateTokenKey(newTokenKey);
-          tokenKey = newTokenKey;
-        }
-      },
-      function () {
-        socketio_server === undefined && clearInterval(interval);
-        log.warn("Keep trying...");
-      }
-    );
-  }, 6 * 1000);
 };
 
 var serviceObserver = {
@@ -223,7 +186,7 @@ var startServers = function (id, tokenKey) {
     {
       tokenKey: tokenKey,
       tokenServer: "ManagementApi",
-      clusterName: enableGrpc ? config.cluster.grpc_host : config.cluster.name,
+      clusterName: config.cluster.grpc_host,
       selfRpcId: id,
       customized_controller: config.portal.customized_controller,
     },
@@ -321,120 +284,20 @@ var rpcPublic = {
   },
 };
 
-if (!enableGrpc) {
-  amqper.connect(
-    config.rabbit,
-    function () {
-      amqper.asRpcClient(
-        function (rpcClnt) {
-          rpcClient = rpcClnt;
-          log.info("portal initializing as rpc client ok");
-          joinCluster(function (id) {
-            log.info("portal join cluster ok, with rpcID:", id);
-            amqper.asRpcServer(
-              id,
-              rpcPublic,
-              function (rpcSvr) {
-                log.info("portal initializing as rpc server ok");
-                amqper.asMonitor(
-                  function (data) {
-                    if (
-                      data.reason === "abnormal" ||
-                      data.reason === "error" ||
-                      data.reason === "quit"
-                    ) {
-                      if (portal !== undefined) {
-                        if (data.message.purpose === "conference") {
-                          const impactedParticipants =
-                            portal.getParticipantsByController(
-                              data.message.type,
-                              data.message.id
-                            );
-                          impactedParticipants.forEach(function (
-                            participantId
-                          ) {
-                            log.error(
-                              "Fault on conference controller(type:",
-                              data.message.type,
-                              "id:",
-                              data.message.id,
-                              ") of participant",
-                              participantId,
-                              "was detected, drop it."
-                            );
-                            socketio_server &&
-                              socketio_server.drop(participantId);
-                          });
-                        }
-                      }
-                    }
-                  },
-                  function (monitor) {
-                    log.info(id + " as monitor ready");
-                    getTokenKey(
-                      id,
-                      function (tokenKey) {
-                        startServers(id, tokenKey);
-                      },
-                      function () {
-                        log.error("portal getting token failed.");
-                        stopServers();
-                        process.exit();
-                      }
-                    );
-                  },
-                  function (reason) {
-                    log.error(
-                      "portal initializing as rpc client failed, reason:",
-                      reason
-                    );
-                    stopServers();
-                    process.exit();
-                  }
-                );
-              },
-              function (reason) {
-                log.error(
-                  "portal initializing as rpc client failed, reason:",
-                  reason
-                );
-                stopServers();
-                process.exit();
-              }
-            );
-          });
-        },
-        function (reason) {
-          log.error(
-            "portal initializing as rpc client failed, reason:",
-            reason
-          );
-          stopServers();
-          process.exit();
-        }
-      );
+// Run gRPC mode
+joinCluster(function (id) {
+  getTokenKey(
+    id,
+    function (tokenKey) {
+      startServers(id, tokenKey);
     },
-    function (reason) {
-      log.error("portal connect to rabbitMQ server failed, reason:", reason);
+    function () {
+      log.error("portal getting token failed.");
+      stopServers();
       process.exit();
     }
   );
-} else {
-  // Run gRPC mode
-  joinCluster(function (id) {
-    getTokenKey(
-      id,
-      function (tokenKey) {
-        startServers(id, tokenKey);
-      },
-      function () {
-        log.error("portal getting token failed.");
-        stopServers();
-        process.exit();
-      }
-    );
-  });
-}
+});
 
 ["SIGINT", "SIGTERM"].map(function (sig) {
   process.on(sig, async function () {

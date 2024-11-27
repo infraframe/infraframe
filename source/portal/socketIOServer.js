@@ -2,31 +2,31 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-"use strict";
+'use strict';
 
-var path = require("path");
-var log = require("./logger").logger.getLogger("SocketIOServer");
-var crypto = require("crypto");
-var vsprintf = require("sprintf-js").vsprintf;
+var path = require('path');
+var log = require('./logger').logger.getLogger('SocketIOServer');
+var crypto = require('crypto');
+var vsprintf = require('sprintf-js').vsprintf;
 
-var Client = require("./client");
+var Client = require('./client');
 
 function safeCall() {
   var callback = arguments[0];
-  if (typeof callback === "function") {
+  if (typeof callback === 'function') {
     var args = Array.prototype.slice.call(arguments, 1);
     callback.apply(null, args);
   }
 }
 
 const getErrorMessage = function (err) {
-  if (typeof err === "string") {
+  if (typeof err === 'string') {
     return err;
   } else if (err && err.message) {
     return err.message;
   } else {
-    log.debug("Unknown error:", err.stack);
-    return "Unknown";
+    log.debug('Unknown error:', err.stack);
+    return 'Unknown';
   }
 };
 
@@ -53,27 +53,27 @@ var Connection = function (spec, socket, reconnectionKey, portal, dock) {
 
   const validateUserAgent = function (ua) {
     if (!ua || !ua.sdk || !ua.sdk.version || !ua.sdk.type) {
-      return Promise.reject("User agent info is incorrect");
+      return Promise.reject('User agent info is incorrect');
     }
     return Promise.resolve(
-      ua.sdk.type === "Objective-C" ||
-        ua.sdk.type === "C++" ||
-        ua.sdk.type === "Android" ||
-        ua.sdk.type == "JavaScript"
+      ua.sdk.type === 'Objective-C' ||
+        ua.sdk.type === 'C++' ||
+        ua.sdk.type === 'Android' ||
+        ua.sdk.type == 'JavaScript'
     );
   };
 
   const calculateSignature = function (ticket) {
-    const to_sign = vsprintf("%s,%s,%s", [
+    const to_sign = vsprintf('%s,%s,%s', [
       ticket.participantId,
       ticket.notBefore,
       ticket.notAfter,
     ]);
     const signed = crypto
-      .createHmac("sha256", reconnectionKey)
+      .createHmac('sha256', reconnectionKey)
       .update(to_sign)
-      .digest("hex");
-    return Buffer.from(signed).toString("base64");
+      .digest('hex');
+    return Buffer.from(signed).toString('base64');
   };
 
   const generateReconnectionTicket = function () {
@@ -86,23 +86,23 @@ var Connection = function (spec, socket, reconnectionKey, portal, dock) {
       notAfter: now + spec.reconnectionTicketLifetime * 1000,
     };
     reconnection.ticket.signature = calculateSignature(reconnection.ticket);
-    return Buffer.from(JSON.stringify(reconnection.ticket)).toString("base64");
+    return Buffer.from(JSON.stringify(reconnection.ticket)).toString('base64');
   };
 
   const validateReconnectionTicket = function (ticket) {
     if (!reconnection.enabled) {
-      return Promise.reject("Reconnection is not allowed.");
+      return Promise.reject('Reconnection is not allowed.');
     }
     if (ticket.participantId !== client_id) {
-      return Promise.reject("Participant ID is not matched.");
+      return Promise.reject('Participant ID is not matched.');
     }
     let signature = calculateSignature(ticket);
     if (signature != ticket.signature) {
-      return Promise.reject("Invalid reconnection ticket signature");
+      return Promise.reject('Invalid reconnection ticket signature');
     }
     const now = Date.now();
     if (now < ticket.notBefore || now > ticket.notAfter) {
-      return Promise.reject("Ticket is expired.");
+      return Promise.reject('Ticket is expired.');
     }
     if (disconnect_timeout) {
       clearTimeout(disconnect_timeout);
@@ -123,55 +123,39 @@ var Connection = function (spec, socket, reconnectionKey, portal, dock) {
   };
 
   const forceClientLeave = () => {
-    log.debug("forceClientLeave, client_id:", client_id);
+    log.debug('forceClientLeave, client_id:', client_id);
     if (client_id) {
       const client = dock.getClient(client_id);
       if (client && client.connection === that) {
         client.leave();
         dock.onClientLeft(client_id);
-        state = "initialized";
+        state = 'initialized';
         client_id = undefined;
       }
     }
   };
 
   const okWord = () => {
-    return protocol_version === "legacy" ? "success" : "ok";
+    return protocol_version === 'legacy' ? 'success' : 'ok';
   };
 
   const run = () => {
-    state = "initialized";
-    socket.on("login", function (login_info, callback) {
-      if (state !== "initialized") {
-        return safeCall(callback, "error", "Connection is in service");
+    state = 'initialized';
+    socket.on('login', function (login_info, callback) {
+      if (state !== 'initialized') {
+        return safeCall(callback, 'error', 'Connection is in service');
       }
-      state = "connecting";
-
-      client_id = socket.id + "";
-      var client;
-      if (login_info.protocol === "1.2") {
-        //FIXME: Reject connection from 3.5 client
-        if (
-          login_info.userAgent &&
-          login_info.userAgent.sdk &&
-          login_info.userAgent.sdk.version === "3.5"
-        ) {
-          safeCall(callback, "error", "Deprecated client version");
-          return socket.disconnect();
-        }
-        protocol_version = login_info.protocol;
-        client = new Client(client_id, that, portal, protocol_version);
-      } else {
-        safeCall(callback, "error", "Unknown client protocol");
-        return socket.disconnect();
-      }
+      state = 'connecting';
+      client_id = `${socket.id}`;
+      protocol_version = login_info.protocol;
+      let client = new Client(client_id, that, portal, protocol_version);
 
       return validateUserAgent(login_info.userAgent)
         .then((reconnEnabled) => {
           reconnection.enabled = reconnEnabled;
           return new Promise(function (resolve) {
             resolve(
-              JSON.parse(Buffer.from(login_info.token, "base64").toString())
+              JSON.parse(Buffer.from(login_info.token, 'base64').toString())
             );
           });
         })
@@ -179,49 +163,49 @@ var Connection = function (spec, socket, reconnectionKey, portal, dock) {
           return client.join(token);
         })
         .then((result) => {
-          if (state === "connecting") {
+          if (state === 'connecting') {
             if (reconnection.enabled) {
               result.reconnectionTicket = generateReconnectionTicket();
             }
-            state = "connected";
+            state = 'connected';
             dock.onClientJoined(client_id, client);
             safeCall(callback, okWord(), result);
           } else {
             client.leave(client_id);
-            state = "initialized";
-            safeCall(callback, "error", "Participant early left");
-            log.info("Login failed:", "Participant early left");
+            state = 'initialized';
+            safeCall(callback, 'error', 'Participant early left');
+            log.info('Login failed:', 'Participant early left');
             socket.disconnect();
           }
         })
         .catch((err) => {
-          state = "initialized";
+          state = 'initialized';
           const err_message = getErrorMessage(err);
-          safeCall(callback, "error", err_message);
-          log.info("Login failed:", err_message);
+          safeCall(callback, 'error', err_message);
+          log.info('Login failed:', err_message);
           socket.disconnect();
         });
     });
 
-    socket.on("relogin", function (reconnectionTicket, callback) {
-      if (state !== "initialized") {
-        return safeCall(callback, "error", "Connection is in service");
+    socket.on('relogin', function (reconnectionTicket, callback) {
+      if (state !== 'initialized') {
+        return safeCall(callback, 'error', 'Connection is in service');
       }
-      state = "connecting";
+      state = 'connecting';
 
       var client;
       var reconnection_ticket;
       new Promise((resolve) => {
         resolve(
-          JSON.parse(Buffer.from(reconnectionTicket, "base64").toString())
+          JSON.parse(Buffer.from(reconnectionTicket, 'base64').toString())
         );
       })
         .then((ticket) => {
           var now = Date.now();
           if (ticket.notBefore > now || ticket.notAfter < now) {
-            return Promise.reject("Ticket is expired");
+            return Promise.reject('Ticket is expired');
           } else if (ticket.signature !== calculateSignature(ticket)) {
-            return Promise.reject("Invalid reconnection ticket signature");
+            return Promise.reject('Invalid reconnection ticket signature');
           } else {
             reconnection_ticket = ticket;
             return dock.getClient(ticket.participantId);
@@ -230,21 +214,21 @@ var Connection = function (spec, socket, reconnectionKey, portal, dock) {
         .then((clt) => {
           client = clt;
           if (!client) {
-            return Promise.reject("Client does NOT exist");
+            return Promise.reject('Client does NOT exist');
           }
           return client.connection.reconnect();
         })
         .then((connectionInfo) => {
           if (!connectionInfo.reconnection.enabled) {
-            return Promise.reject("Reconnection is not allowed");
+            return Promise.reject('Reconnection is not allowed');
           } else if (
             connectionInfo.reconnection.ticket.participantId !==
             reconnection_ticket.participantId
           ) {
-            return Promise.reject("Participant ID is not matched");
+            return Promise.reject('Participant ID is not matched');
           } else {
-            client_id = connectionInfo.clientId + "";
-            protocol_version = connectionInfo.protocolVersion + "";
+            client_id = connectionInfo.clientId + '';
+            protocol_version = connectionInfo.protocolVersion + '';
             pending_messages = connectionInfo.pendingMessages;
             message_seq = connectionInfo.messageSeq;
             message_buffer = connectionInfo.messageBuffer;
@@ -258,8 +242,8 @@ var Connection = function (spec, socket, reconnectionKey, portal, dock) {
             delete msg.time;
             return msg;
           });
-          state = "connected";
-          if (protocol_version === "1.2") {
+          state = 'connected';
+          if (protocol_version === '1.2') {
             safeCall(callback, okWord(), { ticket, messages });
           } else {
             safeCall(callback, okWord(), ticket);
@@ -267,51 +251,51 @@ var Connection = function (spec, socket, reconnectionKey, portal, dock) {
           }
         })
         .catch((err) => {
-          state = "initialized";
+          state = 'initialized';
           const err_message = getErrorMessage(err);
-          log.info("Relogin failed:", err_message);
-          safeCall(callback, "error", err_message);
+          log.info('Relogin failed:', err_message);
+          safeCall(callback, 'error', err_message);
           forceClientLeave();
           socket.disconnect();
         });
     });
 
-    socket.on("refreshReconnectionTicket", function (callback) {
-      if (state !== "connected") {
-        return safeCall(callback, "error", "Illegal request");
+    socket.on('refreshReconnectionTicket', function (callback) {
+      if (state !== 'connected') {
+        return safeCall(callback, 'error', 'Illegal request');
       }
 
       if (!reconnection.enabled) {
-        return safeCall(callback, "error", "Reconnection is not enabled.");
+        return safeCall(callback, 'error', 'Reconnection is not enabled.');
       }
 
       let ticket = generateReconnectionTicket();
       safeCall(callback, okWord(), ticket);
     });
 
-    socket.on("logout", function (callback) {
+    socket.on('logout', function (callback) {
       reconnection.enabled = false;
-      state = "initialized";
+      state = 'initialized';
       if (client_id) {
         forceClientLeave();
         safeCall(callback, okWord());
       } else {
-        return safeCall(callback, "error", "Illegal request");
+        return safeCall(callback, 'error', 'Illegal request');
       }
     });
 
-    socket.on("disconnect", function (reason) {
-      log.debug("socket.io disconnected, reason: " + reason);
+    socket.on('disconnect', function (reason) {
+      log.debug('socket.io disconnected, reason: ' + reason);
 
-      if (state === "connected" && reconnection.enabled) {
-        state = "waiting_for_reconnecting";
+      if (state === 'connected' && reconnection.enabled) {
+        state = 'waiting_for_reconnecting';
         socket.disconnect(true);
         waiting_for_reconnecting_timer = setTimeout(() => {
-          log.info(client_id + " waiting for reconnecting timeout.");
+          log.info(client_id + ' waiting for reconnecting timeout.');
           forceClientLeave();
         }, spec.reconnectionTimeout * 1000);
       } else {
-        if (state === "connecting" || state === "connected") {
+        if (state === 'connecting' || state === 'connected') {
           forceClientLeave();
         }
       }
@@ -319,11 +303,11 @@ var Connection = function (spec, socket, reconnectionKey, portal, dock) {
   };
 
   that.isInService = () => {
-    return state && state !== "initialized";
+    return state && state !== 'initialized';
   };
 
   that.reconnect = () => {
-    log.debug("client reconnect", client_id);
+    log.debug('client reconnect', client_id);
     if (waiting_for_reconnecting_timer) {
       clearTimeout(waiting_for_reconnecting_timer);
       waiting_for_reconnecting_timer = null;
@@ -340,12 +324,12 @@ var Connection = function (spec, socket, reconnectionKey, portal, dock) {
   };
 
   that.sendMessage = function (event, data) {
-    log.debug("sendMessage, event:", event, "data:", data);
-    if (state === "connected") {
+    log.debug('sendMessage, event:', event, 'data:', data);
+    if (state === 'connected') {
       try {
         socket.emit(event, data);
       } catch (e) {
-        log.error("socket.emit error:", e.message);
+        log.error('socket.emit error:', e.message);
       }
     } else {
       pending_messages.push({ event: event, data: data });
@@ -363,7 +347,7 @@ var Connection = function (spec, socket, reconnectionKey, portal, dock) {
   };
 
   that.close = (ifLeave) => {
-    log.debug("close it, client_id:", client_id);
+    log.debug('close it, client_id:', client_id);
     ifLeave && forceClientLeave();
 
     waiting_for_reconnecting_timer &&
@@ -373,7 +357,7 @@ var Connection = function (spec, socket, reconnectionKey, portal, dock) {
     try {
       socket.disconnect();
     } catch (e) {
-      log.error("socket.emit error:", e.message);
+      log.error('socket.emit error:', e.message);
     }
 
     reconnection.enabled = false;
@@ -388,7 +372,7 @@ var SocketIOServer = function (spec, portal, observer) {
   var io;
   var clients = {};
   // A Socket.IO server has a unique reconnection key. Client cannot reconnect to another Socket.IO server in the cluster.
-  var reconnection_key = require("crypto").randomBytes(64).toString("hex");
+  var reconnection_key = require('crypto').randomBytes(64).toString('hex');
   var sioOptions = {};
   // TODO: remove allowEIO3
   sioOptions.allowEIO3 = true;
@@ -401,39 +385,39 @@ var SocketIOServer = function (spec, portal, observer) {
   if (spec.cors) {
     sioOptions.cors = { credentials: true };
     sioOptions.cors.origin = (origin, callback) => {
-      if (spec.cors.indexOf(origin) < 0 && spec.cors.indexOf("*") < 0) {
-        return callback("origin not allowed", false);
+      if (spec.cors.indexOf(origin) < 0 && spec.cors.indexOf('*') < 0) {
+        return callback('origin not allowed', false);
       }
       callback(null, true);
     };
   }
 
   var startInsecure = function (port) {
-    var server = require("http").createServer().listen(port);
-    io = require("socket.io")(server, sioOptions);
+    var server = require('http').createServer().listen(port);
+    io = require('socket.io')(server, sioOptions);
     run();
-    return Promise.resolve("ok");
+    return Promise.resolve('ok');
   };
 
   var startSecured = function (port, keystorePath, forceTlsv12) {
     return new Promise(function (resolve, reject) {
-      var cipher = require("./cipher");
+      var cipher = require('./cipher');
       var keystore = path.resolve(path.dirname(keystorePath), cipher.kstore);
       cipher.unlock(cipher.k, keystore, function (err, passphrase) {
         if (!err) {
           var option = {
-            pfx: require("fs").readFileSync(keystorePath),
+            pfx: require('fs').readFileSync(keystorePath),
             passphrase: passphrase,
           };
           if (forceTlsv12) {
-            var constants = require("constants");
+            var constants = require('constants');
             option.secureOptions =
               constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1;
           }
-          var server = require("https").createServer(option).listen(port);
-          io = require("socket.io")(server, sioOptions);
+          var server = require('https').createServer(option).listen(port);
+          io = require('socket.io')(server, sioOptions);
           run();
-          resolve("ok");
+          resolve('ok');
         } else {
           reject(err);
         }
@@ -442,7 +426,7 @@ var SocketIOServer = function (spec, portal, observer) {
   };
 
   var run = function () {
-    io.sockets.on("connection", function (socket) {
+    io.sockets.on('connection', function (socket) {
       var conn = Connection(spec, socket, reconnection_key, portal, that);
 
       setTimeout(() => {
@@ -454,13 +438,13 @@ var SocketIOServer = function (spec, portal, observer) {
   };
 
   that.onClientJoined = (id, client) => {
-    log.debug("onClientJoined, id:", id, "client.tokenCode:", client.tokenCode);
+    log.debug('onClientJoined, id:', id, 'client.tokenCode:', client.tokenCode);
     clients[id] = client;
     observer.onJoin(client.tokenCode);
   };
 
   that.onClientLeft = (id) => {
-    log.debug("onClientLeft, id:", id);
+    log.debug('onClientLeft, id:', id);
     if (clients[id]) {
       observer.onLeave(clients[id].tokenCode);
       delete clients[id];
@@ -494,51 +478,50 @@ var SocketIOServer = function (spec, portal, observer) {
 
   that.notify = function (participantId, event, data) {
     log.debug(
-      "notify participant:",
+      'notify participant:',
       participantId,
-      "event:",
+      'event:',
       event,
-      "data:",
+      'data:',
       data
     );
     if (clients[participantId]) {
       clients[participantId].notify(event, data);
-      return Promise.resolve("ok");
+      return Promise.resolve('ok');
     } else {
-      return Promise.reject("participant does not exist");
+      return Promise.reject('participant does not exist');
     }
   };
 
   that.broadcast = function (controller, excludeList, event, data) {
     log.debug(
-      "broadcast controller:",
+      'broadcast controller:',
       controller,
-      "exclude:",
+      'exclude:',
       excludeList,
-      "event:",
+      'event:',
       event,
-      "data:",
+      'data:',
       data
     );
-    const receivers = portal.getParticipantsByController("node", controller);
-    log.debug("receivers:", JSON.stringify(receivers));
+    const receivers = portal.getParticipantsByController('node', controller);
+    log.debug('receivers:', JSON.stringify(receivers));
     for (let clientId of receivers) {
       if (!excludeList.includes(clientId) && clients[clientId]) {
-        let dataClone = JSON.parse(JSON.stringify(data));
-        clients[clientId].notify(event, dataClone);
+        clients[clientId].notify(event, data);
       }
     }
   };
 
   that.drop = function (participantId) {
-    if (participantId === "all") {
+    if (participantId === 'all') {
       for (var pid in clients) {
         clients[pid].drop();
       }
     } else if (clients[participantId]) {
       clients[participantId].drop();
     } else {
-      log.debug("user not in room", participantId);
+      log.debug('user not in room', participantId);
     }
   };
 

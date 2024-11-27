@@ -1,16 +1,12 @@
-// Copyright (C) <2019> Intel Corporation
-//
-// SPDX-License-Identifier: Apache-2.0
+'use strict';
 
-"use strict";
-
-var path = require("path");
-var url = require("url");
-var crypto = require("crypto");
-var log = require("./logger").logger.getLogger("Portal");
-var dataAccess = require("./data_access");
-const { v4: uuid } = require("uuid");
-const vsprintf = require("sprintf-js").vsprintf;
+var path = require('path');
+var url = require('url');
+var crypto = require('crypto');
+var log = require('./logger').logger.getLogger('Portal');
+var dataAccess = require('./data_access');
+const { v4: uuid } = require('uuid');
+const vsprintf = require('sprintf-js').vsprintf;
 
 var Portal = function (spec, rpcReq) {
   var that = {},
@@ -28,36 +24,36 @@ var Portal = function (spec, rpcReq) {
    */
   var participants = {};
 
+  // Key is participantId, value is token ID.
   that.updateTokenKey = function (tokenKey) {
     token_key = tokenKey;
   };
 
   that.join = function (participantId, token) {
     log.debug(
-      "participant[",
+      'participant[',
       participantId,
-      "] join with token:",
+      '] join with token:',
       JSON.stringify(token)
     );
     if (participants[participantId]) {
-      return Promise.reject("Participant already in room");
+      return Promise.reject('Participant already in room');
     }
 
     var calculateSignature = function (token) {
-      var toSign =
-          token.tokenId + "," + token.host + "," + token.webTransportUrl,
+      var toSign = token.tokenId + ',' + token.host,
         signed = crypto
-          .createHmac("sha256", token_key)
+          .createHmac('sha256', token_key)
           .update(toSign)
-          .digest("hex");
-      return Buffer.from(signed).toString("base64");
+          .digest('hex');
+      return Buffer.from(signed).toString('base64');
     };
 
     var validateToken = function (token) {
       var signature = calculateSignature(token);
 
       if (signature !== token.signature) {
-        return Promise.reject("Invalid token signature");
+        return Promise.reject('Invalid token signature');
       } else {
         return Promise.resolve(token);
       }
@@ -65,23 +61,25 @@ var Portal = function (spec, rpcReq) {
 
     var tokenCode, userInfo, role, origin, room_id, room_controller, domain;
 
-    return validateToken(token)
-      .then(function (validToken) {
-        log.debug("token validation ok.");
-        return dataAccess.token.delete(validToken.tokenId);
-      })
-      .then(function (deleteTokenResult) {
-        log.debug("login ok.", deleteTokenResult);
-        tokenCode = deleteTokenResult.code;
-        userInfo = deleteTokenResult.user;
-        role = deleteTokenResult.role;
-        origin = deleteTokenResult.origin;
-        domain = deleteTokenResult.domain;
-        room_id = deleteTokenResult.room || domain;
-        return rpcReq.getController(cluster_name, room_id);
-      })
+    // validateToken (token)
+    //   .then(function(validToken) {
+    //     log.debug('token validation ok.');
+    //     return dataAccess.token.delete(validToken.tokenId);
+    //   })
+    //   .then(function(deleteTokenResult) {
+    //     log.debug('login ok.', deleteTokenResult);
+    //     tokenCode = deleteTokenResult.code;
+    //     userInfo = deleteTokenResult.user;
+    //     role = deleteTokenResult.role;
+    //     origin = deleteTokenResult.origin;
+    //     domain = deleteTokenResult.domain;
+    //     room_id = deleteTokenResult.room || domain;
+    //     return rpcReq.getController(cluster_name, room_id);
+    //   })
+    return rpcReq
+      .getController(cluster_name, room_id)
       .then(function (controller) {
-        log.debug("got controller:", controller);
+        log.debug('got controller:', controller);
         room_controller = controller;
         const joinInfo = {
           id: participantId,
@@ -93,13 +91,12 @@ var Portal = function (spec, rpcReq) {
         return rpcReq.join(controller, room_id, joinInfo);
       })
       .then(function (joinResult) {
-        log.debug("join ok, result:", joinResult);
+        log.debug('join ok, result:', joinResult);
         participants[participantId] = {
           in_room: room_id,
           controller: room_controller,
           domain: domain,
         };
-
 
         return {
           tokenCode: tokenCode,
@@ -123,34 +120,34 @@ var Portal = function (spec, rpcReq) {
   };
 
   that.leave = function (participantId) {
-    log.debug("participant leave:", participantId);
+    log.debug('participant leave:', participantId);
     if (participants[participantId]) {
       rpcReq
         .leave(participants[participantId].controller, participantId)
         .catch(function (reason) {
           log.info(
-            "Failed in leaving, ",
+            'Failed in leaving, ',
             reason.message ? reason.message : reason
           );
         });
       delete participants[participantId];
-      return Promise.resolve("ok");
+      return Promise.resolve('ok');
     } else {
-      return Promise.reject("Participant has NOT joined");
+      return Promise.reject('Participant has NOT joined');
     }
   };
 
   that.publish = function (participantId, streamId, pubInfo) {
     log.debug(
-      "publish, participantId:",
+      'publish, participantId:',
       participantId,
-      "streamId:",
+      'streamId:',
       streamId,
-      "pubInfo:",
+      'pubInfo:',
       pubInfo
     );
     if (participants[participantId] === undefined) {
-      return Promise.reject("Participant has NOT joined");
+      return Promise.reject('Participant has NOT joined');
     }
 
     return rpcReq.publish(
@@ -163,13 +160,13 @@ var Portal = function (spec, rpcReq) {
 
   that.unpublish = function (participantId, streamId) {
     log.debug(
-      "unpublish, participantId:",
+      'unpublish, participantId:',
       participantId,
-      "streamId:",
+      'streamId:',
       streamId
     );
     if (participants[participantId] === undefined) {
-      return Promise.reject("Participant has NOT joined");
+      return Promise.reject('Participant has NOT joined');
     }
 
     return rpcReq.unpublish(
@@ -181,15 +178,15 @@ var Portal = function (spec, rpcReq) {
 
   that.streamControl = function (participantId, streamId, commandInfo) {
     log.debug(
-      "streamControl, participantId:",
+      'streamControl, participantId:',
       participantId,
-      "streamId:",
+      'streamId:',
       streamId,
-      "command:",
+      'command:',
       commandInfo
     );
     if (participants[participantId] === undefined) {
-      return Promise.reject("Participant has NOT joined");
+      return Promise.reject('Participant has NOT joined');
     }
 
     return rpcReq.streamControl(
@@ -202,15 +199,15 @@ var Portal = function (spec, rpcReq) {
 
   that.subscribe = function (participantId, subscriptionId, subDesc) {
     log.debug(
-      "subscribe, participantId:",
+      'subscribe, participantId:',
       participantId,
-      "subscriptionId:",
+      'subscriptionId:',
       subscriptionId,
-      "subDesc:",
+      'subDesc:',
       subDesc
     );
     if (participants[participantId] === undefined) {
-      return Promise.reject("Participant has NOT joined");
+      return Promise.reject('Participant has NOT joined');
     }
 
     return rpcReq.subscribe(
@@ -223,13 +220,13 @@ var Portal = function (spec, rpcReq) {
 
   that.unsubscribe = function (participantId, subscriptionId) {
     log.debug(
-      "unsubscribe, participantId:",
+      'unsubscribe, participantId:',
       participantId,
-      "subscriptionId:",
+      'subscriptionId:',
       subscriptionId
     );
     if (participants[participantId] === undefined) {
-      return Promise.reject("Participant has NOT joined");
+      return Promise.reject('Participant has NOT joined');
     }
 
     return rpcReq.unsubscribe(
@@ -245,15 +242,15 @@ var Portal = function (spec, rpcReq) {
     commandInfo
   ) {
     log.debug(
-      "subscriptionControl, participantId:",
+      'subscriptionControl, participantId:',
       participantId,
-      "subscriptionId:",
+      'subscriptionId:',
       subscriptionId,
-      "command:",
+      'command:',
       commandInfo
     );
     if (participants[participantId] === undefined) {
-      return Promise.reject("Participant has NOT joined");
+      return Promise.reject('Participant has NOT joined');
     }
 
     return rpcReq.subscriptionControl(
@@ -266,15 +263,15 @@ var Portal = function (spec, rpcReq) {
 
   that.onSessionSignaling = function (participantId, sessionId, signaling) {
     log.debug(
-      "onSessionSignaling, participantId:",
+      'onSessionSignaling, participantId:',
       participantId,
-      "sessionId:",
+      'sessionId:',
       sessionId,
-      "signaling:",
+      'signaling:',
       signaling
     );
     if (participants[participantId] === undefined) {
-      return Promise.reject("Participant has NOT joined");
+      return Promise.reject('Participant has NOT joined');
     }
 
     return rpcReq.onSessionSignaling(
@@ -286,9 +283,9 @@ var Portal = function (spec, rpcReq) {
   };
 
   that.text = function (participantId, to, msg) {
-    log.debug("text, participantId:", participantId, "to:", to, "msg:", msg);
+    log.debug('text, participantId:', participantId, 'to:', to, 'msg:', msg);
     if (participants[participantId] === undefined) {
-      return Promise.reject("Participant has NOT joined");
+      return Promise.reject('Participant has NOT joined');
     }
 
     return rpcReq.text(
@@ -303,8 +300,8 @@ var Portal = function (spec, rpcReq) {
     var result = [];
     for (var participant_id in participants) {
       if (
-        (type === "node" && participants[participant_id].controller === id) ||
-        (type === "worker" &&
+        (type === 'node' && participants[participant_id].controller === id) ||
+        (type === 'worker' &&
           participants[participant_id].controller.startsWith(id))
       ) {
         result.push(participant_id);

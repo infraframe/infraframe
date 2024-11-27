@@ -1,35 +1,31 @@
-// Copyright (C) <2019> Intel Corporation
-//
-// SPDX-License-Identifier: Apache-2.0
+'use strict';
 
-"use strict";
-
-var log = require("./logger").logger.getLogger("Client");
-var ReqType = require("./versions/requestType");
-var dataAdapter = require("./versions/portalDataAdapter");
-const { v4: uuid } = require("uuid");
+var log = require('./logger').logger.getLogger('Client');
+var ReqType = require('./requestType');
+const validator = require('./requestDataValidator')();
+const { v4: uuid } = require('uuid');
 
 var idPattern = /^[0-9a-zA-Z\-]+$/;
 function isValidIdString(str) {
-  return typeof str === "string" && idPattern.test(str);
+  return typeof str === 'string' && idPattern.test(str);
 }
 
 function safeCall() {
   var callback = arguments[0];
-  if (typeof callback === "function") {
+  if (typeof callback === 'function') {
     var args = Array.prototype.slice.call(arguments, 1);
     callback.apply(null, args);
   }
 }
 
 const getErrorMessage = function (err) {
-  if (typeof err === "string") {
+  if (typeof err === 'string') {
     return err;
   } else if (err && err.message) {
     return err.message;
   } else {
-    log.debug("Unknown error:", err);
-    return "Unknown";
+    log.debug('Unknown error:', err);
+    return 'Unknown';
   }
 };
 
@@ -39,7 +35,6 @@ var Client = function (clientId, sigConnection, portal, version) {
     connection: sigConnection,
     version: version,
   };
-  var adapter = dataAdapter(version);
 
   const sendMsg = (evt, data) => {
     that.connection.sendMessage(evt, data);
@@ -48,46 +43,46 @@ var Client = function (clientId, sigConnection, portal, version) {
   const onError = (method, callback) => {
     return (err) => {
       const err_message = getErrorMessage(err);
-      log.error(method + " failed:", err_message);
-      safeCall(callback, "error", err_message);
+      log.error(method + ' failed:', err_message);
+      safeCall(callback, 'error', err_message);
     };
   };
 
   const idPattern = /^[0-9a-zA-Z\-]+$/;
   const validateId = (type, id) => {
-    if (typeof id === "string" && idPattern.test(id)) {
+    if (typeof id === 'string' && idPattern.test(id)) {
       return Promise.resolve(id);
     } else {
-      return Promise.reject("Invalid " + type);
+      return Promise.reject('Invalid ' + type);
     }
   };
 
   const uuidWithoutDash = function () {
-    return uuid().replace(/-/g, "");
+    return uuid().replace(/-/g, '');
   };
 
   const updateMessageHandler = (socket) => {
     const allowedRequests = [
-      "publish",
-      "unpublish",
-      "stream-control",
-      "subscribe",
-      "unsubscribe",
-      "subscription-control",
-      "soac",
+      'publish',
+      'unpublish',
+      'stream-control',
+      'subscribe',
+      'unsubscribe',
+      'subscription-control',
+      'soac',
     ];
 
     allowedRequests.forEach(function (requestName) {
       socket.on(requestName, function (req, callback) {
-        log.debug("KeepSignalFormat", requestName);
+        log.debug('KeepSignalFormat', requestName);
         if (!that.keepSignalFormat) {
-          return safeCall(callback, "error", "Illegal request");
+          return safeCall(callback, 'error', 'Illegal request');
         }
         return portal
           .onRTCSignaling(clientId, requestName, req)
           .then((result) => {
-            log.debug("RTC signaling result:", result);
-            safeCall(callback, "ok", result);
+            log.debug('RTC signaling result:', result);
+            safeCall(callback, 'ok', result);
           })
           .catch(onError(requestName, callback));
       });
@@ -95,85 +90,85 @@ var Client = function (clientId, sigConnection, portal, version) {
   };
 
   const listenAt = (socket) => {
-    socket.on("text", function (textReq, callback) {
+    socket.on('text', function (textReq, callback) {
       if (!that.inRoom) {
-        return safeCall(callback, "error", "Illegal request");
+        return safeCall(callback, 'error', 'Illegal request');
       }
 
-      return adapter
-        .translateReq(ReqType.Text, textReq)
+      return validator
+        .validate(ReqType.Text, textReq)
         .then((req) => {
           return portal.text(clientId, req.to, req.message);
         })
         .then((result) => {
-          safeCall(callback, "ok");
+          safeCall(callback, 'ok');
         })
-        .catch(onError("text", callback));
+        .catch(onError('text', callback));
     });
 
-    socket.on("publish", function (pubReq, callback) {
+    socket.on('publish', function (pubReq, callback) {
       if (that.keepSignalFormat) {
         return;
       }
       if (!that.inRoom) {
-        return safeCall(callback, "error", "Illegal request");
+        return safeCall(callback, 'error', 'Illegal request');
       }
 
       //FIXME: move the id assignment to conference
       var stream_id = uuidWithoutDash();
       var transportId;
-      return adapter
-        .translateReq(ReqType.Pub, pubReq)
+      return validator
+        .validate(ReqType.Pub, pubReq)
         .then((req) => {
-          if (req.transport && req.transport.type == "quic") {
-            req.type = "quic";
+          if (req.transport && req.transport.type == 'quic') {
+            req.type = 'quic';
             if (!req.transport.id) {
               req.transport.id = uuidWithoutDash();
             }
             transportId = req.transport.id;
           } else {
-            req.type = "webrtc"; //FIXME: For backend compatibility with v3.4 clients.
+            req.type = 'webrtc'; //FIXME: For backend compatibility with v3.4 clients.
             if (!req.transport || !req.transport.id) {
-              req.transport = { type: "webrtc", id: stream_id };
+              req.transport = { type: 'webrtc', id: stream_id };
             }
           }
           transportId = req.transport.id;
           return portal.publish(clientId, stream_id, req);
         })
         .then((result) => {
-          safeCall(callback, "ok", { id: stream_id, transportId });
+          safeCall(callback, 'ok', { id: stream_id, transportId });
         })
-        .catch(onError("publish", callback));
+        .catch(onError('publish', callback));
     });
 
-    socket.on("unpublish", function (unpubReq, callback) {
+    socket.on('unpublish', function (unpubReq, callback) {
       if (that.keepSignalFormat) {
         return;
       }
       if (!that.inRoom) {
-        return safeCall(callback, "error", "Illegal request");
+        return safeCall(callback, 'error', 'Illegal request');
       }
 
-      return validateId("stream id", unpubReq.id)
+      return validateId('stream id', unpubReq.id)
         .then((streamId) => {
           return portal.unpublish(clientId, streamId);
         })
         .then((result) => {
-          safeCall(callback, "ok");
+          safeCall(callback, 'ok');
         })
-        .catch(onError("unpublish", callback));
+        .catch(onError('unpublish', callback));
     });
 
-    socket.on("stream-control", function (streamCtrlReq, callback) {
+    socket.on('stream-control', function (streamCtrlReq, callback) {
       if (that.keepSignalFormat) {
         return;
       }
       if (!that.inRoom) {
-        return safeCall(callback, "error", "Illegal request");
+        return safeCall(callback, 'error', 'Illegal request');
       }
 
-      return adapter
-        .translateReq(ReqType.StreamCtrl, streamCtrlReq)
+      return validator
+        .validate(ReqType.StreamCtrl, streamCtrlReq)
         .then((req) => {
           return portal.streamControl(clientId, req.id, {
             operation: req.operation,
@@ -181,74 +176,74 @@ var Client = function (clientId, sigConnection, portal, version) {
           });
         })
         .then((result) => {
-          safeCall(callback, "ok", result);
+          safeCall(callback, 'ok', result);
         })
-        .catch(onError("stream-control", callback));
+        .catch(onError('stream-control', callback));
     });
 
-    socket.on("subscribe", function (subReq, callback) {
+    socket.on('subscribe', function (subReq, callback) {
       if (that.keepSignalFormat) {
         return;
       }
       if (!that.inRoom) {
-        return safeCall(callback, "error", "Illegal request");
+        return safeCall(callback, 'error', 'Illegal request');
       }
 
       //FIXME: move the id assignment to conference
       var subscription_id = uuidWithoutDash();
       var transportId;
-      return adapter
-        .translateReq(ReqType.Sub, subReq)
+      return validator
+        .validate(ReqType.Sub, subReq)
         .then((req) => {
-          if (req.transport && req.transport.type == "quic") {
-            req.type = "quic";
+          if (req.transport && req.transport.type == 'quic') {
+            req.type = 'quic';
             if (!req.transport.id) {
               req.transport.id = uuidWithoutDash();
             }
             transportId = req.transport.id;
           } else {
-            req.type = "webrtc"; //FIXME: For backend compatibility with v3.4 clients.
+            req.type = 'webrtc'; //FIXME: For backend compatibility with v3.4 clients.
             if (!req.transport || !req.transport.id) {
-              req.transport = { type: "webrtc", id: subscription_id };
+              req.transport = { type: 'webrtc', id: subscription_id };
             }
           }
           transportId = req.transport.id;
           return portal.subscribe(clientId, subscription_id, req);
         })
         .then((result) => {
-          safeCall(callback, "ok", { id: subscription_id, transportId });
+          safeCall(callback, 'ok', { id: subscription_id, transportId });
         })
-        .catch(onError("subscribe", callback));
+        .catch(onError('subscribe', callback));
     });
 
-    socket.on("unsubscribe", function (unsubReq, callback) {
+    socket.on('unsubscribe', function (unsubReq, callback) {
       if (that.keepSignalFormat) {
         return;
       }
       if (!that.inRoom) {
-        return safeCall(callback, "error", "Illegal request");
+        return safeCall(callback, 'error', 'Illegal request');
       }
 
-      return validateId("subscription id", unsubReq.id)
+      return validateId('subscription id', unsubReq.id)
         .then((subscriptionId) => {
           return portal.unsubscribe(clientId, subscriptionId);
         })
         .then((result) => {
-          safeCall(callback, "ok");
+          safeCall(callback, 'ok');
         })
-        .catch(onError("unsubscribe", callback));
+        .catch(onError('unsubscribe', callback));
     });
 
-    socket.on("subscription-control", function (subCtrlReq, callback) {
+    socket.on('subscription-control', function (subCtrlReq, callback) {
       if (that.keepSignalFormat) {
         return;
       }
       if (!that.inRoom) {
-        return safeCall(callback, "error", "Illegal request");
+        return safeCall(callback, 'error', 'Illegal request');
       }
 
-      return adapter
-        .translateReq(ReqType.SubscriptionCtrl, subCtrlReq)
+      return validator
+        .validate(ReqType.SubscriptionCtrl, subCtrlReq)
         .then((req) => {
           return portal.subscriptionControl(clientId, req.id, {
             operation: req.operation,
@@ -256,33 +251,32 @@ var Client = function (clientId, sigConnection, portal, version) {
           });
         })
         .then((result) => {
-          safeCall(callback, "ok");
+          safeCall(callback, 'ok');
         })
-        .catch(onError("subscription-control", callback));
+        .catch(onError('subscription-control', callback));
     });
 
-    socket.on("soac", function (SOAC, callback) {
+    socket.on('soac', function (SOAC, callback) {
       if (that.keepSignalFormat) {
         return;
       }
       if (!that.inRoom) {
-        return safeCall(callback, "error", "Illegal request");
+        return safeCall(callback, 'error', 'Illegal request');
       }
 
-      return adapter
-        .translateReq(ReqType.SOAC, SOAC)
+      return validator
+        .validate(ReqType.SOAC, SOAC)
         .then((soac) => {
           return portal.onSessionSignaling(clientId, soac.id, soac.signaling);
         })
         .then((result) => {
-          safeCall(callback, "ok");
+          safeCall(callback, 'ok');
         })
-        .catch(onError("soac", callback));
+        .catch(onError('soac', callback));
     });
   };
 
   that.notify = (evt, data) => {
-    ({ evt, data } = adapter.translateNotification(evt, data));
     sendMsg(evt, data);
   };
 
@@ -291,8 +285,7 @@ var Client = function (clientId, sigConnection, portal, version) {
       that.inRoom = result.data.room.id;
       that.tokenCode = result.tokenCode;
       result.data.id = that.id;
-      const data = adapter.translateResp(ReqType.Join, result.data);
-      return data;
+      return result.data;
     });
   };
 
@@ -309,11 +302,11 @@ var Client = function (clientId, sigConnection, portal, version) {
     that.connection.close(false);
     that.connection = sigConnection;
     listenAt(that.connection.socket);
-    return Promise.resolve("ok");
+    return Promise.resolve('ok');
   };
 
   that.drop = () => {
-    that.connection.sendMessage("drop");
+    that.connection.sendMessage('drop');
     that.leave();
     that.connection.close(true);
   };
