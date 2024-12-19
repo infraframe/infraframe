@@ -14,10 +14,10 @@
     ]
   },
   "mcu-all": {
-    "include": ["mcu", "video-analyzer-sw", "gst-pipeline"]
+    "include": ["mcu"]
   },
   "all": {
-    "include": ["mcu", "video-analyzer-sw", "gst-pipeline"]
+    "include": ["mcu"]
   },
   "webrtc": {
     "include": ["webrtc-conn", "webrtc-frame"]
@@ -31,10 +31,6 @@
   },
   "video-transcoder-sw": {
     "path": "source/agent/video/videoTranscoder/videoTranscoder_sw",
-    "gyp": "binding.sw.gyp"
-  },
-  "video-analyzer-sw": {
-    "path": "source/agent/video/videoTranscoder/videoAnalyzer_sw",
     "gyp": "binding.sw.gyp"
   },
   "gst-pipeline": {
