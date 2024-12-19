@@ -4,8 +4,6 @@
 
 "use strict";
 var internalIO = require("../internalIO/build/Release/internalIO");
-var InternalIn = internalIO.In;
-var InternalOut = internalIO.Out;
 var MediaFrameMulticaster = require("../mediaFrameMulticaster/build/Release/mediaFrameMulticaster");
 var AudioMixer = require("../audioMixer/build/Release/audioMixer");
 
@@ -20,7 +18,6 @@ var { InternalConnectionRouter } = require("./internalConnectionRouter");
 
 // Setup GRPC server
 var createGrpcInterface = require("./grpcAdapter").createGrpcInterface;
-var enableGRPC = global.config.agent.enable_grpc || false;
 
 var EventEmitter = require("events").EventEmitter;
 
@@ -521,10 +518,5 @@ module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
     }
   };
 
-  if (enableGRPC) {
-    // Export GRPC interface.
-    return createGrpcInterface(that, streamingEmitter);
-  }
-
-  return that;
+  return createGrpcInterface(that, streamingEmitter);
 };

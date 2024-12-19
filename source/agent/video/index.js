@@ -16,7 +16,6 @@ const router = new InternalConnectionRouter(global.config.internal);
 
 // Setup GRPC server
 var createGrpcInterface = require('./grpcAdapter').createGrpcInterface;
-var enableGRPC = global.config.agent.enable_grpc || false;
 
 var EventEmitter = require('events').EventEmitter;
 
@@ -27,10 +26,10 @@ var useHardware = global.config.video.hardwareAccelerated,
 
 const VideoMixer = require('../videoMixer_sw/build/Release/videoMixer-sw');
 const VideoTranscoder = require('../videoTranscoder_sw/build/Release/videoTranscoder-sw');
-const VideoAnalyzer = require('../videoTranscoder_sw/build/Release/videoAnalyzer-sw');
+// const VideoAnalyzer = require('../videoTranscoder_sw/build/Release/videoAnalyzer-sw');
 const { VMixer } = require('./vmixer');
 const { VTranscoder } = require('./vtranscoder');
-const { VAnalyzer } = require('./vanalyzer');
+// const { VAnalyzer } = require('./vanalyzer');
 
 module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
   const that = {
@@ -71,16 +70,16 @@ module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
         );
         processor.initialize(config.motionFactor, controller, callback);
         that.__proto__ = processor;
-      } else if (service === 'analytic') {
-        processor = new VAnalyzer(
-          rpcClient,
-          clusterWorkerIP,
-          VideoAnalyzer,
-          router,
-          streamingEmitter
-        );
-        processor.initialize(config.motionFactor, controller, callback);
-        that.__proto__ = processor;
+        // } else if (service === 'analytic') {
+        //   processor = new VAnalyzer(
+        //     rpcClient,
+        //     clusterWorkerIP,
+        //     VideoAnalyzer,
+        //     router,
+        //     streamingEmitter
+        //   );
+        //   processor.initialize(config.motionFactor, controller, callback);
+        //   that.__proto__ = processor;
       } else {
         log.error('Unknown service type to init a video node:', service);
         callback(
@@ -105,10 +104,5 @@ module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
     const port = router.internalPort;
     callback('callback', { ip, port });
   };
-  if (enableGRPC) {
-    // Export GRPC interface.
-    return createGrpcInterface(that, streamingEmitter);
-  }
-
-  return that;
+  return createGrpcInterface(that, streamingEmitter);
 };

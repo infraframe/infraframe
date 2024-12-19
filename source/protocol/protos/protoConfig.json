@@ -1,64 +1,64 @@
 {
   "webrtc": {
-    "file": "webrtc_agent.proto",
+    "file": "./protos/webrtc_agent.proto",
     "package": "owt",
     "service": "WebRTCAgent"
   },
   "audio": {
-    "file": "audio_agent.proto",
+    "file": "./protos/audio_agent.proto",
     "package": "owt",
     "service": "AudioAgent"
   },
   "video": {
-    "file": "video_agent.proto",
+    "file": "./protos/video_agent.proto",
     "package": "owt",
     "service": "VideoAgent"
   },
   "streaming": {
-    "file": "streaming_agent.proto",
+    "file": "./protos/streaming_agent.proto",
     "package": "owt",
     "service": "StreamingAgent"
   },
   "recording": {
-    "file": "streaming_agent.proto",
+    "file": "./protos/streaming_agent.proto",
     "package": "owt",
     "service": "StreamingAgent"
   },
   "analytics": {
-    "file": "analytics_agent.proto",
+    "file": "./protos/analytics_agent.proto",
     "package": "owt",
     "service": "AnalyticsAgent"
   },
   "quic": {
-    "file": "quic_agent.proto",
+    "file": "./protos/quic_agent.proto",
     "package": "owt",
     "service": "QuicAgent"
   },
   "conference": {
-    "file": "conference_agent.proto",
+    "file": "./protos/conference_agent.proto",
     "package": "owt",
     "service": "ConferenceAgent"
   },
   "nodeManager": {
-    "file": "node_manager.proto",
+    "file": "./protos/node_manager.proto",
     "package": "owt",
     "service": "NodeManager"
   },
   "clusterManager": {
-    "file": "cluster_manager.proto",
+    "file": "./protos/cluster_manager.proto",
     "package": "owt",
     "service": "ClusterManager"
   },
   "internal": {
-    "file": "internal.proto"
+    "file": "./protos/internal.proto"
   },
   "sipPortal": {
-    "file": "sip_portal.proto",
+    "file": "./protos/sip_portal.proto",
     "package": "owt",
     "service": "SipPortal"
   },
   "sip": {
-    "file": "sip_agent.proto",
+    "file": "./protos/sip_agent.proto",
     "package": "owt",
     "service": "SipAgent"
   }

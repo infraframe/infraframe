@@ -37,9 +37,3 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
-if ${ENABLE_HARDWARE}; then
-  echo -e "\x1b[36mHardware acceleration enabled\x1b[0m"
-else
-  echo -e "\x1b[36mHardware acceleration disbled\x1b[0m"
-  sed -i 's/^hardwareAccelerated = true/hardwareAccelerated = false/' ${this}/agent.toml
-fi

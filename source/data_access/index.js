@@ -2,34 +2,35 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-"use strict";
+'use strict';
 
 global.config = global.config || {};
 global.config.mongo = global.config.mongo || {};
 global.config.mongo.dataBaseURL =
-  global.config.mongo.dataBaseURL || "localhost/owtdb";
+  global.config.mongo.dataBaseURL || 'localhost/owtdb';
 var databaseUrl = global.config.mongo.dataBaseURL;
 
-var fs = require("fs");
-var cipher = require("../cipher");
+var fs = require('fs');
+var cipher = require('../cipher');
 
 // Connect to MongoDB
 var connectOption = {};
 
-var mongoose = require("mongoose");
+var mongoose = require('mongoose');
 mongoose.plugin((schema) => {
   schema.options.usePushEach = true;
 });
 mongoose.Promise = Promise;
 
 var setupConnection = function () {
-  if (databaseUrl.indexOf("mongodb://") !== 0) {
-    databaseUrl = "mongodb://" + databaseUrl;
+  if (databaseUrl.indexOf('mongodb://') !== 0) {
+    databaseUrl = 'mongodb://' + databaseUrl;
   }
+  mongoose.set('strictQuery', false);
   mongoose.connect(databaseUrl, connectOption).catch(function (err) {
     console.log(err.message);
   });
-  mongoose.connection.on("error", function (err) {
+  mongoose.connection.on('error', function (err) {
     console.log(err.message);
   });
 };
@@ -43,7 +44,7 @@ if (fs.existsSync(cipher.astore)) {
       }
       setupConnection();
     } else {
-      console.error("Failed to get mongodb auth:", err);
+      console.error('Failed to get mongodb auth:', err);
       setupConnection();
     }
   });
@@ -51,4 +52,4 @@ if (fs.existsSync(cipher.astore)) {
   setupConnection();
 }
 
-exports.room = require("./interface/roomInterface");
+exports.room = require('./interface/roomInterface');

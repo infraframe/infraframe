@@ -2,32 +2,31 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-"use strict";
+'use strict';
 
-var internalIO = require("../internalIO/build/Release/internalIO");
+var internalIO = require('../internalIO/build/Release/internalIO');
 var InternalIn = internalIO.In;
 var InternalOut = internalIO.Out;
 
-var avstream = require("../avstreamLib/build/Release/avstream");
+var avstream = require('../avstreamLib/build/Release/avstream');
 var AVStreamIn = avstream.AVStreamIn;
 var AVStreamOut = avstream.AVStreamOut;
 
-const MediaFrameMulticaster = require("../mediaFrameMulticaster/build/Release/mediaFrameMulticaster");
+const MediaFrameMulticaster = require('../mediaFrameMulticaster/build/Release/mediaFrameMulticaster');
 
-var logger = require("../logger").logger;
-var path = require("path");
-var Connections = require("./connections");
+var logger = require('../logger').logger;
+var path = require('path');
+var Connections = require('./connections');
 
 // Logger
-var log = logger.getLogger("StreamingNode");
+var log = logger.getLogger('StreamingNode');
 
-var { InternalConnectionRouter } = require("./internalConnectionRouter");
+var { InternalConnectionRouter } = require('./internalConnectionRouter');
 
 // Setup GRPC server
-var createGrpcInterface = require("./grpcAdapter").createGrpcInterface;
-var enableGRPC = global.config.agent.enable_grpc || false;
+var createGrpcInterface = require('./grpcAdapter').createGrpcInterface;
 
-var EventEmitter = require("events").EventEmitter;
+var EventEmitter = require('events').EventEmitter;
 
 module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
   var that = {
@@ -40,55 +39,55 @@ module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
   var streamingEmitter = new EventEmitter();
 
   var notifyStatus = (controller, sessionId, direction, status) => {
-    rpcClient.remoteCast(controller, "onSessionProgress", [
+    rpcClient.remoteCast(controller, 'onSessionProgress', [
       sessionId,
       direction,
       status,
     ]);
     // Emit GRPC notifications
     const notification = {
-      name: "onSessionProgress",
+      name: 'onSessionProgress',
       data: {
         id: sessionId,
         direction,
         status,
       },
     };
-    streamingEmitter.emit("notification", notification);
+    streamingEmitter.emit('notification', notification);
   };
 
   var createAVStreamIn = function (sessionId, options) {
     var avstream_options = {
-      type: "streaming",
+      type: 'streaming',
       has_audio:
-        options.media.audio === "auto"
-          ? "auto"
+        options.media.audio === 'auto'
+          ? 'auto'
           : !!options.media.audio
-          ? "yes"
-          : "no",
+          ? 'yes'
+          : 'no',
       has_video:
-        options.media.video === "auto"
-          ? "auto"
+        options.media.video === 'auto'
+          ? 'auto'
           : !!options.media.video
-          ? "yes"
-          : "no",
+          ? 'yes'
+          : 'no',
       transport: options.connection.transportProtocol,
       buffer_size: options.connection.bufferSize,
       url: options.connection.url,
     };
 
     var connection = new AVStreamIn(avstream_options, function (message) {
-      log.debug("avstream-in status message:", message);
-      notifyStatus(options.controller, sessionId, "in", JSON.parse(message));
+      log.debug('avstream-in status message:', message);
+      notifyStatus(options.controller, sessionId, 'in', JSON.parse(message));
     });
 
     var dispatcher = new MediaFrameMulticaster();
     var source = dispatcher.source();
-    connection.addDestination("audio", dispatcher);
-    connection.addDestination("video", dispatcher);
+    connection.addDestination('audio', dispatcher);
+    connection.addDestination('video', dispatcher);
     source.close = function () {
-      connection.removeDestination("audio", dispatcher);
-      connection.removeDestination("video", dispatcher);
+      connection.removeDestination('audio', dispatcher);
+      connection.removeDestination('video', dispatcher);
       connection.close();
       dispatcher.close();
     };
@@ -101,7 +100,7 @@ module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
 
   var createAVStreamOut = function (connectionId, options) {
     var avstream_options = {
-      type: "streaming",
+      type: 'streaming',
       require_audio: !!options.media.audio,
       require_video: !!options.media.video,
       connection: options.connection,
@@ -109,16 +108,16 @@ module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
     };
 
     if (
-      (options.connection.protocol === "dash" ||
-        options.connection.protocol === "hls") &&
-      !options.connection.url.startsWith("http")
+      (options.connection.protocol === 'dash' ||
+        options.connection.protocol === 'hls') &&
+      !options.connection.url.startsWith('http')
     ) {
-      var fs = require("fs");
+      var fs = require('fs');
       if (fs.existsSync(options.connection.url)) {
-        log.error("avstream-out init error: file existed.");
-        notifyStatus(options.controller, connectionId, "out", {
-          type: "failed",
-          reason: "file existed.",
+        log.error('avstream-out init error: file existed.');
+        notifyStatus(options.controller, connectionId, 'out', {
+          type: 'failed',
+          reason: 'file existed.',
         });
         return;
       }
@@ -126,24 +125,24 @@ module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
 
     var connection = new AVStreamOut(avstream_options, function (error) {
       if (error) {
-        log.error("avstream-out init error:", error);
-        notifyStatus(options.controller, connectionId, "out", {
-          type: "failed",
+        log.error('avstream-out init error:', error);
+        notifyStatus(options.controller, connectionId, 'out', {
+          type: 'failed',
           reason: error,
         });
       } else {
-        notifyStatus(options.controller, connectionId, "out", {
-          type: "ready",
+        notifyStatus(options.controller, connectionId, 'out', {
+          type: 'ready',
           info: options.connection.url,
         });
       }
     });
-    connection.addEventListener("fatal", function (error) {
+    connection.addEventListener('fatal', function (error) {
       if (error) {
-        log.error("avstream-out fatal error:", error);
-        notifyStatus(options.controller, connectionId, "out", {
-          type: "failed",
-          reason: "avstream_out fatal error: " + error,
+        log.error('avstream-out fatal error:', error);
+        notifyStatus(options.controller, connectionId, 'out', {
+          type: 'failed',
+          reason: 'avstream_out fatal error: ' + error,
         });
       }
     });
@@ -156,16 +155,16 @@ module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
 
   var onSuccess = function (callback) {
     return function (result) {
-      callback("callback", result);
+      callback('callback', result);
     };
   };
 
   var onError = function (callback) {
     return function (reason) {
-      if (typeof reason === "string") {
-        callback("callback", "error", reason);
+      if (typeof reason === 'string') {
+        callback('callback', 'error', reason);
       } else {
-        callback("callback", reason);
+        callback('callback', reason);
       }
     };
   };
@@ -173,38 +172,38 @@ module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
   that.getInternalAddress = function (callback) {
     const ip = global.config.internal.ip_address;
     const port = router.internalPort;
-    callback("callback", { ip, port });
+    callback('callback', { ip, port });
   };
 
   that.publish = function (connectionId, connectionType, options, callback) {
     log.debug(
-      "publish, connectionId:",
+      'publish, connectionId:',
       connectionId,
-      "connectionType:",
+      'connectionType:',
       connectionType,
-      "options:",
+      'options:',
       options
     );
     if (connections.getConnection(connectionId)) {
-      return callback("callback", {
-        type: "failed",
-        reason: "Connection already exists:" + connectionId,
+      return callback('callback', {
+        type: 'failed',
+        reason: 'Connection already exists:' + connectionId,
       });
     }
 
     var conn = null;
     switch (connectionType) {
-      case "streaming":
+      case 'streaming':
         conn = createAVStreamIn(connectionId, options);
         break;
       default:
-        log.error("Connection type invalid:" + connectionType);
+        log.error('Connection type invalid:' + connectionType);
     }
     if (!conn) {
-      log.error("Create connection failed", connectionId);
-      return callback("callback", {
-        type: "failed",
-        reason: "Create Connection failed",
+      log.error('Create connection failed', connectionId);
+      return callback('callback', {
+        type: 'failed',
+        reason: 'Create Connection failed',
       });
     }
 
@@ -214,43 +213,43 @@ module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
   };
 
   that.unpublish = function (connectionId, callback) {
-    log.debug("unpublish, connectionId:", connectionId);
+    log.debug('unpublish, connectionId:', connectionId);
     var conn = router.getConnection(connectionId);
     router.removeConnection(connectionId).then(function (ok) {
       conn.close();
-      callback("callback", "ok");
+      callback('callback', 'ok');
     }, onError(callback));
   };
 
   that.subscribe = function (connectionId, connectionType, options, callback) {
     log.debug(
-      "subscribe, connectionId:",
+      'subscribe, connectionId:',
       connectionId,
-      "connectionType:",
+      'connectionType:',
       connectionType,
-      "options:",
+      'options:',
       options
     );
     if (connections.getConnection(connectionId)) {
-      return callback("callback", {
-        type: "failed",
-        reason: "Connection already exists:" + connectionId,
+      return callback('callback', {
+        type: 'failed',
+        reason: 'Connection already exists:' + connectionId,
       });
     }
 
     var conn = null;
     switch (connectionType) {
-      case "streaming":
+      case 'streaming':
         conn = createAVStreamOut(connectionId, options);
         break;
       default:
-        log.error("Connection type invalid:" + connectionType);
+        log.error('Connection type invalid:' + connectionType);
     }
     if (!conn) {
-      log.error("Create connection failed", connectionId, connectionType);
-      return callback("callback", {
-        type: "failed",
-        reason: "Create Connection failed",
+      log.error('Create connection failed', connectionId, connectionType);
+      return callback('callback', {
+        type: 'failed',
+        reason: 'Create Connection failed',
       });
     }
 
@@ -260,30 +259,30 @@ module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
   };
 
   that.unsubscribe = function (connectionId, callback) {
-    log.debug("unsubscribe, connectionId:", connectionId);
+    log.debug('unsubscribe, connectionId:', connectionId);
     var conn = router.getConnection(connectionId);
     router.removeConnection(connectionId).then(function (ok) {
       conn.close();
-      callback("callback", "ok");
+      callback('callback', 'ok');
     }, onError(callback));
   };
 
   // streamInfo = {id: 'string', ip: 'string', port: 'number'}
   // from = {audio: streamInfo, video: streamInfo, data: streamInfo}
   that.linkup = function (connectionId, from, callback) {
-    log.debug("linkup, connectionId:", connectionId, "from:", from);
+    log.debug('linkup, connectionId:', connectionId, 'from:', from);
     router
       .linkup(connectionId, from)
       .then(onSuccess(callback), onError(callback));
   };
 
   that.cutoff = function (connectionId, callback) {
-    log.debug("cutoff, connectionId:", connectionId);
+    log.debug('cutoff, connectionId:', connectionId);
     router.cutoff(connectionId).then(onSuccess(callback), onError(callback));
   };
 
   that.close = function () {
-    log.debug("close called");
+    log.debug('close called');
     router.clear();
   };
 
@@ -291,10 +290,5 @@ module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
     connections.onFaultDetected(message);
   };
 
-  if (enableGRPC) {
-    // Export GRPC interface.
-    return createGrpcInterface(that, streamingEmitter);
-  }
-
-  return that;
+  return createGrpcInterface(that, streamingEmitter);
 };

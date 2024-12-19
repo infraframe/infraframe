@@ -29,7 +29,6 @@ const MediaFrameMulticaster = require("../mediaFrameMulticaster/build/Release/me
 
 // Setup GRPC server
 var createGrpcInterface = require("./grpcAdapter").createGrpcInterface;
-var enableGRPC = global.config.agent.enable_grpc || false;
 
 module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
   var that = {
@@ -623,9 +622,5 @@ module.exports = function (rpcClient, selfRpcId, parentRpcId, clusterWorkerIP) {
     connections.onFaultDetected(message);
   };
 
-  if (enableGRPC) {
-    // Export GRPC interface.
-    return createGrpcInterface(that, streamingEmitter);
-  }
-  return that;
+  return createGrpcInterface(that, streamingEmitter);
 };

@@ -2,19 +2,18 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-"use strict";
+'use strict';
 
-const grpcTools = require("./grpcTools");
+const grpcTools = require('./grpcTools');
 const packOption = grpcTools.packOption;
 const unpackNotification = grpcTools.unpackNotification;
 
-const makeRPC = require("./makeRPC").makeRPC;
-const log = require("./logger").logger.getLogger("RpcRequest");
+const makeRPC = require('./makeRPC').makeRPC;
+const log = require('./logger').logger.getLogger('RpcRequest');
 
-const enableGrpc = global.config.agent.enable_grpc || false;
 const GRPC_TIMEOUT = 2000;
 
-const RpcRequest = function (rpcChannel, listener) {
+const RpcRequest = function (listener) {
   const that = {};
   const grpcAgents = {}; // workerAgent => grpcClient
   const grpcNode = {}; // workerNode => grpcClient
@@ -22,109 +21,81 @@ const RpcRequest = function (rpcChannel, listener) {
   let clusterClient;
   const opt = () => ({ deadline: new Date(Date.now() + GRPC_TIMEOUT) });
 
-  that.getRoomConfig = function (configServer, sessionId) {
-    return rpcChannel.makeRPC(configServer, "getRoomConfig", sessionId);
-  };
-
   that.getWorkerNode = function (clusterManager, purpose, forWhom, preference) {
-    log.debug(
-      "getworker node:",
-      purpose,
-      forWhom,
-      "enable grpc:",
-      enableGrpc,
-      clusterManager
-    );
-    if (enableGrpc) {
-      if (!clusterClient) {
-        clusterClient = grpcTools.startClient("clusterManager", clusterManager);
-      }
-      let agentAddress;
-      return new Promise((resolve, reject) => {
-        const req = {
-          purpose,
-          task: forWhom.task,
-          preference, // Change data for some preference
-          reserveTime: 30 * 1000,
-        };
-        clusterClient.schedule(req, opt(), (err, result) => {
-          if (err) {
-            log.debug("Schedule node error:", err);
-            reject(err);
-          } else {
-            resolve(result);
-          }
+    log.debug('getworker node:', purpose, forWhom, clusterManager);
+    if (!clusterClient) {
+      clusterClient = grpcTools.startClient('clusterManager', clusterManager);
+    }
+    let agentAddress;
+    return new Promise((resolve, reject) => {
+      const req = {
+        purpose,
+        task: forWhom.task,
+        preference, // Change data for some preference
+        reserveTime: 30 * 1000,
+      };
+      clusterClient.schedule(req, opt(), (err, result) => {
+        if (err) {
+          log.debug('Schedule node error:', err);
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    })
+      .then((workerAgent) => {
+        agentAddress = workerAgent.info.ip + ':' + workerAgent.info.grpcPort;
+        if (!grpcAgents[agentAddress]) {
+          grpcAgents[agentAddress] = grpcTools.startClient(
+            'nodeManager',
+            agentAddress
+          );
+        }
+        return new Promise((resolve, reject) => {
+          grpcAgents[agentAddress].getNode(
+            { info: forWhom },
+            opt(),
+            (err, result) => {
+              if (!err) {
+                resolve(result.message);
+              } else {
+                reject(err);
+              }
+            }
+          );
         });
       })
-        .then((workerAgent) => {
-          agentAddress = workerAgent.info.ip + ":" + workerAgent.info.grpcPort;
-          if (!grpcAgents[agentAddress]) {
-            grpcAgents[agentAddress] = grpcTools.startClient(
-              "nodeManager",
-              agentAddress
-            );
-          }
-          return new Promise((resolve, reject) => {
-            grpcAgents[agentAddress].getNode(
-              { info: forWhom },
-              opt(),
-              (err, result) => {
-                if (!err) {
-                  resolve(result.message);
-                } else {
-                  reject(err);
-                }
-              }
-            );
-          });
-        })
-        .then((workerNode) => {
-          if (grpcNode[workerNode]) {
-            // Has client already
-            return { agent: agentAddress, node: workerNode };
-          }
-          log.debug("Start gRPC client:", purpose, workerNode);
-          grpcNode[workerNode] = grpcTools.startClient(purpose, workerNode);
-          nodeType[workerNode] = purpose;
-          // Register listener
-          const call = grpcNode[workerNode].listenToNotifications({ id: "" });
-          call.on("data", (notification) => {
-            if (listener) {
-              // Unpack notification.data
-              const data = unpackNotification(notification);
-              if (data) {
-                listener.processNotification(data);
-              }
-            }
-          });
-          call.on("end", (err) => {
-            log.debug("Call on end:", err);
-            if (grpcNode[workerNode]) {
-              grpcNode[workerNode].close();
-              delete grpcNode[workerNode];
-            }
-          });
-          call.on("error", (err) => {
-            // On error
-            log.debug("Call on error:", err);
-          });
+      .then((workerNode) => {
+        if (grpcNode[workerNode]) {
+          // Has client already
           return { agent: agentAddress, node: workerNode };
+        }
+        log.debug('Start gRPC client:', purpose, workerNode);
+        grpcNode[workerNode] = grpcTools.startClient(purpose, workerNode);
+        nodeType[workerNode] = purpose;
+        // Register listener
+        const call = grpcNode[workerNode].listenToNotifications({ id: '' });
+        call.on('data', (notification) => {
+          if (listener) {
+            // Unpack notification.data
+            const data = unpackNotification(notification);
+            if (data) {
+              listener.processNotification(data);
+            }
+          }
         });
-    }
-
-    return rpcChannel
-      .makeRPC(clusterManager, "schedule", [
-        purpose,
-        forWhom.task,
-        preference,
-        30 * 1000,
-      ])
-      .then(function (workerAgent) {
-        return rpcChannel
-          .makeRPC(workerAgent.id, "getNode", [forWhom])
-          .then(function (workerNode) {
-            return { agent: workerAgent.id, node: workerNode };
-          });
+        call.on('end', (err) => {
+          log.debug('Call on end:', err);
+          if (grpcNode[workerNode]) {
+            grpcNode[workerNode].close();
+            delete grpcNode[workerNode];
+          }
+        });
+        call.on('error', (err) => {
+          // On error
+          log.debug('Call on error:', err);
+        });
+        return { agent: agentAddress, node: workerNode };
       });
   };
 
@@ -134,7 +105,7 @@ const RpcRequest = function (rpcChannel, listener) {
       return new Promise((resolve, reject) => {
         grpcAgents[workerAgent].recycleNode(req, opt(), (err, result) => {
           if (err) {
-            log.debug("Recycle node error:", err);
+            log.debug('Recycle node error:', err);
             reject(err);
           }
           if (grpcNode[workerNode]) {
@@ -142,14 +113,9 @@ const RpcRequest = function (rpcChannel, listener) {
             delete grpcNode[workerNode];
             delete nodeType[workerNode];
           }
-          resolve("ok");
+          resolve('ok');
         });
       });
-    } else {
-      return rpcChannel.makeRPC(workerAgent, "recycleNode", [
-        workerNode,
-        forWhom,
-      ]);
     }
   };
 
@@ -163,7 +129,7 @@ const RpcRequest = function (rpcChannel, listener) {
     if (grpcNode[accessNode]) {
       // Use GRPC
       return new Promise((resolve, reject) => {
-        if (direction === "in") {
+        if (direction === 'in') {
           const req = {
             id: sessionId,
             type: sessionType,
@@ -176,7 +142,7 @@ const RpcRequest = function (rpcChannel, listener) {
               reject(err);
             }
           });
-        } else if (direction === "out") {
+        } else if (direction === 'out') {
           const req = {
             id: sessionId,
             type: sessionType,
@@ -190,24 +156,9 @@ const RpcRequest = function (rpcChannel, listener) {
             }
           });
         } else {
-          reject("Invalid direction");
+          reject('Invalid direction');
         }
       });
-    }
-    if (direction === "in") {
-      return rpcChannel.makeRPC(accessNode, "publish", [
-        sessionId,
-        sessionType,
-        Options,
-      ]);
-    } else if (direction === "out") {
-      return rpcChannel.makeRPC(accessNode, "subscribe", [
-        sessionId,
-        sessionType,
-        Options,
-      ]);
-    } else {
-      return Promise.reject("Invalid direction");
     }
   };
 
@@ -219,7 +170,7 @@ const RpcRequest = function (rpcChannel, listener) {
     if (grpcNode[accessNode]) {
       // Use GRPC
       return new Promise((resolve, reject) => {
-        if (direction === "in") {
+        if (direction === 'in') {
           const req = { id: sessionId };
           grpcNode[accessNode].unpublish(req, opt(), (err, result) => {
             if (!err) {
@@ -228,7 +179,7 @@ const RpcRequest = function (rpcChannel, listener) {
               reject(err);
             }
           });
-        } else if (direction === "out") {
+        } else if (direction === 'out') {
           const req = { id: sessionId };
           grpcNode[accessNode].unsubscribe(req, opt(), (err, result) => {
             if (!err) {
@@ -238,24 +189,9 @@ const RpcRequest = function (rpcChannel, listener) {
             }
           });
         } else {
-          reject("Invalid direction");
+          reject('Invalid direction');
         }
       });
-    }
-    if (direction === "in") {
-      return rpcChannel
-        .makeRPC(accessNode, "unpublish", [sessionId])
-        .catch((e) => {
-          return "ok";
-        });
-    } else if (direction === "out") {
-      return rpcChannel
-        .makeRPC(accessNode, "unsubscribe", [sessionId])
-        .catch((e) => {
-          return "ok";
-        });
-    } else {
-      return Promise.resolve("ok");
     }
   };
 
@@ -277,10 +213,6 @@ const RpcRequest = function (rpcChannel, listener) {
         });
       });
     }
-    return rpcChannel.makeRPC(accessNode, "onTransportSignaling", [
-      transportId,
-      signaling,
-    ]);
   };
 
   that.destroyTransport = function (accessNode, transportId) {
@@ -298,7 +230,6 @@ const RpcRequest = function (rpcChannel, listener) {
         });
       });
     }
-    return rpcChannel.makeRPC(accessNode, "destroyTransport", [transportId]);
   };
 
   that.mediaOnOff = function (accessNode, sessionId, track, direction, onOff) {
@@ -320,65 +251,39 @@ const RpcRequest = function (rpcChannel, listener) {
         });
       });
     }
-    return rpcChannel.makeRPC(accessNode, "mediaOnOff", [
-      sessionId,
-      track,
-      direction,
-      onOff,
-    ]);
   };
 
   that.sendMsg = function (portal, participantId, event, data) {
-    if (enableGrpc) {
-      return Promise.resolve();
-    }
-    return rpcChannel.makeRPC(portal, "notify", [participantId, event, data]);
+    return Promise.resolve();
   };
 
   that.broadcast = function (portal, controller, excludeList, event, data) {
-    if (enableGrpc) {
-      return Promise.resolve();
-    }
-    return rpcChannel.makeRPC(portal, "broadcast", [
-      controller,
-      excludeList,
-      event,
-      data,
-    ]);
+    return Promise.resolve();
   };
 
   that.dropUser = function (portal, participantId) {
-    if (enableGrpc) {
-      return Promise.resolve();
-    }
-    return rpcChannel.makeRPC(portal, "drop", [participantId]);
+    return Promise.resolve();
   };
 
   that.createLayerStreams = function (accessNode, trackId, preferredLayers) {
-    return rpcChannel.makeRPC(accessNode, "createLayerStreams", [
-      trackId,
-      preferredLayers,
-    ]);
+    return Promise.resolve();
   };
 
   that.createQualitySwitch = function (accessNode, froms) {
-    return rpcChannel.makeRPC(accessNode, "createQualitySwitch", [froms]);
+    return Promise.resolve();
   };
 
   that.getClusterID = function (clusterManager, room_id, roomToken) {
-    return rpcChannel.makeRPC(clusterManager, "getClusterID", [
-      room_id,
-      roomToken,
-    ]);
+    return Promise.resolve();
   };
 
   that.leaveConference = function (clusterManager, roomId) {
-    return rpcChannel.makeRPC(clusterManager, "leaveConference", [roomId]);
+    return Promise.resolve();
   };
 
   that.makeRPC = function (_, remoteNode, rpcName, parameters, onOk, onError) {
     if (grpcNode[remoteNode]) {
-      if (rpcName === "linkup") {
+      if (rpcName === 'linkup') {
         const req = {
           id: parameters[0],
           from: parameters[1],
@@ -390,7 +295,7 @@ const RpcRequest = function (rpcChannel, listener) {
             onError && onError(err);
           }
         });
-      } else if (rpcName === "cutoff") {
+      } else if (rpcName === 'cutoff') {
         const req = { id: parameters[0] };
         grpcNode[remoteNode].cutoff(req, opt(), (err, result) => {
           if (!err) {
@@ -399,7 +304,7 @@ const RpcRequest = function (rpcChannel, listener) {
             onError && onError(err);
           }
         });
-      } else if (rpcName === "getInternalAddress") {
+      } else if (rpcName === 'getInternalAddress') {
         grpcNode[remoteNode].getInternalAddress({}, opt(), (err, result) => {
           if (!err) {
             onOk && onOk(result);
@@ -407,8 +312,8 @@ const RpcRequest = function (rpcChannel, listener) {
             onError && onError(err);
           }
         });
-      } else if (rpcName === "publish" || rpcName === "subscribe") {
-        const direction = rpcName === "publish" ? "in" : "out";
+      } else if (rpcName === 'publish' || rpcName === 'subscribe') {
+        const direction = rpcName === 'publish' ? 'in' : 'out';
         that
           .initiate(
             remoteNode,
@@ -423,8 +328,8 @@ const RpcRequest = function (rpcChannel, listener) {
           .catch((err) => {
             onError && onError(err);
           });
-      } else if (rpcName === "unpublish" || rpcName === "unsubscribe") {
-        const direction = rpcName === "unpublish" ? "in" : "out";
+      } else if (rpcName === 'unpublish' || rpcName === 'unsubscribe') {
+        const direction = rpcName === 'unpublish' ? 'in' : 'out';
         that
           .terminate(remoteNode, parameters[0], direction)
           .then((result) => {
@@ -433,7 +338,7 @@ const RpcRequest = function (rpcChannel, listener) {
           .catch((err) => {
             onError && onError(err);
           });
-      } else if (rpcName === "init") {
+      } else if (rpcName === 'init') {
         const type = nodeType[remoteNode];
         const initOption = {
           service: parameters[0],
@@ -453,7 +358,7 @@ const RpcRequest = function (rpcChannel, listener) {
             onError && onError(err);
           }
         });
-      } else if (rpcName === "generate") {
+      } else if (rpcName === 'generate') {
         const req = {
           id: parameters[0],
           media: {},
@@ -462,7 +367,7 @@ const RpcRequest = function (rpcChannel, listener) {
           req.media.audio = { format: { codec: parameters[1] } };
         } else if (parameters.length === 5) {
           parameters = parameters.map((par) =>
-            par === "unspecified" ? undefined : par
+            par === 'unspecified' ? undefined : par
           );
           req.media.video = {
             format: { codec: parameters[0] },
@@ -482,7 +387,7 @@ const RpcRequest = function (rpcChannel, listener) {
             onError && onError(err);
           }
         });
-      } else if (rpcName === "degenerate") {
+      } else if (rpcName === 'degenerate') {
         const req = { id: parameters[0] };
         grpcNode[remoteNode].degenerate(req, opt(), (err, result) => {
           if (!err) {
@@ -491,7 +396,7 @@ const RpcRequest = function (rpcChannel, listener) {
             onError && onError(err);
           }
         });
-      } else if (rpcName === "enableVAD") {
+      } else if (rpcName === 'enableVAD') {
         const req = { periodMs: parameters[0] };
         grpcNode[remoteNode].enableVad(req, opt(), (err, result) => {
           if (!err) {
@@ -500,10 +405,10 @@ const RpcRequest = function (rpcChannel, listener) {
             onError && onError(err);
           }
         });
-      } else if (rpcName === "resetVAD" || rpcName === "deinit") {
+      } else if (rpcName === 'resetVAD' || rpcName === 'deinit') {
         const req = {};
-        if (rpcName === "resetVAD") {
-          rpcName = "resetVad";
+        if (rpcName === 'resetVAD') {
+          rpcName = 'resetVad';
         }
         grpcNode[remoteNode][rpcName](req, opt(), (err, result) => {
           if (!err) {
@@ -512,7 +417,7 @@ const RpcRequest = function (rpcChannel, listener) {
             onError && onError(err);
           }
         });
-      } else if (rpcName === "setInputActive") {
+      } else if (rpcName === 'setInputActive') {
         const req = {
           id: parameters[0],
           active: parameters[1],
@@ -524,7 +429,7 @@ const RpcRequest = function (rpcChannel, listener) {
             onError && onError(err);
           }
         });
-      } else if (rpcName === "getRegion") {
+      } else if (rpcName === 'getRegion') {
         const req = { id: parameters[0] };
         grpcNode[remoteNode][rpcName](req, opt(), (err, result) => {
           if (!err) {
@@ -533,7 +438,7 @@ const RpcRequest = function (rpcChannel, listener) {
             onError && onError(err);
           }
         });
-      } else if (rpcName === "setRegion") {
+      } else if (rpcName === 'setRegion') {
         const req = {
           streamId: parameters[0],
           regionId: parameters[1],
@@ -545,7 +450,7 @@ const RpcRequest = function (rpcChannel, listener) {
             onError && onError(err);
           }
         });
-      } else if (rpcName === "setLayout") {
+      } else if (rpcName === 'setLayout') {
         const req = { regions: parameters[0] };
         grpcNode[remoteNode][rpcName](req, opt(), (err, result) => {
           if (!err) {
@@ -554,7 +459,7 @@ const RpcRequest = function (rpcChannel, listener) {
             onError && onError(err);
           }
         });
-      } else if (rpcName === "setPrimary" || rpcName === "forceKeyFrame") {
+      } else if (rpcName === 'setPrimary' || rpcName === 'forceKeyFrame') {
         const req = { id: parameters[0] };
         grpcNode[remoteNode][rpcName](req, opt(), (err, result) => {
           if (!err) {
@@ -564,12 +469,10 @@ const RpcRequest = function (rpcChannel, listener) {
           }
         });
       } else {
-        log.error("Unknow rpc name:", rpcName);
+        log.error('Unknown rpc name:', rpcName);
       }
     } else {
-      if (enableGrpc) {
-        log.warn("Unknown gRPC node:", remoteNode);
-      }
+      log.warn('Unknown gRPC node:', remoteNode);
       return makeRPC(_, remoteNode, rpcName, parameters, onOk, onError);
     }
   };

@@ -6,8 +6,32 @@ const dataAccess = require('./data_access');
 async function main() {
   let config;
   try {
-    let portal = await dataAccess.Config.findOne({ name: 'portal' });
-    config = Object.fromEntries(portal.config.entries()) || {};
+    config = {
+      portal: {
+        keystorePath: './cert/certificate.pfx',
+        hostname: '',
+        ip_address: '',
+        port: 8080,
+        ssl: true,
+        force_tls_v12: false,
+        networkInterface: 'eth1',
+        ping_interval: 25,
+        ping_timeout: 60,
+        reconnection_ticket_lifetime: 600,
+        reconnection_timeout: 60,
+        cors: ['*'],
+      },
+      cluster: {
+        name: 'owt-cluster',
+        join_retry: 60,
+        report_load_interval: 1000,
+        max_load: 0.85,
+      },
+      capacity: {
+        isps: [],
+        regions: [],
+      },
+    };
   } catch (e) {
     log.error('ERROR on read config: ' + e.message);
     process.exit(1);
