@@ -26,68 +26,60 @@
 
 // This file is borrowed from lynckia/licode with some modifications.
 
-"use strict";
-var dataAccess = require("../../data_access");
-var logger = require("../../logger").logger;
-var requestHandler = require("../../requestHandler");
-var e = require("../../errors");
+'use strict';
+var dataAccess = require('../../data_access');
+var logger = require('../../logger').logger;
+var requestHandler = require('../../requestHandler');
+var e = require('../../errors');
 
 // Logger
-var log = logger.getLogger("RoomsResource");
+var log = logger.getLogger('RoomsResource');
 
 /*
- * Post Room. Creates a new room for a determined service.
+ * Post Room. Creates a new room.
  */
 exports.createRoom = function (req, res, next) {
   var authData = req.authData;
 
   if (
-    typeof req.body !== "object" ||
+    typeof req.body !== 'object' ||
     req.body === null ||
-    typeof req.body.name !== "string" ||
-    req.body.name === ""
+    typeof req.body.name !== 'string' ||
+    req.body.name === ''
   ) {
-    return next(new e.BadRequestError("Invalid request body"));
+    return next(new e.BadRequestError('Invalid request body'));
   }
 
-  if (req.body.options && typeof req.body.options !== "object") {
-    return next(new e.BadRequestError("Invalid room option"));
+  if (req.body.options && typeof req.body.options !== 'object') {
+    return next(new e.BadRequestError('Invalid room option'));
   }
   req.body.options = req.body.options || {};
 
   var options = req.body.options;
   options.name = req.body.name;
-  dataAccess.room.create(authData.service._id, options, function (err, result) {
+  dataAccess.room.create(options, function (err, result) {
     if (!err && result) {
-      log.debug(
-        "Room created:",
-        req.body.name,
-        "for service",
-        authData.service.name
-      );
+      log.debug('Room created:', req.body.name);
       res.send(result);
     } else {
-      log.info("Room creation failed", err ? err.message : options);
-      next(err || new e.AppError("Create room failed"));
+      log.info('Room creation failed', err ? err.message : options);
+      next(err || new e.AppError('Create room failed'));
     }
   });
 };
 
 /*
- * Get Rooms. Represent a list of rooms for a determined service.
+ * Get Rooms. Represent a list of rooms.
  */
 exports.represent = function (req, res, next) {
-  var authData = req.authData;
-
   req.query.page = Number(req.query.page) || undefined;
   req.query.per_page = Number(req.query.per_page) || undefined;
 
-  dataAccess.room.list(authData.service._id, req.query, function (err, rooms) {
+  dataAccess.room.list(req.query, function (err, rooms) {
     if (rooms) {
-      log.debug("Representing rooms for service ", authData.service._id);
       res.send(rooms);
     } else {
-      next(err || new e.AppError("Get rooms failed"));
+      next(err || new e.AppError('Get rooms failed'));
     }
   });
 };

@@ -26,9 +26,9 @@
 
 // This file is borrowed from lynckia/licode with some modifications.
 
-"use strict";
-var log = require("./../logger").logger.getLogger("ServerAuthenticator");
-var e = require("../errors");
+'use strict';
+var log = require('./../logger').logger.getLogger('ServerAuthenticator');
+var e = require('../errors');
 const _ = require('lodash');
 
 /*
@@ -37,19 +37,9 @@ const _ = require('lodash');
  * a response with an authentication request to the client.
  */
 exports.authenticate = function (req, res, next) {
-  const randomDelay = Math.round(Math.random() * 1000);
-  const sendErrorResponse = function () {
-    next(authErr);
+  req.authData = {
+    user: 'username',
+    role: 'presenter',
   };
-
-  if (_.has(req, 'user')) {
-    req.authData = {
-      user: 'username',
-      role: 'presenter',
-    };
-    next();
-  } else {
-    log.info('[Auth] bearer token not presented', req.ip);
-    setTimeout(sendErrorResponse, randomDelay);
-  }
+  next();
 };

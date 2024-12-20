@@ -26,38 +26,29 @@
 
 // This file is borrowed from lynckia/licode with some modifications.
 
-"use strict";
-var dataAccess = require("../../data_access");
-var requestHandler = require("../../requestHandler");
-var logger = require("./../../logger").logger;
-var e = require("../../errors");
+'use strict';
+var dataAccess = require('../../data_access');
+var requestHandler = require('../../requestHandler');
+var logger = require('./../../logger').logger;
+var e = require('../../errors');
 
 // Logger
-var log = logger.getLogger("RoomResource");
+var log = logger.getLogger('RoomResource');
 
 /*
  * Get Room. Represents a determined room.
  */
 exports.represent = function (req, res, next) {
   var authData = req.authData;
-  dataAccess.room.get(
-    authData.service._id,
-    req.params.room,
-    function (err, room) {
-      if (!room) {
-        log.info("Room ", req.params.room, " does not exist");
-        next(new e.NotFoundError("Room not found"));
-      } else {
-        log.info(
-          "Representing room ",
-          room._id,
-          "of service ",
-          authData.service._id
-        );
-        res.send(room);
-      }
+  dataAccess.room.get(req.params.room, function (err, room) {
+    if (!room) {
+      log.info('Room ', req.params.room, ' does not exist');
+      next(new e.NotFoundError('Room not found'));
+    } else {
+      log.info('Representing room ', room._id);
+      res.send(room);
     }
-  );
+  });
 };
 
 /*
@@ -65,86 +56,62 @@ exports.represent = function (req, res, next) {
  */
 exports.deleteRoom = function (req, res, next) {
   var authData = req.authData;
-  dataAccess.room.get(
-    authData.service._id,
-    req.params.room,
-    function (err, room) {
-      if (!room) {
-        log.info("Room ", req.params.room, " does not exist");
-        next(new e.NotFoundError("Room not found"));
-      } else {
-        dataAccess.room.delete(
-          authData.service._id,
-          req.params.room,
-          function (err, room) {
-            if (err) {
-              return next(err);
-            } else {
-              var id = req.params.room;
-              log.debug(
-                "Room ",
-                id,
-                " deleted for service ",
-                authData.service._id
-              );
-              requestHandler.deleteRoom(id, function () {});
-              res.send("Room deleted");
-            }
-          }
-        );
-      }
+  dataAccess.room.get(req.params.room, function (err, room) {
+    if (!room) {
+      log.info('Room ', req.params.room, ' does not exist');
+      next(new e.NotFoundError('Room not found'));
+    } else {
+      dataAccess.room.delete(req.params.room, function (err, room) {
+        if (err) {
+          return next(err);
+        } else {
+          var id = req.params.room;
+          log.debug('Room ', id, ' deleted');
+          requestHandler.deleteRoom(id, function () {});
+          res.send('Room deleted');
+        }
+      });
     }
-  );
+  });
 };
 
 exports.updateRoom = function (req, res, next) {
   var authData = req.authData;
   var updates = req.body;
-  dataAccess.room.get(
-    authData.service._id,
-    req.params.room,
-    function (err, room) {
-      if (!room) {
-        log.info("Room ", req.params.room, " does not exist");
-        next(new e.NotFoundError("Room not found"));
-      } else {
-        var updates = req.body;
-        dataAccess.room.update(
-          authData.service._id,
-          req.params.room,
-          updates,
-          function (err, result) {
-            if (result) {
-              res.send(result);
-            } else {
-              next(
-                new e.BadRequestError(
-                  (err && err.message) || "Bad room configuration"
-                )
-              );
-            }
+  dataAccess.room.get(req.params.room, function (err, room) {
+    if (!room) {
+      log.info('Room ', req.params.room, ' does not exist');
+      next(new e.NotFoundError('Room not found'));
+    } else {
+      var updates = req.body;
+      dataAccess.room.update(req.params.room, updates, function (err, result) {
+        if (result) {
+          res.send(result);
+          if (changeType) {
+            log.debug('Change type', changeType);
           }
-        );
-      }
+        } else {
+          next(
+            new e.BadRequestError(
+              (err && err.message) || 'Bad room configuration'
+            )
+          );
+        }
+      });
     }
-  );
+  });
 };
 
 exports.validate = function (req, res, next) {
-  var authData = req.authData;
-  dataAccess.room.get(
-    authData.service._id,
-    req.params.room,
-    function (err, room) {
-      if (err) {
-        return next(err);
-      }
-      if (!room) {
-        next(new e.NotFoundError("Room not found"));
-      } else {
-        req.authData.room = room;
-        next();
-      }
+  dataAccess.room.get(req.params.room, function (err, room) {
+    if (err) {
+      return next(err);
     }
-  );
+    if (!room) {
+      next(new e.NotFoundError('Room not found'));
+    } else {
+      req.authData.room = room;
+      next();
+    }
+  });
 };

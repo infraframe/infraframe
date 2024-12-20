@@ -35,7 +35,9 @@ var Portal = function (spec, rpcReq) {
       return Promise.reject('Participant already in room');
     }
 
-    var tokenCode, userInfo, role, origin, room_id, room_controller, domain;
+    var tokenCode, userInfo, role, origin, room_controller, domain;
+
+    let room_id = '67626fd9b03471956c692c84';
 
     return rpcReq
       .getController(cluster_name, room_id)

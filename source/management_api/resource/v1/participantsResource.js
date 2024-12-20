@@ -15,9 +15,7 @@ var log = logger.getLogger("ParticipantsResource");
 exports.getList = function (req, res, next) {
   log.debug(
     "Representing participants for room ",
-    req.params.room,
-    "and service",
-    req.authData.service._id
+    req.params.room
   );
   requestHandler.getParticipantsInRoom(
     req.params.room,

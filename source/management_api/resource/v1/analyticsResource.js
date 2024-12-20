@@ -14,9 +14,7 @@ var log = logger.getLogger("AnalyticsResource");
 exports.getList = function (req, res, next) {
   log.debug(
     "Representing analytics for room ",
-    req.params.room,
-    "and service",
-    req.authData.service._id
+    req.params.room
   );
   requestHandler.getSubscriptionsInRoom(
     req.params.room,

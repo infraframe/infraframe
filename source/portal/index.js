@@ -14,7 +14,7 @@ async function main() {
         port: 8080,
         ssl: true,
         force_tls_v12: false,
-        networkInterface: 'eth1',
+        networkInterface: '',
         ping_interval: 25,
         ping_timeout: 60,
         reconnection_ticket_lifetime: 600,
@@ -122,6 +122,7 @@ async function main() {
       config.portal.ip_address === '' ||
       config.portal.ip_address === undefined
     ) {
+      log.info(`ADDRESSED0: ${addresses[0]}`);
       ip_address = addresses[0];
     } else {
       ip_address = config.portal.ip_address;
@@ -238,7 +239,7 @@ async function main() {
       .start()
       .then(function () {
         log.info('start socket.io server ok.');
-        refreshTokenKey(id, portal, tokenKey);
+        // refreshTokenKey(id, portal, tokenKey);
       })
       .catch(function (err) {
         log.error('Failed to start servers, reason:', err && err.message);
@@ -295,17 +296,7 @@ async function main() {
 
   // Run gRPC mode
   joinCluster(function (id) {
-    getTokenKey(
-      id,
-      function (tokenKey) {
-        startServers(id, tokenKey);
-      },
-      function () {
-        log.error('portal getting token failed.');
-        stopServers();
-        process.exit();
-      }
-    );
+    startServers(id, 'owt');
   });
 
   ['SIGINT', 'SIGTERM'].map(function (sig) {

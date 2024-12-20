@@ -15,9 +15,7 @@ var convertStream = require("../streamAdapter").convertToV10Stream;
 exports.getList = function (req, res, next) {
   log.debug(
     "Representing streams for room ",
-    req.params.room,
-    "and service",
-    req.authData.service._id
+    req.params.room
   );
   requestHandler.getStreamsInRoom(req.params.room, function (streams) {
     if (streams === "error") {

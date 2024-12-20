@@ -15,9 +15,7 @@ var log = logger.getLogger("RecordingsResource");
 exports.getList = function (req, res, next) {
   log.debug(
     "Representing recordings for room ",
-    req.params.room,
-    "and service",
-    req.authData.service._id
+    req.params.room
   );
   requestHandler.getSubscriptionsInRoom(
     req.params.room,

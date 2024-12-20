@@ -83,7 +83,7 @@ const removeNull = (obj) => {
 /*
  * Create Room.
  */
-exports.create = function (serviceId, roomOption, callback) {
+exports.create = function (roomOption, callback) {
   var attr;
   for (attr in Default.ROOM_CONFIG) {
     if (!roomOption[attr]) {
@@ -115,7 +115,7 @@ exports.create = function (serviceId, roomOption, callback) {
 /*
  * List Rooms.
  */
-exports.list = function (serviceId, options, callback) {
+exports.list = function (options, callback) {
   let popOption = {
     options: {
       sort: { _id: 1 },
@@ -151,7 +151,7 @@ exports.list = function (serviceId, options, callback) {
 /*
  * Get Room. Represents a determined room.
  */
-exports.get = function (serviceId, roomId, callback) {
+exports.get = function (roomId, callback) {
   Room.findById(roomId)
     .lean()
     .exec(function (err, room) {
@@ -162,7 +162,7 @@ exports.get = function (serviceId, roomId, callback) {
 /*
  * Delete Room. Removes a determined room from the data base.
  */
-exports.delete = function (serviceId, roomId, callback) {
+exports.delete = function (roomId, callback) {
   Room.deleteOne({ _id: roomId }, function (err) {
     callback(err, roomId);
   });
@@ -171,7 +171,7 @@ exports.delete = function (serviceId, roomId, callback) {
 /*
  * Update Room. Update a determined room from the data base.
  */
-exports.update = function (serviceId, roomId, updates, callback) {
+exports.update = function (roomId, updates, callback) {
   removeNull(updates);
   var labels = getAudioOnlyLabels(updates);
   Room.findById(roomId)
