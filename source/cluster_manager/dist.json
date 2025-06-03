@@ -1,0 +1,27 @@
+{
+    "name": "cluster-manager",
+    "dest": "cluster_manager",
+    "common": {
+        "package": "package.json",
+        "files": [
+            "clusterManager.js",
+            "index.js",
+            "log4js_configuration.json",
+            "matcher.js",
+            "scheduler.js",
+            "strategy.js",
+            "../../scripts/release/initauth.js",
+            "../common/cipher.js",
+            "../common/logger.js",
+            "../common/grpcTools.js",
+            "../protocol/protos/protoConfig.json",
+            "../protocol/protos/*.proto"
+        ],
+        "folders": {
+            "data_access": [
+                "../data_access/*"
+            ]
+        }
+    },
+    "start": "node ."
+}

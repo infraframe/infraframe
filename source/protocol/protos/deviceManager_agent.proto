@@ -1,0 +1,226 @@
+//
+syntax = "proto3";
+
+import "access_agent.proto";
+
+package owt;
+
+// The deviceManager service definition.
+service DeviceManagerAgent {
+
+  // Listen to notifications (streaming RPC)
+  rpc ListenToNotifications (ListenRequest) returns (stream ProgressNotification) {}
+
+  // Internal connections
+  rpc GetInternalAddress (Empty) returns (AddressReply) {}
+
+  // DeviceManage
+  rpc GetDevices(QueryRequest) returns (DevicesReply) {}
+  rpc GetDevice(IdRequest) returns (Device) {}
+  rpc DeleteDevice(IdRequest) returns (SimpleReply) {}
+  rpc UpdateDevice(UpdateRequest) returns (Device) {}
+  rpc AddDevice(AddRequest) returns (Device) {}
+  rpc Discovery(Empty) returns (StateReply) {}
+  rpc GetResults(Empty) returns (DevicesInfoReply) {}
+  rpc Service(ServiceRequest) returns (StateReply) {}
+}
+
+// The progress message for webrtc sessions ("type": "webrtc").
+// Progress "name": "onSessionProgress".
+message SessionProgressData {
+  string id = 1;
+  message Status {
+    optional string type = 1;
+    optional string reason = 2;
+  }
+  Status status = 2;
+  optional string direction = 3;
+}
+
+// Publish/Subscribe option
+message RequestOption {
+  message MediaOption {
+    optional bool audio = 1;
+    optional bool video = 2;
+  }
+  optional MediaOption media = 1;
+
+  message StreamingConfig {
+    optional string url = 1;
+    optional string protocol = 2;
+    optional string transportProtocol = 3;
+    optional int32 bufferSize = 4;
+    optional string container = 5;
+
+    message StreamingParameter {
+      string method = 1;
+      optional int32 hlsTime = 2;
+      optional int32 hlsListSize = 3;
+      optional int32 dashSegDuration = 4;
+      optional int32 dashWindowSize = 5;
+    }
+    optional StreamingParameter parameters = 6;
+  }
+  StreamingConfig connection = 2;
+  optional string controller = 3;
+}
+
+
+//Device Basic
+message Basic {
+  // string _id = 1;
+  string name = 1;
+  string rtsp = 2;
+  int32 supportNO = 3;
+  int32 index = 4;
+  optional string groups = 5;
+}
+//Device Connection
+message Connection {
+  string protocol = 1;
+  string ip = 2;
+  int32 port = 3;
+  string user= 4;
+  string password = 5;
+  optional int32 channel = 6;
+}
+
+//Device DeviceInfo
+message DeviceInfo {
+  string ip = 1;
+  string mask = 2;
+  string gateway = 3;
+  string DNS = 4;
+  string deviceDescription = 5;
+  string macAddress = 6;
+  string serialNumber = 7;
+  string softVersin = 8;
+  string runTime = 9;
+}
+
+//Device Net
+message Net {
+  string ip = 1;
+  string mask = 2;
+  string gateway = 3;
+  string DNS = 4;
+}
+
+//Device Video
+message Video {
+  string resolution = 1;
+  string codec = 2;
+  string fps = 3;
+  int32 bitrate = 4;
+  int32 GOP = 5;
+  optional string capabilities = 6;
+}
+
+//Device Auth
+message Auth {
+  string username = 1;
+  string password = 2;
+}
+
+
+//Device StoragePlan
+message StoragePlan {
+  bool enable = 1;
+}
+
+
+// Device
+message Device {
+  string _id = 1;
+  Basic basic = 2;
+  Connection connection = 3;
+  DeviceInfo deviceInfo = 4;
+  Net net = 5;
+  Video video = 6;
+  Auth auth = 7;
+  Osd osd = 8;
+  StoragePlan storagePlan = 9;
+}
+
+message Update {
+  string op = 1;
+  string path = 2;
+  message Value {
+    optional Basic basic = 1;
+    optional Connection connection = 2;
+    optional DeviceInfo deviceInfo = 3;
+    optional Net net = 4;
+    optional Video video = 5;
+    optional Auth auth = 6;
+    optional Osd osd = 7;
+    optional StoragePlan storagePlan = 8;
+    optional string roomId = 9;
+  }
+  Value value = 3;
+}
+
+message DevicesResult {
+  int32 total = 1;
+  int32 page = 2;
+  int32 size = 3;
+  repeated Device devices = 4;
+}
+
+// For GetDevices
+message DevicesReply {
+  DevicesResult result = 1;
+}
+
+//Device DeviceInfoResult
+message DeviceInfoResult {
+  string ip = 1;
+  string mask = 2;
+  string gateway = 3;
+  string DNS = 4;
+  string deviceDescription = 5;
+  string macAddress = 6;
+  string serialNumber = 7;
+  string softVersin = 8;
+  string runTime = 9;
+  bool ifAdd = 10;
+}
+
+message DevicesInfoReply {
+  repeated DeviceInfoResult result = 1;
+}
+
+message StateReply {
+  int32 result = 1;
+}
+
+message QueryRequest {
+  int32 page = 1;
+  int32 size = 2;
+}
+
+message UpdateRequest {
+  string id = 1;
+  repeated Update update = 2;
+}
+
+message Config {
+  Basic basic = 1;
+  optional Connection connection = 2;
+  optional DeviceInfo deviceInfo = 3;
+  optional Net net = 4;
+  optional Video video = 5;
+  optional Auth auth = 6;
+  optional Osd osd = 7;
+  optional StoragePlan storagePlan = 8;
+}
+
+message AddRequest {
+  Config config = 1;
+}
+
+message ServiceRequest {
+  string id = 1;
+  string method = 2;
+}
+
+

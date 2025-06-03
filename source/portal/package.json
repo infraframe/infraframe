@@ -1,0 +1,31 @@
+{
+  "name": "OWT-MCU-Portal",
+  "version":"5.1.0",
+  "dependencies": {
+    "socket.io": "^4.5.0",
+    "log4js": "*",
+    "sprintf-js": "^1.0.3",
+    "ajv": "^6.12.3",
+    "mongoose": "^6.13.0",
+    "fraction.js": "^4.0.12",
+    "ioredis": "^5.4.1",
+    "uuid": "^8.0.0",
+    "@grpc/proto-loader": "^0.5.0",
+    "@grpc/grpc-js": "^1.1.0"
+  },
+  "devDependencies": {
+    "mocha": "^6.0.2",
+    "chai": "^3.0.0",
+    "chai-as-promised": "^5.1.0",
+    "sinon": "^1.15.4",
+    "sinon-as-promised": "^4.0.0",
+    "istanbul": "*",
+    "request": "*",
+    "mockery": "*",
+    "socket.io-client": "3.1.1"
+  },
+  "scripts": {
+    "test": "mocha ./test -R spec --timeout 5000 --exit",
+    "test:cover": "istanbul cover _mocha -- ./test -R spec --timeout 5000 --exit"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "OWT-MCU-Cluster-Manager",
+  "version":"5.1.0",
+  "dependencies": {
+    "log4js": "^6.4.0",
+    "toml": "*",
+    "mongoose": "^6.13.0",
+    "fraction.js": "^4.0.12",
+    "@grpc/proto-loader": "^0.5.0",
+    "@grpc/grpc-js": "^1.1.0"
+  }
+}

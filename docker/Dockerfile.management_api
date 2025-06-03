@@ -1,0 +1,29 @@
+FROM infraframe/base:latest as base
+
+FROM ubuntu:20.04
+ARG TARGETARCH
+
+WORKDIR /home/infraframe/
+# 环境变量
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PREFIX="/home/infraframe/build/libdeps"
+ENV PREFIX_DIR="/home/infraframe/build/libdeps/build"
+ENV PATHNAME="/home/infraframe/scripts"
+ENV PATH=""
+ENV PKG_CONFIG_PATH=${PREFIX_DIR}/lib/pkgconfig
+ENV PATH=${PREFIX}/bin:${PREFIX}/node-v14.21.3-linux-${TARGETARCH}/bin:/usr/bin:$PATH
+# # # 从 base 阶段复制构建产物
+COPY --from=base /home/infraframe/dist/management_api /home/infraframe/dist/management_api
+COPY --from=base /home/infraframe/dist/package.json  /home/infraframe/dist/package.json
+COPY --from=base /home/infraframe/dist/bin /home/infraframe/dist/bin
+COPY --from=base ${PREFIX_DIR} ${PREFIX_DIR}
+COPY --from=base ${PREFIX}/bin ${PREFIX}/bin
+COPY --from=base ${PREFIX}/lib ${PREFIX}/lib
+COPY  ./infraframe-DEPS/env_nodemds/mana_api_node/ /home/infraframe/node_modules/
+COPY  ./management_api.toml /home/infraframe/dist/management_api
+COPY --from=base ${PREFIX}/node-v14.21.3-linux-${TARGETARCH} ${PREFIX}/node-v14.21.3-linux-${TARGETARCH}
+COPY --from=base ${PREFIX}/nodejs-node-gyp-adcdab2 ${PREFIX}/nodejs-node-gyp-adcdab2
+COPY --from=base /home/infraframe/package.json  /home/infraframe/package.json
+
+WORKDIR /home/infraframe/dist/management_api
+CMD node .

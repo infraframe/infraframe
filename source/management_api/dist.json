@@ -1,0 +1,27 @@
+{
+  "name": "management-api",
+  "dest": "management_api",
+  "common": {
+    "package": "package.json",
+    "files": [
+      "*.js",
+      "*.sh",
+      "log4js_configuration.json",
+      "../common/logger.js",
+      "../common/cipher.js",
+      "../common/grpcTools.js",
+      "../protocol/protos/protoConfig.json",
+      "../protocol/protos/*.proto",
+      "../../scripts/release/initauth.js",
+      "../../scripts/release/initcert.js",
+      "../../scripts/detectOS.sh"
+    ],
+    "folders": {
+      "auth": ["auth/*"],
+      "resource": ["resource/*"],
+      "rpc": ["rpc/*"],
+      "data_access": ["../data_access/*"]
+    }
+  },
+  "start": "node api.js"
+}

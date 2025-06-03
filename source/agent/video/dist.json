@@ -1,0 +1,88 @@
+{
+  "name": "video-agent",
+  "dest": "video_agent",
+  "common": {
+    "package": "../package.json",
+    "files": [
+      "log4js_configuration.json",
+      "init.sh",
+      "install_deps.sh",
+      "install_openh264.sh",
+      "uninstall_openh264.sh",
+      "configLoader.js",
+      "videoCapability.js",
+      "../index.js",
+      "../networkHelper.js",
+      "../nodeManager.js",
+      "../workingNode.js",
+      "log4cxx.properties",
+      "../../common/cipher.js",
+      "../../common/clusterWorker.js",
+      "../../common/loadCollector.js",
+      "../../common/logger.js",
+      "../../common/makeRPC.js",
+      "../../common/mediaUtil.js",
+      "../../common/grpcTools.js",
+      "../../protocol/protos/protoConfig.json",
+      "../../protocol/protos/*.proto",
+      "../../../scripts/release/install_ffmpeg.sh",
+      "../../../scripts/release/initauth.js",
+      "../../../scripts/detectOS.sh",
+      "compile_svtHevcEncoder.sh"
+    ],
+    "folders": {
+      "video": [
+        "index.js",
+        "layout.js",
+        "vmixer.js",
+        "vtranscoder.js",
+        "../connections.js",
+        "grpcAdapter.js",
+        "../../common/grpcTools.js",
+        "../../protocol/protos/protoConfig.json",
+        "../../protocol/protos/*.proto",
+        "../internalConnectionRouter.js"
+      ],
+      "avatars": ["avatars/*"],
+      "data_access": ["../../data_access/*"]
+    }
+  },
+  "natives": {
+    "libdist": "lib",
+    "addons": [
+      {
+        "folder": "videoMixer/videoMixer_sw",
+        "name": "videoMixer-sw"
+      },
+      {
+        "folder": "videoTranscoder/videoTranscoder_sw",
+        "name": "videoTranscoder-sw"
+      },
+      {
+        "folder": "videoMixer/videoMixer_msdk",
+        "name": "videoMixer-msdk"
+      },
+      {
+        "folder": "videoTranscoder/videoTranscoder_msdk",
+        "name": "videoTranscoder-msdk"
+      },
+      {
+        "folder": "../addons/mediaFrameMulticaster",
+        "name": "mediaFrameMulticaster"
+      },
+      {
+        "folder": "../addons/internalIO",
+        "name": "internalIO"
+      },
+      {
+        "folder": "../addons/logger",
+        "name": "logger"
+      },
+      {
+        "folder": "../addons/quicIO",
+        "name": "quicIO"
+      }
+    ]
+  },
+  "start": "node . -U video"
+}

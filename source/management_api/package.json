@@ -1,0 +1,35 @@
+{
+  "name": "infraframe-management-api",
+  "version": "1.0.0",
+  "dependencies": {
+    "@grpc/grpc-js": "^1.1.0",
+    "@grpc/proto-loader": "^0.5.0",
+    "ajv": "^6.12.6",
+    "axios": "^1.8.4",
+    "body-parser": "*",
+    "express": "4.21.2",
+    "express-fileupload": "^1.5.1",
+    "fraction.js": "^4.0.12",
+    "ioredis": "^5.4.1",
+    "log4js": "^6.4.0",
+    "mongodb": "^3.7.4",
+    "mongoose": "^6.13.0",
+    "node-schedule": "^2.1.1",
+    "passport": "^0.7.0",
+    "passport-http-bearer": "^1.0.1"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chai-as-promised": "^5.1.0",
+    "istanbul": "*",
+    "mocha": "^6.2.3",
+    "mockery": "*",
+    "node-gyp": "*",
+    "sinon": "^2.0.0",
+    "sinon-as-promised": "^4.0.0"
+  },
+  "scripts": {
+    "test": "mocha ./test -R spec --exit"
+  },
+  "main": "api.js"
+}

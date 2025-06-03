@@ -1,0 +1,2136 @@
+openapi: 3.0.0
+servers:
+  - url: http://localhost:3000
+info:
+  description: '视频网关智能系统REST API'
+  version: 1.0.0
+  title: 视频网关智能系统REST API
+  contact:
+     name: '华宁电子'
+tags:
+  - name: 'room'
+  - name: 'participant'
+paths:
+  /rooms:
+    get:
+      summary: 列出房间
+      description: '列出房间'
+      operationId: GetRooms
+      tags:
+        - room
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: per_page
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Room'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    post:
+      summary: 创建房间
+      description: 该请求可以创建一个房间
+      operationId: PostRooms
+      tags:
+        - room
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: SampleRoom
+                options:
+                  $ref: '#/components/schemas/Room'
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Room'
+  /rooms/{roomId}:
+    get:
+      summary: 获取房间信息
+      description: '获取房间信息'
+      operationId: GetRoomsRoomId
+      tags:
+        - room
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+    delete:
+      summary: 删除房间
+      description: ''
+      tags:
+        - room
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '204':
+          description: 删除成功
+    put:
+      summary: 更新房间信息
+      description: '**完全**更新房间信息'
+      tags:
+        - room
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Room'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+  /rooms/{roomId}/participants:
+    get:
+      summary: 列出参与者
+      description: 列出当前在指定房间中的参与者
+      tags:
+        - participant
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ParticipantDetail'
+  /rooms/{roomId}/participants/{participantId}:
+    get:
+      summary: 获取参与者信息
+      description: 获取指定房间的指定参会人员信息
+      tags:
+        - participant
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: ObjectId
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantDetail'
+    patch:
+      summary: 更新参与者
+      description: ''
+      tags:
+        - participant
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PermissionUpdate'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantDetail'
+    delete:
+      summary: 删除参与者
+      description: ''
+      tags:
+        - participant
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '204':
+          description: 删除成功
+  /rooms/{roomId}/streams:
+    get:
+      summary: 列出流
+      description: ''
+      tags:
+        - stream
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: per_page
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StreamInfo'
+  /rooms/{roomId}/streams/{streamId}:
+    get:
+      summary: 获取流信息
+      description: ''
+      tags:
+        - stream
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+        - name: streamId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreamInfo'
+    patch:
+      summary: 更新流
+      description: ''
+      tags:
+        - stream
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+        - name: streamId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StreamUpdate'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreamInfo'
+        '404':
+          $ref: '#/components/responses/NotFoundRoom'
+    delete:
+      summary: 删除流
+      description: ''
+      tags:
+        - stream
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+        - name: streamId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '204':
+          description: 删除成功
+  /rooms/{roomId}/streaming-ins:
+    post:
+      summary: 开始一个串流
+      description: 添加外部`RTSP`/`RTMP`流到指定房间
+      tags:
+        - streaming-in
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StreamingInRequest'
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StreamInfo'
+  /rooms/{roomId}/streaming-ins/{streamId}:
+    delete:
+      summary: 删除串流输入
+      description: 停止指定房间的指定外部串流
+      tags:
+        - streaming-in
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+        - name: streamId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '204':
+          description: 删除成功
+  /rooms/{roomId}/streaming-outs:
+    get:
+      summary: 列出串流输出
+      description: 获取指定房间内所有正在进行的对外串流
+      tags:
+        - streaming-out
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StreamingOut'
+    post:
+      summary: 开始一个串流输出
+      description: 开始从指定房间向外串流
+      tags:
+        - streaming-out
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StreamingOutRequest'
+      responses:
+        '200':
+          description: OK
+  /rooms/{roomId}/streaming-outs/{streamId}:
+    patch:
+      summary: 更新串流输出
+      description: 更新指定房间中对外串流的给定属性
+      tags:
+        - streaming-out
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+        - name: streamId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      requestBody:
+        content:
+          javascript/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionControlInfo'
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreamingOut'
+    delete:
+      summary: 删除串流输出
+      description: ''
+      tags:
+        - streaming-out
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+        - name: streamId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '204':
+          description: 删除成功
+  /rooms/{roomId}/recordings:
+    get:
+      summary: 列出录像
+      description: ''
+      tags:
+        - recording
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recording'
+    post:
+      summary: 开始录像
+      description: ''
+      tags:
+        - recording
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordingRequest'
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recording'
+  /rooms/{roomId}/recordings/{recordingId}:
+    get:
+      summary: 获取录像信息
+      description: ''
+      tags:
+        - recording
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+        - name: recordingId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recording'
+    patch:
+      summary: 更新录像
+      description: ''
+      tags:
+        - recording
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+        - name: recordingId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionControlInfo'
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recording'
+    delete:
+      summary: 删除录像
+      description: ''
+      tags:
+        - recording
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+        - name: recordingId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '204':
+          description: 删除成功
+  /rooms/{roomId}/analytics:
+    get:
+      summary: 列出AI分析
+      description: 获取指定房间中所有正在进行的视频分析
+      tags:
+        - analytic
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Analytics'
+    post:
+      summary: 开始AI分析
+      description: 开始对指定房间中的流进行分析
+      tags:
+        - analytic
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyticsRequest'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Analytics'
+  /rooms/{roomId}/analytics/{analyticId}:
+    get:
+      summary: 获取AI分析信息
+      description: ''
+      tags:
+        - analytic
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+        - name: analyticId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Analytics'
+    patch:
+      summary: 更新AI分析
+      description: ''
+      tags:
+        - analytic
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+        - name: analyticId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Analytics'
+    delete:
+      summary: 删除AI分析
+      description: ''
+      tags:
+        - analytic
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+        - name: analyticId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '204':
+          description: 删除成功
+  /plugins:
+    get:
+      summary: 列出插件
+      description: ''
+      tags:
+        - plugin
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: string
+            example: '1'
+        - name: per_page
+          in: query
+          schema:
+            type: string
+            example: '10'
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum:
+              - single
+              - multiple
+            example: 'multiple'
+      responses:
+        '200':
+          description: OK
+  /plugins/{pluginId}:
+    get:
+      summary: 获取插件信息
+      description: ''
+      tags:
+        - plugin
+      parameters:
+        - name: pluginId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '200':
+          description: OK
+    patch:
+      summary: 更新插件
+      description: ''
+      tags:
+        - plugin
+      parameters:
+        - name: pluginId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: 删除插件
+      description: ''
+      tags:
+        - plugin
+      parameters:
+        - name: pluginId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '204':
+          description: 删除成功
+  /events:
+    get:
+      summary: 列出事件
+      description: ''
+      tags:
+        - event
+      parameters: []
+      responses:
+        '200':
+          description: OK
+  /events/{eventId}:
+    get:
+      summary: 获取事件信息
+      description: ''
+      tags:
+        - event
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '200':
+          description: OK
+    patch:
+      summary: 更新事件
+      description: ''
+      tags:
+        - event
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: 删除事件
+      description: ''
+      tags:
+        - event
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '204':
+          description: 删除成功
+  /infos:
+    get:
+      summary: 列出系统信息
+      description: >-
+        默认情况下，返回的是当前时间往前一个小时的数据。
+        为了灵活适应信息查询，您可以使用`start_time`参数和`end_time`参数设置自定义起始时间。
+        如果只输入起始时间，则返回从起始时间往后一小时的所有数据，如果只输入结束时间则返回结束时间往前一小时的数据。
+      tags:
+        - info
+      parameters:
+        - name: key
+          in: query
+          required: true
+          schema:
+            type: string
+            example: host_cpuusage
+        - name: start_time
+          in: query
+          schema:
+            type: string
+            format: timestamp
+            example: '1722494662'
+        - name: end_time
+          in: query
+          schema:
+            type: string
+            format: timestamp
+            example: '1722494662'
+      responses:
+        '200':
+          description: OK
+  /devices:
+    get:
+      summary: 列出设备
+      description: ''
+      tags:
+        - device
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: 添加设备
+      description: ''
+      tags:
+        - device
+      responses:
+        '200':
+          description: OK
+  /devices/discovery:
+    post:
+      summary: 设备发现
+      description: ''
+      tags:
+        - device
+      responses:
+        '200':
+          description: OK
+  /devices/{deviceId}:
+    get:
+      summary: 获取设备信息
+      description: ''
+      tags:
+        - device
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '200':
+          description: OK
+    patch:
+      summary: 更新设备
+      description: ''
+      tags:
+        - device
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: 删除设备
+      description: ''
+      tags:
+        - device
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '204':
+          description: 删除成功
+  /devices/{deviceId}/reboot:
+    post:
+      summary: 重启设备
+      description: ''
+      tags:
+        - device
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '200':
+          description: OK
+  /users:
+    get:
+      summary: 列出用户
+      description: ''
+      tags:
+        - auth
+      responses:
+        '200':
+          description: OK
+  /users/{userId}:
+    get:
+      summary: 获取用户信息
+      description: ''
+      tags:
+        - auth
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '200':
+          description: OK
+    patch:
+      summary: 更新用户
+      description: ''
+      tags:
+        - auth
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: 删除用户
+      description: ''
+      tags:
+        - auth
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 66ac3a8da75233659c7a891c
+      responses:
+        '204':
+          description: 删除成功
+components:
+  schemas:
+    Room:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 66ac3a8da75233659c7a891c
+        name:
+          type: string
+        participantLimit:
+          type: number
+        inputLimit:
+          type: number
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+        views:
+          type: array
+          items:
+            $ref: '#/components/schemas/View'
+        mediaIn:
+          $ref: '#/components/schemas/MediaIn'
+        mediaOut:
+          $ref: '#/components/schemas/MediaOut'
+        transcoding:
+          $ref: '#/components/schemas/Transcoding'
+        notifying:
+          $ref: '#/components/schemas/Notifying'
+        selectActiveAudio:
+          type: boolean
+      required: ['']
+    Role:
+      type: object
+      properties:
+        role:
+          type: string
+        publish:
+          type: object
+          properties:
+            video:
+              type: boolean
+            audio:
+              type: boolean
+        subscribe:
+          type: object
+          properties:
+            video:
+              type: boolean
+            audio:
+              type: boolean
+    View:
+      type: object
+      properties:
+        label:
+          type: string
+        audio:
+          $ref: '#/components/schemas/ViewAudio'
+        video:
+          $ref: '#/components/schemas/ViewVideo'
+    ViewAudio:
+      type: object
+      properties:
+        format:
+          $ref: '#/components/schemas/AudioFormat'
+        vad:
+          type: boolean
+          description: voice activity detection 语音激励
+    ViewVideo:
+      type: object
+      properties:
+        format:
+          $ref: '#/components/schemas/VideoFormat'
+        parameters:
+          $ref: '#/components/schemas/VideoParameters'
+    Resolution:
+      type: object
+      properties:
+        width:
+          type: number
+        height:
+          type: number
+    Region:
+      type: object
+      properties:
+        id:
+          type: string
+          format: ObjectId
+        shape:
+          type: string
+          enum:
+            - rectangle
+            - circle
+        area:
+          type: object
+          properties:
+            left:
+              type: number
+            top:
+              type: number
+            width:
+              type: number
+            height:
+              type: number
+    AudioFormat:
+      type: object
+      properties:
+        codec:
+          type: string
+          enum:
+            - pcmu
+            - pcma
+            - opus
+            - g722
+            - iSAC
+            - iLBC
+            - aac
+            - ac3
+            - nellymoser
+        sampleRate:
+          type: number
+        channelNum:
+          type: number
+      required:
+        - codec
+    VideoFormat:
+      type: object
+      properties:
+        codec:
+          type: string
+          enum:
+            - h264
+            - h265
+            - vp8
+            - vp9
+        profile:
+          type: string
+          enum:
+            - CB
+            - B
+            - M
+            - H
+    MediaIn:
+      type: object
+      properties:
+        audio:
+          $ref: '#/components/schemas/AudioFormat'
+        video:
+          $ref: '#/components/schemas/VideoFormat'
+    MediaOut:
+      type: object
+      properties:
+        audio:
+          $ref: '#/components/schemas/AudioFormat'
+        video:
+          type: object
+          properties:
+            format:
+              $ref: '#/components/schemas/VideoFormat'
+            parameters:
+              type: object
+              properties:
+                resolution:
+                  type: array
+                  items:
+                    type: string
+                framerate:
+                  type: array
+                  items:
+                    type: number
+                bitrate:
+                  type: array
+                  items:
+                    type: number
+                keyFrameInterval:
+                  type: array
+                  items:
+                    type: number
+    Transcoding:
+      type: object
+      properties:
+        audio:
+          $ref: '#/components/schemas/AudioFormat'
+        video:
+          type: object
+          properties:
+            format:
+              type: boolean
+            parameters:
+              type: object
+              properties:
+                resolution:
+                  type: boolean
+                framerate:
+                  type: boolean
+                bitrate:
+                  type: boolean
+                keyFrameInterval:
+                  type: boolean
+    Notifying:
+      type: object
+      properties:
+        participantActivities:
+          type: boolean
+        streamChange:
+          type: boolean
+    RoomConfig:
+      type: object
+      properties:
+        name:
+          type: string
+        room:
+          $ref: '#/components/schemas/Room'
+    Recording:
+      type: object
+      properties:
+        id:
+          type: string
+        media:
+          $ref: '#/components/schemas/OutMedia'
+        storage:
+          type: object
+          properties:
+            host:
+              type: string
+              format: host
+            file:
+              type: string
+              format: filename
+    Permission:
+      type: object
+      properties:
+        publish:
+          type: object
+          properties:
+            audio:
+              type: boolean
+            video:
+              type: boolean
+        subscribe:
+          type: object
+          properties:
+            audio:
+              type: boolean
+            video:
+              type: boolean
+    ParticipantDetail:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+          format: ObjectId
+        role:
+          $ref: '#/components/schemas/Role'
+        permission:
+          $ref: '#/components/schemas/Permission'
+    StreamInfo:
+      type: object
+      properties:
+        id:
+          type: string
+          format: StreamId
+        type:
+          type: string
+          enum:
+            - forward
+            - mixed
+        media:
+          $ref: '#/components/schemas/MediaInfo'
+    MediaInfo:
+      type: object
+      properties:
+        audio:
+          $ref: '#/components/schemas/AudioInfo'
+        video:
+          $ref: '#/components/schemas/VideoInfo'
+    AudioInfo:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+          description: 适用于转发流
+        source:
+          type: string
+          enum:
+            - mic
+            - screen-cast
+            - raw-file
+            - encoded-file
+            - streaming
+          description: 适用于转发流
+        format:
+          type: array
+          items:
+            $ref: '#/components/schemas/VideoFormat'
+    VideoInfo:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+          description: 适用于转发流
+        source:
+          type: string
+          enum:
+            - mic
+            - screen-cast
+            - raw-file
+            - encoded-file
+            - streaming
+          description: 适用于转发流
+        original:
+          type: array
+          items:
+            type: object
+            properties:
+              format:
+                $ref: '#/components/schemas/VideoFormat'
+              parameters:
+                $ref: '#/components/schemas/VideoParameters'
+              simulcastRid:
+                type: string
+                example: ''
+    ForwardInfo:
+      type: object
+      properties:
+        owner:
+          type: string
+          format: ParticipantId
+        type:
+          type: string
+          enum:
+            - webrtc
+            - streaming
+            - analytics
+        inViews:
+          type: array
+          items:
+            type: string
+            format: ViewLabel
+        attributes:
+          type: object
+    MixedInfo:
+      type: object
+      properties:
+        label:
+          type: string
+          format: ViewLabel
+        layout:
+          type: object
+          properties:
+            stream:
+              type: string
+              format: StreamId
+            region:
+              $ref: '#/components/schemas/Region'
+    StreamingOut:
+      type: object
+      properties:
+        id:
+          type: string
+        media:
+          $ref: '#/components/schemas/OutMedia'
+        protocol:
+          type: string
+          enum:
+            - rtmp
+            - rtsp
+            - hls
+            - dash
+        url:
+          type: string
+        parameters:
+          type: string
+    OutMedia:
+      type: object
+      properties:
+        audio:
+          oneOf:
+            - $ref: '#/components/schemas/StreamingOutAudio'
+            - type: boolean
+              enum:
+                - 'false'
+        video:
+          oneOf:
+            - $ref: '#/components/schemas/StreamingOutVideo'
+            - type: boolean
+              enum:
+                - 'false'
+    StreamingOutAudio:
+      type: object
+      properties:
+        from:
+          type: string
+          description: 流ID（streamId）
+        format:
+          $ref: '#/components/schemas/AudioFormat'
+    StreamingOutVideo:
+      type: object
+      properties:
+        from:
+          type: string
+          format: StreamId
+          description: 流ID
+        format:
+          $ref: '#/components/schemas/VideoFormat'
+        parameters:
+          $ref: '#/components/schemas/VideoParametersSpecification'
+    VideoParametersSpecification:
+      type: object
+      properties:
+        resolution:
+          $ref: '#/components/schemas/Resolution'
+        framerate:
+          type: integer
+        bitrate:
+          type: integer
+          description: 必须位于VideoInfo.optional.parameters.bitrate数组中
+        keyFrameInterval:
+          type: integer
+    VideoParameters:
+      type: object
+      properties:
+        resolution:
+          $ref: '#/components/schemas/Resolution'
+        framerate:
+          type: integer
+        bitrate:
+          type: integer
+        keyFrameInterval:
+          type: integer
+    HlsParameters:
+      type: object
+      properties:
+        method:
+          type: string
+          enum:
+            - PUT
+            - POST
+        hlsTime:
+          type: number
+          format: HlsTime
+          description: HlsTime
+        hlsListSize:
+          type: number
+          format: HlsListSize
+          description: HlsListSize
+    DashParameters:
+      type: object
+      properties:
+        method:
+          type: string
+          enum:
+            - PUT
+            - POST
+        dashSegDuration:
+          type: number
+          format: DashSegDuration
+          description: DashSegDuration
+        dashWindowSize:
+          type: number
+          format: DashWindowSize
+          description: DashWindowSize
+    SubscriptionControlInfo:
+      type: object
+      oneOf:
+        - type: object
+          properties:
+            op:
+              type: string
+              enum:
+                - replace
+            path:
+              type: string
+              enum:
+                - /media/audio/from
+                - /media/video/from
+            value:
+              type: string
+        - type: object
+          properties:
+            op:
+              type: string
+              enum:
+                - replace
+            path:
+              type: string
+              enum:
+                - /media/video/parameters/resolution
+            value:
+              $ref: '#/components/schemas/Resolution'
+        - type: object
+          properties:
+            op:
+              type: string
+              enum:
+                - replace
+            path:
+              type: string
+              enum:
+                - /media/video/parameters/framerate
+            value:
+              type: integer
+              enum:
+                - 6
+                - 12
+                - 15
+                - 24
+                - 30
+                - 48
+                - 60
+        - type: object
+          properties:
+            op:
+              type: string
+              enum:
+                - replace
+            path:
+              type: string
+              enum:
+                - /media/video/parameters/bitrate
+            value:
+              type: string
+              enum:
+                - x0.8
+                - x0.6
+                - x0.4
+                - x0.2
+        - type: object
+          properties:
+            op:
+              type: string
+              enum:
+                - replace
+            path:
+              type: string
+              enum:
+                - /media/video/parameters/keyFrameInterval
+            value:
+              type: integer
+              enum:
+                - 1
+                - 2
+                - 5
+                - 30
+                - 100
+    PermissionUpdate:
+      type: object
+      properties:
+        op:
+          type: string
+          enum:
+            - replace
+        path:
+          type: string
+          enum:
+            - permission/publish
+            - permission/subscribe
+        value:
+          type: object
+          properties:
+            audio:
+              type: boolean
+            video:
+              type: boolean
+    Device:
+      type: object
+      properties:
+        id:
+          type: string
+          format: ObjectId
+        updateTime:
+          type: string
+          format: date-time
+        basic:
+          type: object
+          properties:
+            name:
+              type: string
+            rtsp:
+              type: string
+            supportNO:
+              type: integer
+            index:
+              type: integer
+            groups:
+              type: string
+              format: ObjectId
+          required:
+            - name
+            - rtsp
+        connection:
+          type: object
+          properties:
+            protocol:
+              type: string
+              enum:
+                - hik
+                - hn
+                - dah
+            ip:
+              type: string
+            port:
+              type: integer
+            user:
+              type: string
+            password:
+              type: string
+            channel:
+              type: string
+        deviceInfo:
+          type: object
+          properties:
+            ip:
+              type: string
+            mask:
+              type: string
+            gateway:
+              type: string
+            DNS:
+              type: string
+            deviceDescription:
+              type: string
+            macAddress:
+              type: string
+            serialNumber:
+              type: string
+            softVersion:
+              type: string
+            runTime:
+              type: string
+        net:
+          type: object
+          properties:
+            ip:
+              type: string
+            mask:
+              type: string
+            gateway:
+              type: string
+            DNS:
+              type: string
+        video:
+          type: object
+          properties:
+            resolution:
+              type: integer
+              enum:
+                - 1
+                - 2
+              default: 1
+            codec:
+              type: integer
+              enum:
+                - 1
+                - 2
+              default: 1
+            fps:
+              type: integer
+              enum:
+                - 10
+                - 15
+                - 20
+                - 25
+                - 30
+              default: 25
+            bitrate:
+              type: integer
+              maximum: 9216
+              minimum: 10
+              default: 3000
+            GOP:
+              type: integer
+              maximum: 200
+              minimum: 1
+              default: 100
+        auth:
+          type: object
+          properties:
+            username:
+              type: string
+            password:
+              type: string
+        OSD:
+          type: object
+          properties:
+            text:
+              type: object
+              properties:
+                enable:
+                  type: boolean
+                  default: false
+                content:
+                  type: string
+                  default: 'text'
+                position:
+                  type: object
+                  properties:
+                    left:
+                      type: string
+                      default: '1/3'
+                    top:
+                      type: string
+                      default: '0/1'
+                fontSize:
+                  type: string
+                  default: '16px'
+                color:
+                  type: string
+                  default: '#FFFFFF'
+            bitmap:
+              type: object
+              properties:
+                enable:
+                  type: boolean
+                  default: false
+                position:
+                  type: object
+                  properties:
+                    left:
+                      type: string
+                      default: '1/3'
+                    top:
+                      type: string
+                      default: '0/1'
+            vector:
+              type: object
+              properties:
+                enable:
+                  type: boolean
+                  default: false
+                position:
+                  type: object
+                  properties:
+                    left:
+                      type: string
+                      default: '1/3'
+                    top:
+                      type: string
+                      default: '0/1'
+    DeviceGroup:
+      type: object
+      properties:
+        name:
+          type: string
+        updateTime:
+          type: string
+          format: date-time
+        devices:
+          type: array
+          items:
+            $ref: '#/components/schemas/Device'
+        subGroup:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceGroup'
+    Plugins:
+      type: object
+      properties:
+        name:
+          description: '名称'
+          type: string
+        displayName:
+          description: '显示名称'
+          type: string
+        description:
+          description: '描述'
+          type: string
+        type:
+          type: string
+          description: '类型，“单流算法”还是“多流算法”'
+          enum:
+            - single
+            - multiple
+        screenshot:
+          type: string
+          description: '截图'
+        version:
+          type: string
+          description: '链接库版本'
+        libraryFilename:
+          type: string
+          description: '链接库文件名'
+        enabled:
+          type: boolean
+          description: '是否启用'
+          default: false
+        optionSchema:
+          type: object
+          description: '链接库的配置项，每个算法插件不同'
+      required:
+        - name
+        - displayName
+        - description
+        - type
+        - version
+        - libraryFilename
+        - enabled
+        - optionSchema
+    Config:
+      type: object
+      properties:
+        name:
+          type: string
+        config:
+          type: object
+      required:
+        - name
+        - config
+    Analytics:
+      type: object
+      properties:
+        id:
+          type: string
+        analytics:
+          type: object
+          properties:
+            algorithm:
+              type: string
+              format: ObjectId
+        media:
+          type: object
+          properties:
+            format:
+              $ref: '#/components/schemas/VideoFormat'
+            from:
+              type: string
+              format: StreamId
+    StreamingInRequest:
+      type: object
+      properties:
+        connection:
+          type: object
+          properties:
+            url:
+              type: string
+            transportProtocol:
+              type: string
+              enum:
+                - udp
+                - tcp
+            bufferSize:
+              type: number
+        media:
+          type: object
+          properties:
+            audio: {}
+            video: {}
+    StreamingOutRequest:
+      type: object
+      properties:
+        protocol:
+          type: string
+          enum:
+            - rtmp
+            - rtsp
+            - hls
+            - dash
+          example: hls
+        url:
+          type: string
+        parameters:
+          type: object
+          oneOf:
+            - $ref: '#/components/schemas/HlsParameters'
+            - $ref: '#/components/schemas/DashParameters'
+        media:
+          $ref: '#/components/schemas/MediaSubOptions'
+    RecordingRequest:
+      type: object
+      properties:
+        container:
+          type: string
+          enum:
+            - auto
+            - mkv
+            - mp4
+          example: mp4
+        media:
+          $ref: '#/components/schemas/MediaSubOptions'
+    AnalyticsRequest:
+      type: object
+      properties:
+        algorithm:
+          type: string
+          format: ObjectId
+        media:
+          $ref: '#/components/schemas/MediaSubOptions'
+    MediaSubOptions:
+      type: object
+      properties:
+        audio:
+          type: object
+          properties:
+            form:
+              type: string
+              format: ObjectId
+            format:
+              type: object
+              properties:
+                codec:
+                  type: string
+                sampleRate:
+                  type: integer
+                channelNum:
+                  type: integer
+        video:
+          type: object
+          properties:
+            form:
+              type: string
+              format: ObjectId
+            format:
+              type: object
+              properties:
+                codec:
+                  type: string
+                profile:
+                  type: string
+            parameters:
+              $ref: '#/components/schemas/VideoParameters'
+    StreamUpdate:
+      type: object
+      oneOf:
+        - $ref: '#/components/schemas/MixUpdate'
+        - $ref: '#/components/schemas/StatusUpdate'
+        - $ref: '#/components/schemas/RegionUpdate'
+        - $ref: '#/components/schemas/LayoutUpdate'
+    MixUpdate:
+      type: object
+      properties:
+        op:
+          type: string
+          enum:
+            - add
+            - remove
+        path:
+          type: string
+          enum:
+            - info/inViews
+        value:
+          type: string
+          format: viewLabel
+    StatusUpdate:
+      type: object
+      properties:
+        op:
+          type: string
+          enum:
+            - replace
+        path:
+          type: string
+          enum:
+            - /media/audio/status
+            - /media/video/status
+        value:
+          type: string
+          enum:
+            - active
+            - inactive
+    RegionUpdate:
+      type: object
+      properties:
+        op:
+          type: string
+          enum:
+            - replace
+        path:
+          type: string
+          pattern: /info/layout/${regionIndex}/stream
+          description: ${regionIndex}是区域的索引
+        value:
+          type: string
+          format: StreamId
+    LayoutUpdate:
+      type: object
+      properties:
+        op:
+          type: string
+          enum:
+            - replace
+        path:
+          type: string
+          enum:
+            - info/layout
+        value:
+          type: array
+          items:
+            type: object
+            properties:
+              audio:
+                type: boolean
+              video:
+                type: boolean
+    UpdateInfo:
+      type: object
+      properties:
+        id:
+          type: string
+    AlgorithmApply:
+      type: object
+      properties:
+        id:
+          type: string
+    Algorithm:
+      type: object
+      properties:
+        id:
+          type: string
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+    SysInfo:
+      type: object
+      properties:
+        id:
+          type: string
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: integer
+            message:
+              type: string
+          enum:
+            - code: 1001
+              message: 未找到
+            - code: 1002
+              message: 未找到服务
+            - code: 1003
+              message: 未找到房间
+            - code: 1004
+              message: 未找到流
+            - code: 1005
+              message: 未找到参与者
+            - code: 1101
+              message: 未授权
+            - code: 1102
+              message: 没有权限
+            - code: 1201
+              message: 集群调用失败
+            - code: 1301
+              message: 请求的数据有错误
+            - code: 1401
+              message: 数据库错误
+            - code: 2001
+              message: 服务器错误
+  requestBodies:
+    Room:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Room'
+      description: ''
+      required: true
+  responses:
+    UnauthorizedError:
+      description: 没有权限
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 1102
+            message: 没有权限
+    NotFoundRoom:
+      description: 未找到房间
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 1003
+            message: 未找到房间
+    NotFoundStream:
+      description: 未找到流
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 1004
+            message: 未找到流
+    NotFoundParticipant:
+      description: 未找到参与者
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 1005
+            message: 未找到参与者
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  links: {}
+  callbacks: {}
+security: []

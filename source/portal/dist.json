@@ -1,0 +1,43 @@
+{
+  "name": "portal",
+  "dest": "portal",
+  "common": {
+    "package": "package.json",
+    "files": [
+      "index.js",
+      "log4js_configuration.json",
+      "portal.js",
+      "rpcRequest.js",
+      "socketIOServer.js",
+      "client.js",
+      "requestDataValidator.js",
+      "requestFormat.js",
+      "requestType.js",
+      "../common/cipher.js",
+      "../common/clusterWorker.js",
+      "../common/loadCollector.js",
+      "../common/logger.js",
+      "../common/makeRPC.js",
+      "../common/grpcTools.js",
+      "../protocol/protos/protoConfig.json",
+      "../protocol/protos/*.proto",
+      "../../scripts/release/initauth.js",
+      "../../scripts/release/initcert.js",
+      "../../scripts/detectOS.sh"
+    ],
+    "folders": {
+      "data_access": ["../data_access/*"]
+    }
+  },
+  "debug": {
+    "folders": {
+      "test": [
+        "test/portal_test.js",
+        "test/rpcRequest_test.js",
+        "test/socketIOServer_legacyClient_test.js",
+        "test/socketIOServer_v10Client_test.js"
+      ]
+    }
+  },
+  "start": "node ."
+}

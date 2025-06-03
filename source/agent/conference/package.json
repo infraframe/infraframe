@@ -1,0 +1,30 @@
+{
+  "name": "OWT-Server-Conference-Controller",
+  "version": "5.1.0",
+  "dependencies": {
+    "@grpc/grpc-js": "^1.1.0",
+    "@grpc/proto-loader": "^0.5.0",
+    "fraction.js": "^4.0.12",
+    "ioredis": "^5.4.1",
+    "log4js": "^6.4.0",
+    "node-getopt": "*",
+    "toml": "*",
+    "mongoose": "^6.13.0",
+    "uuid": "^8.0.0",
+    "async-lock": "^1.4.1",
+    "node-schedule":"^2.1.1"
+  },
+  "devDependencies": {
+    "mocha": "^6.0.2",
+    "chai": "^3.0.0",
+    "chai-as-promised": "^5.1.0",
+    "sinon": "^1.15.4",
+    "sinon-as-promised": "^4.0.0",
+    "istanbul": "*",
+    "mockery": "*"
+  },
+  "scripts": {
+    "test": "mocha ./test -R spec --timeout 5000",
+    "test:cover": "istanbul cover _mocha -- ./test -R spec --timeout 5000"
+  }
+}

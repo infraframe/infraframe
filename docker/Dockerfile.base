@@ -1,0 +1,201 @@
+# 使用合适的基础镜像
+FROM infraframe/builder:latest
+
+ARG TARGETARCH
+
+WORKDIR /home
+# 设置环境变量
+ENV DEBIAN_FRONTEND=noninteractive
+ENV ROOT_DIR=/home
+ENV PREFIX="/home/infraframe/build/libdeps"
+ENV PREFIX_DIR="/home/infraframe/build/libdeps/build"
+ENV PATHNAME="/home/infraframe/scripts"
+ENV PATH=""
+ENV PKG_CONFIG_PATH=${PREFIX_DIR}/lib/pkgconfig
+ENV PATH=${PREFIX}/bin:${PREFIX}/node-v14.21.3-linux-${TARGETARCH}/bin:/usr/bin:$PATH
+ENV CFLAGS="-fPIC"
+
+COPY infraframe/  ./infraframe/
+COPY infraframe-DEPS/ ./infraframe-DEPS/
+COPY infraframe-CLIENT-JS/ ./infraframe-CLIENT-JS/
+
+# patch
+RUN cp -r ./infraframe-DEPS/libnice-0.1.4.tar.gz ./infraframe && \
+    cd ./infraframe && \
+    tar xvf libnice-0.1.4.tar.gz && \
+    cd ./libnice-0.1.4 && \
+    PKG_CONFIG_PATH=$PREFIX_DIR/lib/pkgconfig:$PREFIX_DIR/lib64/pkgconfig:$PKG_CONFIG_PATH && \
+    ./configure --prefix=$PREFIX_DIR && \
+    make -s && \
+    make install && \
+    # 清理多余文件
+    cd .. && \
+    rm -rf libnice-0.1.4 && \
+    rm libnice-0.1.4.tar.gz
+
+# licode
+RUN cp -r ./infraframe-DEPS/licode.tar.gz ./infraframe/third_party && \
+    cd ./infraframe/third_party && \
+    tar xvf licode.tar.gz
+
+# openssl
+RUN cp -r ./infraframe-DEPS/openssl-1.1.1q.tar.gz $PREFIX && \
+    cd $PREFIX && \
+    tar xvf openssl-1.1.1q.tar.gz && \
+    cd $PREFIX/openssl-1.1.1q && \
+    ./config no-ssl3 --prefix=$PREFIX_DIR -fPIC --libdir=lib && \
+    make depend && \
+    make -s V=0  && \
+    make install && \
+    cd .. && \
+    rm -rf openssl-1.1.1q.tar.gz
+
+# re
+RUN cp -r ./infraframe-DEPS/re-0.5.0.zip $PREFIX && \
+    cd $PREFIX && \
+    unzip re-0.5.0.zip && \
+    cd ./re-0.5.0 && \
+    make SYSROOT_ALT=${PREFIX_DIR} RELEASE=1 && \
+    make install SYSROOT_ALT=${PREFIX_DIR} RELEASE=1 PREFIX=${PREFIX_DIR} && \
+    cd .. && \
+    rm -rf re-0.5.0.zip
+
+
+# build zlib
+RUN cp -r ./infraframe-DEPS/zlib-1.3.1.tar.gz $PREFIX && \
+    cd $PREFIX && \
+    tar xvf zlib-1.3.1.tar.gz && \
+    cd zlib-1.3.1 && \
+    ./configure --prefix=$PREFIX_DIR && \
+    make -j8 && \
+    make install && \
+    cd .. && \
+    rm -rf zlib-1.3.1.tar.gz && \
+    rm -rf zlib-1.3.1
+
+
+# build libexpat
+RUN cp -r ./infraframe-DEPS/expat-2.4.4.tar.bz2 $PREFIX && \
+    cd $PREFIX && \
+    tar jxf expat-2.4.4.tar.bz2 && \
+    cd expat-2.4.4 && \
+    ./configure --prefix=${PREFIX_DIR} --with-docbook --without-xmlwf && \
+    make -j8 && \
+    make install && \
+    cd .. && \
+    rm -rf expat-2.4.4.tar.bz2 && \
+    rm -rf expat-2.4.4
+
+
+# Build bootstrap
+RUN cp -r ./infraframe-DEPS/boost_1_84_0.tar.bz2  $PREFIX && \
+    cd  $PREFIX/ && \
+    tar xvf boost_1_84_0.tar.bz2 && \
+    cd ./boost_1_84_0 && \
+    ./bootstrap.sh && \
+    ./b2 && ./b2 install --prefix=$PREFIX_DIR && \
+    cd .. && \
+    rm -rf boost_1_84_0.tar.bz2
+
+# Build usrsctp
+RUN cp -r ./infraframe-DEPS/usrsctp-0.9.5.0.zip $PREFIX && \
+    cd  $PREFIX/ && \
+    unzip usrsctp-0.9.5.0.zip && \
+    cd ./usrsctp-0.9.5.0 && \
+    ./bootstrap && \
+    ./configure --prefix=$PREFIX_DIR && \
+    make -j8 && \
+    make install && \
+    cd .. && \
+    rm -rf usrsctp-0.9.5.0.zip
+
+# Build libsrtp2
+RUN cp -r ./infraframe-DEPS/libsrtp-2.1.0.tar.gz $PREFIX && \
+    cd ${PREFIX} && \
+    tar xzf libsrtp-2.1.0.tar.gz && \
+    cd libsrtp-2.1.0 && \
+    export CFLAGS="-fPIC" && \
+    ./configure --enable-openssl --prefix=${PREFIX_DIR} --with-openssl-dir=${PREFIX_DIR} && \
+    make -s V=0  && \
+    make install && \
+    cd .. && \
+    rm -rf libsrtp-2.1.0.tar.gz
+
+# Build fdkaac
+RUN cp -r ./infraframe-DEPS/fdk-aac-0.1.6.tar.gz $PREFIX && \
+    cd ${PREFIX} && \
+    tar -xvf fdk-aac-0.1.6.tar.gz && \
+    cd ./fdk-aac-0.1.6 && \
+    ./configure --prefix=${PREFIX_DIR} --enable-shared --disable-static && \
+    make -j8 && \
+    make install && \
+    cd .. && \
+    rm -rf fdk-aac-0.1.6.tar.gz
+
+# Build FFmpeg
+RUN cp -r ./infraframe-DEPS/ffmpeg-4.4.1.tar.bz2 $PREFIX && \
+    cd ${PREFIX} && \
+    tar -xvf ffmpeg-4.4.1.tar.bz2 && \
+    cd ./ffmpeg-4.4.1 && \
+    export PKG_CONFIG_PATH=${PREFIX_DIR}/lib/pkgconfig && \
+    ./configure --prefix=${PREFIX_DIR} --enable-shared --disable-static --disable-libvpx --disable-vaapi --enable-libfreetype --enable-libfdk-aac --enable-nonfree && \
+    make -j8 && \
+    make install && \
+    cd .. && \
+    rm -rf ffmpeg-4.4.1.tar.bz2
+
+# node
+RUN cp -r ./infraframe-DEPS/node-v14.21.3-linux-${TARGETARCH}.tar.gz  $PREFIX && \
+    cd ${PREFIX} && \
+    tar -xvf node-v14.21.3-linux-${TARGETARCH}.tar.gz && \
+    rm -rf node-v14.21.3-linux-${TARGETARCH}.tar.gz
+# ENV PATH=$PREFIX/node-v14.21.3-linux-${TARGETARCH}/bin:$PATH
+
+# node-gyp
+# RUN mkdir -p ${PREFIX}/node-gyp-v9.4.1
+RUN cp -r ./infraframe-DEPS/node-gyp-v9.4.1.tar.gz  $PREFIX && \
+    cd ${PREFIX} && \
+    tar xvf node-gyp-v9.4.1.tar.gz && \
+    cd ./nodejs-node-gyp-adcdab2 && \
+    cp -r /home/infraframe-DEPS/node-v14.21.3-headers.tar.gz  $PREFIX/nodejs-node-gyp-adcdab2 && \
+    tar xvf node-v14.21.3-headers.tar.gz && \
+    npm install -g . && \
+    rm -rf node-v14.21.3-headers.tar.gz && \
+    cd .. && \
+    rm -rf node-gyp-v9.4.1.tar.gz
+ENV npm_config_nodedir=${PREFIX}/nodejs-node-gyp-adcdab2/node-v14.21.3/
+
+RUN mkdir -p ./infraframe/third_party/quic-lib
+RUN cp -r ./infraframe-DEPS/dist.tgz ./infraframe/third_party/quic-lib && \
+    cd ./infraframe/third_party/quic-lib && \
+    tar xvf dist.tgz && \
+    rm -rf dist.tgz
+
+# Compilation order is important
+RUN cp -r ${ROOT_DIR}/infraframe-DEPS/plugin-framework ${ROOT_DIR}/infraframe/third_party/ && \
+cd ${ROOT_DIR}/infraframe/third_party/plugin-framework && \
+for file in *.tar.gz; do tar xf "$file"; done && \
+cd ${ROOT_DIR}/infraframe/third_party/plugin-framework/CedarFramework-1.0.0 && mkdir build && cd build && \
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${PREFIX_DIR} -DCMAKE_PREFIX_PATH=${PREFIX_DIR}  ../code && \
+make -j install && \
+cd ${ROOT_DIR}/infraframe/third_party/plugin-framework/CppConfigFramework-1.0.0 && mkdir build && cd build && \
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${PREFIX_DIR} -DCMAKE_PREFIX_PATH=${PREFIX_DIR}  ../code && \
+make -j install && \
+cd ${ROOT_DIR}/infraframe/third_party/plugin-framework/CppPluginFramework-1.0.0 && mkdir build && cd build && \
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${PREFIX_DIR} -DCMAKE_PREFIX_PATH=${PREFIX_DIR}  ../code && \
+make -j install && \
+rm -rf ${ROOT_DIR}/infraframe/third_party/plugin-framework
+
+COPY ./infraframe-DEPS/json/json.hpp ${PREFIX_DIR}/include
+
+RUN cd /home/infraframe && \
+    npm install nan && \
+    npm install ioredis node-getopt log4js toml amqplib @grpc/grpc-js express mongoose && \
+    cp -r ../infraframe-DEPS/webrtc ./third_party && \
+    cp -r ../infraframe-DEPS/webrtc-m88 ./third_party && \
+    ARCH=$(dpkg-architecture -q DEB_BUILD_GNU_CPU) && \
+    cp -r ./third_party/webrtc-m88/${ARCH}/libwebrtc.a ./third_party/webrtc-m88/ && \
+    cp -r ./third_party/webrtc/${ARCH}/libwebrtc.a ./third_party/webrtc/ && \
+    scripts/build.js -r -t all && \
+    scripts/pack.js -t all && \
+    dist/bin/init-all.sh --deps

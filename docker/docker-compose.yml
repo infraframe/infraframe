@@ -1,0 +1,247 @@
+services:
+  mongo:
+    image: mongo:6.0
+    restart: always
+    container_name: mongo
+    expose:
+      - '27017'
+    volumes:
+      - $PWD/database/mongodb:/data/db
+    networks:
+      - agent_network
+
+  redis:
+    image: 'redis/redis-stack-server:6.2.6-v15'
+    container_name: redis
+    restart: always
+    volumes:
+      - $PWD/database/redis:/data
+      - $PWD/config/redis-stack.conf:/etc/redis-stack.conf
+    expose:
+      - '6379'
+    networks:
+      - agent_network
+
+  postgres:
+    image: 'timescale/timescaledb-ha:pg13.10-ts2.10.3-all'
+    volumes:
+      - '$PWD/init-data/public.sql:/docker-entrypoint-initdb.d/public.sql'
+    expose:
+      - '5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=hndz_cfccs
+    networks:
+      - agent_network
+
+  cfccs:
+    image: 'cfccs:1.0'
+    volumes:
+      - '$PWD/config/cfccs.yaml:/usr/src/app/application.yaml'
+    expose:
+      - '48080'
+    networks:
+      - agent_network
+
+  caddy:
+    image: 'caddy:latest'
+    ports:
+      - '80:80'
+      - '443:443'
+      - '2019:2019'
+    volumes:
+      - $PWD/config/Caddyfile:/etc/caddy/Caddyfile
+      - $PWD/static_data:/data
+      - $PWD/static_data/html:/var/www/html
+    networks:
+      - agent_network
+
+  modbus:
+    image: modbus:latest
+    container_name: modbus
+    restart: always
+    networks:
+      - agent_network
+    command: ['bash', '-c', 'cd /home/install_pc/bin/platform && ./run.sh']
+
+  cluster_manager:
+    image: cluster_manager:1.0
+    container_name: cluster_manager
+    restart: on-failure
+    networks:
+      - agent_network
+    stdin_open: true
+    command: ['sh', '-c', 'cd /home/infraframe/dist/cluster_manager && exec node .']
+
+  webrtc_agent:
+    image: webrtc_agent:1.0
+    container_name: webrtc_agent
+    restart: always
+    networks:
+      - agent_network
+    tty: true
+    stdin_open: true
+    environment:
+      - LD_LIBRARY_PATH=/home/infraframe/dist/webrtc_agent/lib:${LD_LIBRARY_PATH}
+    command:
+      ['sh', '-c', 'cd /home/infraframe/dist/webrtc_agent && exec node . -U webrtc']
+
+  video_agent:
+    image: video_agent:1.0
+    container_name: video_agent
+    restart: always
+    networks:
+      - agent_network
+    # tty: true
+    stdin_open: true
+    environment:
+      - DISPLAY=${DISPLAY}
+      - NVIDIA_VISIBLE_DEVICES=all
+      - LD_LIBRARY_PATH=/home/infraframe/build/libdeps/build/lib:${LD_LIBRARY_PATH}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /usr:/usr
+      - /opt:/opt
+      - /etc:/etc
+      - /var:/var
+    command:
+      ['sh', '-c', 'cd /home/infraframe/dist/video_agent && exec node . -U video']
+
+  streaming_agent:
+    image: streaming_agent:1.0
+    container_name: streaming_agent
+    restart: always
+    networks:
+      - agent_network
+    tty: true
+    stdin_open: true
+    environment:
+      - LD_LIBRARY_PATH=/home/infraframe/build/libdeps/build/lib:${LD_LIBRARY_PATH}
+    command:
+      [
+        'sh',
+        '-c',
+        'cd /home/infraframe/dist/streaming_agent && exec node . -U streaming',
+      ]
+
+  recording_agent:
+    image: recording_agent:1.0
+    container_name: recording_agent
+    restart: always
+    networks:
+      - agent_network
+    tty: true
+    stdin_open: true
+    environment:
+      - LD_LIBRARY_PATH=/home/infraframe/build/libdeps/build/lib:${LD_LIBRARY_PATH}
+    command:
+      [
+        'sh',
+        '-c',
+        'cd /home/infraframe/dist/recording_agent  && exec node . -U recording',
+      ]
+
+  portal:
+    image: portal:1.0
+    container_name: portal
+    restart: always
+    networks:
+      - agent_network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    expose:
+      - '8080'
+    tty: true
+    stdin_open: true
+    command: ['sh', '-c', 'cd /home/infraframe/dist/portal&& exec node . -U portal']
+
+  management_api:
+    image: management_api:1.0
+    container_name: management_api
+    restart: always
+    networks:
+      - agent_network
+    tty: true
+    stdin_open: true
+    command:
+      [
+        'sh',
+        '-c',
+        'cd /home/infraframe/dist/management_api && exec node . -U management-api',
+      ]
+
+  conference_agent:
+    image: conference_agent:1.0
+    container_name: conference_agent
+    restart: always
+    networks:
+      - agent_network
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./hhhh/agent.toml:/home/infraframe/dist/conference_agent/agent.toml
+    command:
+      [
+        'sh',
+        '-c',
+        'cd /home/infraframe/dist/conference_agent && exec node . -U conference',
+      ]
+
+  audio_agent:
+    image: audio_agent:1.0
+    container_name: audio_agent
+    restart: always
+    networks:
+      - agent_network
+    tty: true
+    stdin_open: true
+    environment:
+      - LD_LIBRARY_PATH=/home/infraframe/build/libdeps/build/lib:${LD_LIBRARY_PATH}
+    command:
+      ['sh', '-c', 'cd /home/infraframe/dist/audio_agent && exec node . -U audio']
+
+  # analytics_agent:
+  #   image: analytics_agent:1.0
+  #   container_name: analytics_agent
+  #   restart: always
+  #   networks:
+  #     - agent_network
+  #   # tty: true
+  #   stdin_open: true
+  #   environment:
+  #     - DISPLAY=${DISPLAY}
+  #     - NVIDIA_VISIBLE_DEVICES=all # 或者指定具体的 GPU
+  #     - LD_LIBRARY_PATH=/home/infraframe/build/libdeps/build/lib:${LD_LIBRARY_PATH}
+  #     - CONFIGFILE_PATH=./plugin.cfg
+  #   volumes:
+  #     - /tmp/.X11-unix:/tmp/.X11-unix
+  #     - /usr:/usr
+  #     - /opt:/opt
+  #     - /etc:/etc
+  #     - /var:/var
+  #   command:
+  #     [
+  #       'sh',
+  #       '-c',
+  #       'cd /home/infraframe/dist/analytics_agent && exec node . -U analytics',
+  #     ]
+
+  # web:
+  #   image: web:1.0
+  #   container_name: web
+  #   restart: always
+  #   networks:
+  #     - agent_network
+  #   # tty: true
+  #   stdin_open: true
+  #   ports:
+  #     - '3001:3001'
+  #     - '3000:3000'
+  #     - '3004:3004'
+  #   command:
+  #     ['sh', '-c', 'cd /home/infraframe/dist/apps/current_app && exec node . ']
+
+networks:
+  agent_network:
+    driver: bridge

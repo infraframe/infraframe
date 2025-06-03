@@ -1,0 +1,80 @@
+{
+  "name": "webrtc-agent",
+  "dest": "webrtc_agent",
+  "common": {
+    "package": "package.json",
+    "files": [
+      "log4js_configuration.json",
+      "install_deps.sh",
+      "configLoader.js",
+      "../index.js",
+      "../networkHelper.js",
+      "../nodeManager.js",
+      "../workingNode.js",
+      "log4cxx.properties",
+      "../../common/cipher.js",
+      "../../common/clusterWorker.js",
+      "../../common/loadCollector.js",
+      "../../common/logger.js",
+      "../../common/makeRPC.js",
+      "../../common/grpcTools.js",
+      "../../protocol/protos/protoConfig.json",
+      "../../protocol/protos/*.proto",
+      "../../../scripts/release/initcert.js",
+      "../../../scripts/release/initauth.js",
+      "../../../scripts/detectOS.sh"
+    ],
+    "folders": {
+      "webrtc": [
+        "index.js",
+        "wrtcConnection.js",
+        "connection.js",
+        "mediaConfig.js",
+        "profileFilter.js",
+        "sdpInfo.js",
+        "grpcAdapter.js",
+        "../../common/grpcTools.js",
+        "../../protocol/protos/protoConfig.json",
+        "../../protocol/protos/*.proto",
+        "../connections.js",
+        "../internalConnectionRouter.js"
+      ],
+      "cert": ["../../../cert/.owt.keystore"],
+      "data_access": ["../../data_access/*"]
+    }
+  },
+  "natives": {
+    "libdist": "lib",
+    "addons": [
+      {
+        "folder": "rtcConn",
+        "name": "rtcConn"
+      },
+      {
+        "folder": "rtcFrame",
+        "name": "rtcFrame"
+      },
+      {
+        "folder": "../addons/internalIO",
+        "name": "internalIO"
+      },
+      {
+        "folder": "../addons/videoSwitch",
+        "name": "videoSwitch"
+      },
+      {
+        "folder": "../addons/logger",
+        "name": "logger"
+      },
+      {
+        "folder": "../addons/mediaFrameMulticaster",
+        "name": "mediaFrameMulticaster"
+      },
+      {
+        "folder": "../addons/quicIO",
+        "name": "quicIO"
+      }
+    ]
+  },
+  "start": "node . -U webrtc"
+}
