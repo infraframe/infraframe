@@ -53,7 +53,7 @@
         },
       }, { # OS!="mac"
           'cflags!' : ['-fno-exceptions'],
-          'cflags_cc':  ['-Wall', '-O3', '-g' , '-std=c++11'],
+          'cflags_cc':  ['-Wall', '-O3', '-g' , '-std=c++17'],
           'cflags_cc!': ['-fno-exceptions']
       }]
     ]

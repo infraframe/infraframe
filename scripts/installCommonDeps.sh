@@ -41,9 +41,9 @@ install_fdkaac() {
 
   mkdir -p ${LIB_DIR}
   pushd ${LIB_DIR}
-  [[ ! -s ${SRC} ]] && wget -c ${SRC_URL} -O ${SRC}
+  [[ ! -s ${SRC} ]] && curl -L --proxy socks5h://localhost:30000 -o ${SRC} ${SRC_URL}
   if ! (echo "${SRC_MD5SUM} ${SRC}" | md5sum --check); then
-    rm -f ${SRC} && wget -c ${SRC_URL} -O ${SRC} # try download again
+    rm -f ${SRC} && curl -L --proxy socks5h://localhost:30000 -o ${SRC} ${SRC_URL} # try download again
     (echo "${SRC_MD5SUM} ${SRC}" | md5sum --check) || (echo "Downloaded file ${SRC} is corrupted." && return 1)
   fi
   rm -fr fdk-aac-${VERSION}
@@ -77,7 +77,7 @@ install_ffmpeg() {
 
   mkdir -p ${LIB_DIR}
   pushd ${LIB_DIR}
-  [[ ! -s ${SRC} ]] && wget -c ${SRC_URL}
+  [[ ! -s ${SRC} ]] && curl -L --proxy socks5h://localhost:30000 -o ${SRC} ${SRC_URL}
   if ! (echo "${SRC_MD5SUM} ${SRC}" | md5sum --check); then
     echo "Downloaded file ${SRC} is corrupted."
     rm -v ${SRC}
@@ -114,7 +114,7 @@ install_zlib() {
     pushd $LIB_DIR >/dev/null
     rm -rf zlib-*
     rm -f ./build/lib/zlib.*
-    wget -c https://zlib.net/zlib-${VERSION}.tar.gz
+    curl -L --proxy socks5h://localhost:30000 -o zlib-${VERSION}.tar.gz https://zlib.net/zlib-${VERSION}.tar.gz
     tar -zxf zlib-${VERSION}.tar.gz
     pushd zlib-${VERSION} >/dev/null
     ./configure --prefix=$PREFIX_DIR
@@ -146,9 +146,10 @@ install_libnice0114() {
     cd $LIB_DIR
     rm -f ./build/lib/libnice.*
     rm -rf libnice-0.1.*
-    wget -c http://nice.freedesktop.org/releases/libnice-0.1.14.tar.gz
-    tar -zxvf libnice-0.1.14.tar.gz
-    cd libnice-0.1.14
+    # wget -c http://nice.freedesktop.org/releases/libnice-0.1.14.tar.gz
+    curl -L --proxy socks5h://localhost:30000 -o libnice-0.1.16.tar.gz https://repository.timesys.com/buildsources/l/libnice/libnice-0.1.16/libnice-0.1.16.tar.gz
+    tar -zxvf libnice-0.1.16.tar.gz
+    cd libnice-0.1.16
     #patch -p1 < $PATHNAME/patches/libnice-0114.patch
     #patch -p1 < $PATHNAME/patches/libnice-0001-Remove-lock.patch
     PKG_CONFIG_PATH=$PREFIX_DIR"/lib/pkgconfig":$PREFIX_DIR"/lib64/pkgconfig":$PKG_CONFIG_PATH ./configure --prefix=$PREFIX_DIR && make -s V= && make install
@@ -178,7 +179,7 @@ install_libnice014() {
     cd $LIB_DIR
     rm -f ./build/lib/libnice.*
     rm -rf libnice-0.1.*
-    wget -c http://nice.freedesktop.org/releases/libnice-0.1.4.tar.gz
+    curl -L --proxy socks5h://localhost:30000 -o libnice-0.1.4.tar.gz https://repository.timesys.com/buildsources/l/libnice/libnice-0.1.4/libnice-0.1.4.tar.gz
     tar -zxvf libnice-0.1.4.tar.gz
     cd libnice-0.1.4
     patch -p1 <$PATHNAME/patches/libnice014-agentlock.patch
@@ -217,7 +218,7 @@ install_openssl() {
     rm -f ./build/lib/libcrypto.*
     rm -rf openssl-1*
 
-    wget -c https://www.openssl.org/source/openssl-${SSL_VERSION}.tar.gz
+    curl -L --proxy socks5h://localhost:30000 -o openssl-${SSL_VERSION}.tar.gz https://www.openssl.org/source/openssl-${SSL_VERSION}.tar.gz
     tar xf openssl-${SSL_VERSION}.tar.gz
     cd openssl-${SSL_VERSION}
     ./config no-ssl3 --prefix=$PREFIX_DIR -fPIC --libdir=lib
@@ -246,9 +247,9 @@ install_openh264() {
     return 0
   fi
 
-  MAJOR=1
-  MINOR=7
-  SOVER=4
+  MAJOR=2
+  MINOR=6
+  SOVER=8
 
   rm $ROOT/third_party/openh264 -rf
   mkdir $ROOT/third_party/openh264
@@ -256,29 +257,18 @@ install_openh264() {
   cd $ROOT/third_party/openh264
 
   # license
-  wget https://www.openh264.org/BINARY_LICENSE.txt
+  curl -L --proxy socks5h://localhost:30000 -o BINARY_LICENSE.txt https://www.openh264.org/BINARY_LICENSE.txt
 
   SOURCE=v${MAJOR}.${MINOR}.0.tar.gz
-  BINARY=libopenh264-${MAJOR}.${MINOR}.0-linux64.${SOVER}.so
 
-  # download
-  wget https://github.com/cisco/openh264/archive/${SOURCE}
-  wget -c https://github.com/cisco/openh264/releases/download/v${MAJOR}.${MINOR}.0/${BINARY}.bz2
+  # download source code
+  curl -L --proxy socks5h://localhost:30000 -o ${SOURCE} https://github.com/cisco/openh264/archive/refs/tags/${SOURCE}
 
-  # api
-  tar -zxf ${SOURCE} openh264-${MAJOR}.${MINOR}.0/codec/api
-  ln -s -v openh264-${MAJOR}.${MINOR}.0/codec codec
+  # extract source code
+  tar -zxf ${SOURCE} --strip-components=1
 
-  # binary
-  bzip2 -d ${BINARY}.bz2
-  ln -s -v ${BINARY} libopenh264.so.${SOVER}
-  ln -s -v libopenh264.so.${SOVER} libopenh264.so
-
-  # pseudo lib
-  echo \
-    'const char* stub() {return "this is a stub lib";}' \
-    >pseudo-openh264.cpp
-  gcc pseudo-openh264.cpp -fPIC -shared -o pseudo-openh264.so
+  # build from source
+  make -j$(nproc) ENABLE_STATIC=on ENABLE_SHARED=on
 
   cd $CURRENT_DIR
 }
@@ -302,7 +292,7 @@ install_libexpat() {
     pushd ${LIB_DIR} >/dev/null
     rm -rf expat-*
     rm -f ./build/lib/libexpat.*
-    wget -c $DURL
+    curl -L --proxy socks5h://localhost:30000 -o expat-${VERSION}.tar.bz2 $DURL
     tar jxf expat-${VERSION}.tar.bz2
     pushd expat-${VERSION} >/dev/null
     ./configure --prefix=${PREFIX_DIR} --with-docbook --without-xmlwf
@@ -424,7 +414,7 @@ install_quic() {
   mkdir $ROOT/third_party/quic-lib
 
   pushd ${ROOT}/third_party/quic-lib
-  wget https://github.com/open-webrtc-toolkit/owt-deps-quic/releases/download/v0.1/dist.tgz
+  curl -L --proxy socks5h://localhost:30000 -o dist.tgz https://github.com/open-webrtc-toolkit/owt-deps-quic/releases/download/v0.1/dist.tgz
   tar xzf dist.tgz
   popd
 
@@ -590,14 +580,14 @@ install_usrsctp() {
     echo "usrsctp already installed." && return 0
 
   if [ -d $LIB_DIR ]; then
-    local USRSCTP_VERSION="30d7f1bd0b58499e1e1f2415e84d76d951665dc8"
+    local USRSCTP_VERSION="0.9.5.0"
     local USRSCTP_FILE="${USRSCTP_VERSION}.tar.gz"
     local USRSCTP_EXTRACT="usrsctp-${USRSCTP_VERSION}"
     local USRSCTP_URL="https://github.com/sctplab/usrsctp/archive/${USRSCTP_FILE}"
 
     cd $LIB_DIR
     rm -rf usrsctp
-    wget -c ${USRSCTP_URL}
+    curl -L --proxy socks5h://localhost:30000 -o ${USRSCTP_FILE} ${USRSCTP_URL}
     tar -zxvf ${USRSCTP_FILE}
     mv ${USRSCTP_EXTRACT} usrsctp
     rm ${USRSCTP_FILE}
@@ -605,6 +595,7 @@ install_usrsctp() {
     cd usrsctp
     ./bootstrap
     ./configure --prefix=$PREFIX_DIR
+    # CFLAGS="-Wno-address-of-packed-member"
     make && make install
   else
     mkdir -p $LIB_DIR
@@ -616,7 +607,7 @@ install_glib() {
   if [ -d $LIB_DIR ]; then
     local VERSION="2.54.1"
     cd $LIB_DIR
-    wget -c https://github.com/GNOME/glib/archive/${VERSION}.tar.gz -O glib-${VERSION}.tar.gz
+    curl -L --proxy socks5h://localhost:30000 -o glib-${VERSION}.tar.gz https://github.com/GNOME/glib/archive/${VERSION}.tar.gz
 
     tar -xvzf glib-${VERSION}.tar.gz
     cd glib-${VERSION}
@@ -632,7 +623,7 @@ install_gcc() {
   if [ -d $LIB_DIR ]; then
     local VERSION="4.8.4"
     cd $LIB_DIR
-    wget -c http://ftp.gnu.org/gnu/gcc/gcc-${VERSION}/gcc-${VERSION}.tar.bz2
+    curl -L --proxy socks5h://localhost:30000 -o gcc-${VERSION}.tar.bz2 http://ftp.gnu.org/gnu/gcc/gcc-${VERSION}/gcc-${VERSION}.tar.bz2
 
     tar jxf gcc-${VERSION}.tar.bz2
     cd gcc-${VERSION}
@@ -673,7 +664,7 @@ install_json_hpp() {
   if [ -d $LIB_DIR ]; then
     local DOWNLOAD_JSON_LINK="https://github.com/nlohmann/json/releases/download/v3.6.1/json.hpp"
     pushd $LIB_DIR >/dev/null
-    wget -c ${DOWNLOAD_JSON_LINK}
+    curl -L --proxy socks5h://localhost:30000 -o json.hpp ${DOWNLOAD_JSON_LINK}
     mkdir -p ${PREFIX_DIR}/include
     mv json.hpp ${PREFIX_DIR}/include/
     popd
@@ -697,15 +688,20 @@ install_svt_hevc() {
     echo "svt_hevc already installed." && return 0
 
   pushd $ROOT/third_party >/dev/null
-  rm -rf SVT-HEVC
-  git clone https://github.com/intel/SVT-HEVC.git
+  rm -rf SVT-HEVC*
+  # git clone https://github.com/intel/SVT-HEVC.git
 
+  # pushd SVT-HEVC >/dev/null
+  # git checkout v1.5.1
+
+  # if [[ "$OS" =~ .*centos.* ]]; then
+  #   source /opt/rh/devtoolset-7/enable
+  # fi
+
+  curl -L --proxy socks5h://localhost:30000 -o SVT-HEVC.tar.gz https://github.com/OpenVisualCloud/SVT-HEVC/archive/refs/tags/v1.5.1.tar.gz
+  tar -xzf SVT-HEVC.tar.gz
+  mv SVT-HEVC-1.5.1 SVT-HEVC
   pushd SVT-HEVC >/dev/null
-  git checkout v1.3.0
-
-  if [[ "$OS" =~ .*centos.* ]]; then
-    source /opt/rh/devtoolset-7/enable
-  fi
 
   mkdir -p build
   pushd build >/dev/null
@@ -751,9 +747,9 @@ install_boost() {
 
   if [ -d $LIB_DIR ]; then
     cd $LIB_DIR
-    wget -c https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.bz2
-    tar xvf boost_1_84_0.tar.bz2
-    cd boost_1_84_0
+    # curl -L --proxy socks5h://localhost:30000 -o boost-1.84.0.tar.xz https://github.com/boostorg/boost/releases/download/boost-1.84.0/boost-1.84.0.tar.xz
+    # tar xvf boost-1.84.0.tar.xz
+    cd boost-1.84.0
     chmod +x bootstrap.sh
     ./bootstrap.sh
     ./b2 && ./b2 install --prefix=$PREFIX_DIR

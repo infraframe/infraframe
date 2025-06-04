@@ -14,15 +14,13 @@
             "../workingNode.js",
             "log4cxx.properties",
             "../../common/cipher.js",
-            "../../common/amqpClient.js",
             "../../common/clusterWorker.js",
             "../../common/loadCollector.js",
             "../../common/logger.js",
             "../../common/makeRPC.js",
-            "../../common/rpcChannel.js",
             "../../common/grpcTools.js",
-            "../../protos/protoConfig.json",
-            "../../protos/*.proto",
+            "../../protocol/protos/protoConfig.json",
+            "../../protocol/protos/*.proto",
             "../../../scripts/release/initauth.js"
         ],
         "folders": {
@@ -31,8 +29,8 @@
                 "sipCallConnection.js",
                 "grpcAdapter.js",
                 "../../common/grpcTools.js",
-                "../../protos/protoConfig.json",
-                "../../protos/*.proto",
+                "../../protocol/protos/protoConfig.json",
+                "../../protocol/protos/*.proto",
                 "../connections.js",
                 "../internalConnectionRouter.js"
             ]
@@ -46,6 +44,10 @@
                 "name": "sipIn"
             },
             {
+                "folder": "../addons/mediaFrameMulticaster",
+                "name": "mediaFrameMulticaster"
+            },
+            {
                 "folder": "../webrtc/rtcFrame",
                 "name": "rtcFrame"
             },
@@ -56,10 +58,6 @@
             {
                 "folder": "../addons/logger",
                 "name": "logger"
-            },
-            {
-                "folder": "../addons/mediaFrameMulticaster",
-                "name": "mediaFrameMulticaster"
             },
             {
                 "folder": "../addons/quicIO",

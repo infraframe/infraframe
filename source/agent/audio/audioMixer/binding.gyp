@@ -26,7 +26,7 @@
                 "-Wall",
                 "-O$(OPTIMIZATION_LEVEL)",
                 "-g",
-                "-std=c++11",
+                "-std=c++17",
                 "-DWEBRTC_POSIX",
                 "<!@(pkg-config --cflags-only-I gstreamer-1.0)",
                 "<!@(pkg-config --cflags-only-I glib-2.0)",

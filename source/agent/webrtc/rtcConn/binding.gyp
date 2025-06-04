@@ -76,7 +76,7 @@
       }, { # OS!="mac"
           'cflags!' : ['-fno-exceptions'],
           'cflags' : ['-D__STDC_CONSTANT_MACROS'],
-          'cflags_cc' : ['-Wall', '-O3', '-g' , '-std=c++11', '-fexceptions'],
+          'cflags_cc' : ['-Wall', '-O3', '-g' , '-std=c++17', '-fexceptions'],
           'cflags_cc!' : ['-fno-exceptions'],
           'cflags_cc!' : ['-fno-rtti']
       }],

@@ -23,12 +23,12 @@ install_apt_deps() {
   fi
 }
 
-install_gcc_7() {
-  ${SUDO} apt-get install gcc-7 g++-7
-  ${SUDO} update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 100
-  ${SUDO} update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 100
-  ${SUDO} update-alternatives --set g++ /usr/bin/g++-7
-  ${SUDO} update-alternatives --set gcc /usr/bin/gcc-7
+install_gcc() {
+  ${SUDO} apt-get install gcc-9 g++-9
+  ${SUDO} update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 900
+  ${SUDO} update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 900
+  ${SUDO} update-alternatives --set g++ /usr/bin/g++-9
+  ${SUDO} update-alternatives --set gcc /usr/bin/gcc-9
 }
 
 install_mediadeps_nonfree() {

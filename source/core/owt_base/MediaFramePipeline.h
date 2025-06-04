@@ -337,9 +337,9 @@ public:
     virtual bool init(FrameFormat) = 0;
 };
 
-class VideoFrameProcesser : public FrameSource, public FrameDestination {
+class VideoFrameProcessor : public FrameSource, public FrameDestination {
 public:
-    virtual ~VideoFrameProcesser() { }
+    virtual ~VideoFrameProcessor() { }
     virtual bool init(FrameFormat format, const uint32_t width, const uint32_t height, const uint32_t frameRate) = 0;
     virtual void drawText(const std::string& textSpec) = 0;
     virtual void clearText() = 0;

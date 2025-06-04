@@ -30,7 +30,7 @@
                 "-Wall",
                 "-O$(OPTIMIZATION_LEVEL)",
                 "-g",
-                "-std=c++11",
+                "-std=c++17",
                 "-DWEBRTC_POSIX",
                 "-DENABLE_SVT_HEVC_ENCODER",
                 "<!@(pkg-config --cflags-only-I gstreamer-1.0)",
@@ -49,6 +49,7 @@
                 "$(CORE_HOME)/../../third_party/webrtc/src",
                 "$(CORE_HOME)/../../third_party/webrtc/src/third_party/libyuv/include",
                 "$(DEFAULT_DEPENDENCY_PATH)/include",
+                "$(DEFAULT_DEPENDENCY_PATH)/include/svt-hevc",
                 "$(CUSTOM_INCLUDE_PATH)",
             ],
             "libraries": [

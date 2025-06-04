@@ -49,6 +49,7 @@
                 "$(CORE_HOME)/../../third_party/webrtc/src",
                 "$(CORE_HOME)/../../third_party/webrtc/src/third_party/libyuv/include",
                 "$(DEFAULT_DEPENDENCY_PATH)/include",
+                "$(DEFAULT_DEPENDENCY_PATH)/include/svt-hevc",
                 "$(CUSTOM_INCLUDE_PATH)",
             ],
             "libraries": [

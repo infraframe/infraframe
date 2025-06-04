@@ -40,7 +40,7 @@
         },
       }, { # OS!="mac"
         'cflags!':    ['-fno-exceptions'],
-        'cflags_cc':  ['-Wall', '-O$(OPTIMIZATION_LEVEL)', '-g', '-std=c++11'],
+        'cflags_cc':  ['-Wall', '-O$(OPTIMIZATION_LEVEL)', '-g', '-std=c++17'],
         'cflags_cc!': ['-fno-exceptions', '-fno-rtti']
       }],
     ]
@@ -74,7 +74,7 @@
 #        },
 #      }, { # OS!="mac"
 #        'cflags!':    ['-fno-exceptions'],
-#        'cflags_cc':  ['-Wall', '-O$(OPTIMIZATION_LEVEL)', '-g', '-std=c++11', '-DINET', '-DINET6'],
+#        'cflags_cc':  ['-Wall', '-O$(OPTIMIZATION_LEVEL)', '-g', '-std=c++17', '-DINET', '-DINET6'],
 #        'cflags_cc!': ['-fno-exceptions']
 #      }],
 #    ]

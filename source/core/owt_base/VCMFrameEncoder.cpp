@@ -9,7 +9,7 @@
 
 #include "MediaUtilities.h"
 #include "VCMFrameEncoder.h"
-#include "gst//H264VideoEncoders.h"
+#include "gst/H264VideoEncoders.h"
 
 #ifdef ENABLE_MSDK
 #include "MsdkFrame.h"
