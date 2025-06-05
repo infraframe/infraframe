@@ -23,39 +23,10 @@ const notificationTypes = {
 
 // Check SSL variables
 let useSsl = !!process.env['OWT_GRPC_SSL'];
+useSsl = false;
 let rootCert;
 let serverCert, serverKey;
 let clientCert, clientKey;
-if (useSsl) {
-  const { execSync } = require('child_process');
-  const fs = require('fs');
-  let cipher;
-  try {
-    cipher = require('./cipher');
-  } catch (e) {
-    cipher = require('../cipher');
-  }
-  try {
-    const authConfig = cipher.unlockSync(cipher.k, cipher.astore);
-    const execStdio = [null, null, 'ignore'];
-    rootCert = fs.readFileSync(process.env['OWT_GRPC_ROOT_CERT']);
-    serverCert = fs.readFileSync(process.env['OWT_GRPC_SERVER_CERT']);
-    serverKey = execSync(
-      `openssl rsa -passin pass:${authConfig.grpc.serverPass}` +
-        ` -in ${process.env['OWT_GRPC_SERVER_KEY']}`,
-      { stdio: execStdio }
-    );
-    clientCert = fs.readFileSync(process.env['OWT_GRPC_CLIENT_CERT']);
-    clientKey = execSync(
-      `openssl rsa -passin pass:${authConfig.grpc.clientPass}` +
-        ` -in ${process.env['OWT_GRPC_CLIENT_KEY']}`,
-      { stdio: execStdio }
-    );
-  } catch (e) {
-    // console.log('Failed to load SSL files for GRPC:', e);
-    useSsl = false;
-  }
-}
 
 // Return promise with (port).
 function startServer(type, serviceObj, serverPort = 0) {

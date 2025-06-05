@@ -6,7 +6,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const serverAuthenticator = require('./auth/serverAuthenticator');
-const cipher = require('./cipher');
 const path = require('path');
 const dataAccess = require('./data_access');
 
@@ -149,46 +148,7 @@ async function main() {
       logger.reconfigure();
     });
   } else {
-    // Load spk
-    try {
-      const aconfig = cipher.unlockSync(cipher.k, cipher.astore);
-      global.config.spk = aconfig.spk
-        ? Buffer.from(aconfig.spk, 'hex')
-        : cipher.dk;
-    } catch (e) {
-      global.config.spk = cipher.dk;
-    }
-
-    if (serverConfig.ssl === true) {
-      var keystore = path.resolve(
-        path.dirname(serverConfig.keystorePath),
-        cipher.kstore
-      );
-      cipher.unlock(cipher.k, keystore, function cb(err, passphrase) {
-        if (!err) {
-          try {
-            require('https')
-              .createServer(
-                {
-                  pfx: require('fs').readFileSync(serverConfig.keystorePath),
-                  passphrase: passphrase,
-                },
-                app
-              )
-              .listen(serverPort);
-          } catch (e) {
-            log.warn('Failed to start secured server:', e);
-            return process.exit(1);
-          }
-        } else {
-          log.warn('Failed to setup secured server:', err);
-          return process.exit(1);
-        }
-      });
-    } else {
-      app.listen(serverPort);
-    }
-
+    app.listen(serverPort);
     log.info(`Worker ${process.pid} started`);
 
     ['SIGINT', 'SIGTERM'].map(function (sig) {

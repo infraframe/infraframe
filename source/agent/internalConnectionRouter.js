@@ -16,23 +16,7 @@ const internalIO = require('../internalIO/build/Release/internalIO');
 const {InternalServer, InternalClient} = internalIO;
 
 const setSecurePromise = new Promise(function (resolve) {
-  try {
-    const cipher = require('../cipher');
-    cipher.unlock(cipher.k, cipher.astore, function cb (err, authConfig) {
-      if (!err) {
-        if (authConfig.internalPass) {
-          log.debug('Secure enabled for internal IO');
-          internalIO.setPassphrase(authConfig.internalPass);
-        }
-      } else {
-        log.debug('Unlock error:', err);
-      }
-      resolve();
-    });
-  } catch (e) {
-    log.debug('No secure for internal IO');
-    resolve();
-  }
+  resolve();
 });
 
 

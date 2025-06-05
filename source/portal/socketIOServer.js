@@ -399,32 +399,6 @@ var SocketIOServer = function (spec, portal, observer) {
     return Promise.resolve('ok');
   };
 
-  var startSecured = function (port, keystorePath, forceTlsv12) {
-    return new Promise(function (resolve, reject) {
-      var cipher = require('./cipher');
-      var keystore = path.resolve(path.dirname(keystorePath), cipher.kstore);
-      cipher.unlock(cipher.k, keystore, function (err, passphrase) {
-        if (!err) {
-          var option = {
-            pfx: require('fs').readFileSync(keystorePath),
-            passphrase: passphrase,
-          };
-          if (forceTlsv12) {
-            var constants = require('constants');
-            option.secureOptions =
-              constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1;
-          }
-          var server = require('https').createServer(option).listen(port);
-          io = require('socket.io')(server, sioOptions);
-          run();
-          resolve('ok');
-        } else {
-          reject(err);
-        }
-      });
-    });
-  };
-
   var run = function () {
     io.sockets.on('connection', function (socket) {
       var conn = Connection(spec, socket, reconnection_key, portal, that);
@@ -460,11 +434,7 @@ var SocketIOServer = function (spec, portal, observer) {
   };
 
   that.start = function () {
-    if (!spec.ssl) {
-      return startInsecure(spec.port);
-    } else {
-      return startSecured(spec.port, spec.keystorePath, spec.forceTlsv12);
-    }
+    return startInsecure(spec.port);
   };
 
   that.stop = function () {

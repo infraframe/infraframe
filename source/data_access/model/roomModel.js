@@ -62,14 +62,13 @@ var RoomSchema = new Schema({
     password: {
       type: String,
       set: (v) => {
-        return cipher.encrypt(cipher.k, v);
+        if (!v) return v;
+        let ret = '';
+        return ret;
       },
       get: (v) => {
         if (!v) return v;
         let ret = '';
-        try {
-          ret = cipher.decrypt(cipher.k, v);
-        } catch (e) {}
         return ret;
       },
     },

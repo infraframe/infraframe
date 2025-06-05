@@ -29,7 +29,6 @@
 'use strict';
 var fs = require('fs');
 var log = require('./../logger').logger.getLogger('RPC');
-var cipher = require('../cipher');
 var TIMEOUT = 3000;
 
 const grpcTools = require('../grpcTools');

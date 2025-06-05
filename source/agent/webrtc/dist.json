@@ -12,7 +12,6 @@
       "../nodeManager.js",
       "../workingNode.js",
       "log4cxx.properties",
-      "../../common/cipher.js",
       "../../common/clusterWorker.js",
       "../../common/loadCollector.js",
       "../../common/logger.js",
@@ -39,7 +38,6 @@
         "../connections.js",
         "../internalConnectionRouter.js"
       ],
-      "cert": ["../../../cert/.owt.keystore"],
       "data_access": ["../../data_access/*"]
     }
   },

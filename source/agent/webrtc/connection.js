@@ -32,7 +32,6 @@ const path = require('path');
 
 const addon = require('../rtcConn/build/Release/rtcConn');
 
-const cipher = require('../cipher');
 const logger = require('../logger').logger;
 logger.objectToLog = JSON.stringify;
 const log = logger.getLogger('Connection');

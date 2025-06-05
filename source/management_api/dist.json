@@ -8,7 +8,6 @@
       "*.sh",
       "log4js_configuration.json",
       "../common/logger.js",
-      "../common/cipher.js",
       "../common/grpcTools.js",
       "../protocol/protos/protoConfig.json",
       "../protocol/protos/*.proto",

@@ -11,7 +11,6 @@
             "video-switch",
             "webrtc",
             "avstream",
-            "sip"
         ]
     },
     "mcu-msdk" : {
@@ -25,7 +24,6 @@
             "audio-ranker",
             "webrtc",
             "avstream",
-            "sip"
         ]
     },
     "mcu-all" : {

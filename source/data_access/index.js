@@ -1,5 +1,4 @@
 'use strict';
-const cipher = require('../cipher');
 const fs = require('fs');
 const mongoose = require('mongoose');
 const { exit } = require('process');
@@ -17,19 +16,6 @@ mongoose.Promise = Promise;
 
 // Connect to MongoDB
 let connectOption = {};
-if (fs.existsSync(cipher.astore)) {
-  cipher.unlock(cipher.k, cipher.astore, function cb(err, authConfig) {
-    if (!err) {
-      if (authConfig.mongo) {
-        connectOption.user = authConfig.mongo.username;
-        connectOption.pass = authConfig.mongo.password;
-      }
-    } else {
-      console.error('Failed to get mongodb auth:', err);
-      exit();
-    }
-  });
-}
 
 const setupConnection = function () {
   if (databaseUrl.indexOf('mongodb://') !== 0) {

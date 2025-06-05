@@ -13,7 +13,6 @@
       "requestDataValidator.js",
       "requestFormat.js",
       "requestType.js",
-      "../common/cipher.js",
       "../common/clusterWorker.js",
       "../common/loadCollector.js",
       "../common/logger.js",

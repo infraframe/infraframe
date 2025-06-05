@@ -15,7 +15,6 @@ const {
 } = require('../rtcFrame/build/Release/rtcFrame.node');
 
 const logger = require('../logger').logger;
-const cipher = require('../cipher');
 // Logger
 const log = logger.getLogger('WrtcConnection');
 
@@ -472,7 +471,7 @@ module.exports = function (spec, on_status, on_track) {
     if (rids) {
       // Simulcast
       rids.forEach((rid, index) => {
-        const trackId = composeId(mid, rid);        
+        const trackId = composeId(mid, rid);
         if (simSsrcs) {
           // Assign ssrcs for legacy simulcast
           trackSettings[mediaType].ssrcs = [simSsrcs[index]];
