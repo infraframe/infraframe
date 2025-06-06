@@ -93,7 +93,7 @@ then
     [ "$CHECK_INSTALL" != true ] && install_apt_deps
     if [[ "$OS_VERSION" =~ 20.04.* ]]
     then
-      install_gcc_7
+      install_gcc
       if [ "$GITHUB_ACTIONS" != "true" ]; then
         install_boost
       fi

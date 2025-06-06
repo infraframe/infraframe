@@ -99,8 +99,6 @@ init_auth()
     cp ${ROOT}/cluster_manager/${AUTH_STORE} ${ROOT}/streaming_agent/
     cp ${ROOT}/cluster_manager/${AUTH_STORE} ${ROOT}/recording_agent/
     cp ${ROOT}/cluster_manager/${AUTH_STORE} ${ROOT}/analytics_agent/
-    cp ${ROOT}/cluster_manager/${AUTH_STORE} ${ROOT}/sip_agent/
-    cp ${ROOT}/cluster_manager/${AUTH_STORE} ${ROOT}/sip_portal/
     cp ${ROOT}/cluster_manager/${AUTH_STORE} ${ROOT}/management_api/
   fi
 }

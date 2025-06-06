@@ -566,7 +566,6 @@ function isLibAllowed(libSrc) {
     'libusrsctp',
     'libopenh264',
     'libre',
-    'sipLib',
     'librawquic',
     'libowt_web_transport',
   ];
@@ -777,42 +776,6 @@ function packScripts() {
   execSync(`chmod +x ${binDir}/\*.sh`);
 }
 
-function packApps() {
-  if (!options['app-path']) return;
-  chdir(originCwd);
-  var appPath = options['app-path'];
-  if (!fs.existsSync(appPath)) {
-    console.log(`\x1b[31mError: ${appPath} does not exist\x1b[0m`);
-    return;
-  }
-  execSync(`rm -rf ${distDir}/apps`);
-  execSync(`mkdir -p ${distDir}/apps`);
-  console.log('\x1b[32mApps folder created in :', distDir, '\x1b[0m');
-  execSync(`cp -a ${appPath} ${distDir}/apps/current_app`);
-
-  // Look in the app's package.json to see what file to use for main.js
-  var jsonTXT = execSync(`cat ${distDir}/apps/current_app/package.json`);
-  var appJSON = JSON.parse(jsonTXT)['main'];
-
-  if (!appJSON === undefined) {
-    console.log('\x1b[31mError: No main js file for the app\x1b[0m');
-    return;
-  } else {
-    // Make a soft link to the main JS file node.js should call
-    if (appJSON !== 'main.js')
-      execSync(
-        `ln -srf ${distDir}/apps/current_app/${appJSON} ${distDir}/apps/current_app/main.js`
-      );
-  }
-  const certScript = `${distDir}/apps/current_app/initcert.js`;
-  if (fs.existsSync(certScript)) execSync(`chmod +x ${certScript}`);
-
-  if (options['install-module']) {
-    chdir(`${distDir}/apps/current_app`);
-    execSync('npm install' + npmInstallOption);
-  }
-}
-
 function archive() {
   if (!options['archive']) return;
   const myVersion = options['archive'];
@@ -834,7 +797,6 @@ getTargets()
   .then(cleanIfRepack)
   .then(processTargets)
   .then(packScripts)
-  .then(packApps)
   .then(archive)
   .then(() => {
     console.log('\x1b[32mWork finished in directory:', distDir, '\x1b[0m');

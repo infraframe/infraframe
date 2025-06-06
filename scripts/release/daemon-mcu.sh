@@ -153,19 +153,6 @@ case $startStop in
           > "${stdout}" 2>&1 </dev/null &
         echo $! > ${pid}
         ;;
-      sip-agent )
-        cd ${OWT_HOME}/sip_agent
-        export LD_LIBRARY_PATH=./lib:${LD_LIBRARY_PATH}
-        nohup nice -n ${OWT_NICENESS} node . -U sip\
-          > "${stdout}" 2>&1 </dev/null &
-        echo $! > ${pid}
-        ;;
-      sip-portal )
-        cd ${OWT_HOME}/sip_portal
-        nohup nice -n ${OWT_NICENESS} node sip_portal.js \
-          > "${stdout}" 2>&1 </dev/null &
-        echo $! > ${pid}
-        ;;
       audio-agent )
         cd ${OWT_HOME}/audio_agent
         export LD_LIBRARY_PATH=./lib:${LD_LIBRARY_PATH}
@@ -206,12 +193,6 @@ case $startStop in
         ;;
       management-console )
         cd ${OWT_HOME}/management_console
-        nohup nice -n ${OWT_NICENESS} node . \
-          > "${stdout}" 2>&1 </dev/null &
-        echo $! > ${pid}
-        ;;
-      app )
-        cd ${OWT_HOME}/apps/current_app/
         nohup nice -n ${OWT_NICENESS} node . \
           > "${stdout}" 2>&1 </dev/null &
         echo $! > ${pid}

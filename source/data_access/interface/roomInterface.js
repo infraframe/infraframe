@@ -101,11 +101,11 @@ exports.create = function (roomOption, callback) {
   room
     .save()
     .then((saved) => {
-          if (labels.length > 0) {
-            updateAudioOnlyViews(labels, saved, callback);
-          } else {
-            callback(null, saved.toObject());
-          }
+      if (labels.length > 0) {
+        updateAudioOnlyViews(labels, saved, callback);
+      } else {
+        callback(null, saved.toObject());
+      }
     })
     .catch((err) => {
       callback(err, null);
@@ -152,11 +152,10 @@ exports.list = function (options, callback) {
  * Get Room. Represents a determined room.
  */
 exports.get = function (roomId, callback) {
-      Room.findById(roomId)
-        .lean()
-        .exec(function (err, room) {
-          return callback(err, room);
-        });
+  Room.findById(roomId)
+    .lean()
+    .exec(function (err, room) {
+      return callback(err, room);
     });
 };
 

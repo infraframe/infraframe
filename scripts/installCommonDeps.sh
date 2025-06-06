@@ -351,11 +351,11 @@ install_webrtc() {
   rm -rf $ROOT/third_party/webrtc-m88
 
   pushd ${ROOT}/third_party/
-  git clone git@github.com:infraframe/infraframe-DEPS.git
+  ALL_PROXY=socks5h://localhost:30000 git clone git@github.com:infraframe/infraframe-deps.git
 
-  mv infraframe-DEPS/webrtc ./
-  mv infraframe-DEPS/webrtc-m88 ./
-  rm -rf infraframe-DEPS
+  mv infraframe-deps/webrtc ./
+  mv infraframe-deps/webrtc-m88 ./
+  rm -rf infraframe-deps
 
   ARCH=$(dpkg-architecture -q DEB_BUILD_GNU_CPU)
   cp webrtc-m88/${ARCH}/libwebrtc.a webrtc-m88/
@@ -380,7 +380,7 @@ install_licode() {
   local LINK_PATH="$ROOT/source/agent/webrtc/webrtcLib"
   pushd ${ROOT}/third_party >/dev/null
   rm -rf licode
-  git clone https://github.com/lynckia/licode.git
+  ALL_PROXY=socks5h://localhost:30000 git clone https://github.com/lynckia/licode.git
   pushd licode >/dev/null
   git reset --hard $COMMIT
 
@@ -448,7 +448,7 @@ install_nicer() {
   local COMMIT="24d88e95e18d7948f5892d04589acce3cc9a5880"
   pushd ${ROOT}/third_party >/dev/null
   rm -rf nICEr
-  git clone https://github.com/lynckia/nICEr.git
+  ALL_PROXY=socks5h://localhost:30000 git clone https://github.com/lynckia/nICEr.git
   pushd nICEr >/dev/null
   git reset --hard $COMMIT
   cmake -DCMAKE_C_FLAGS="-std=c99" -DCMAKE_INSTALL_PREFIX:PATH=${ROOT}/third_party/nICEr/out
@@ -553,7 +553,7 @@ install_libre() {
   if [ -d $LIB_DIR ]; then
     pushd ${LIB_DIR} >/dev/null
     rm -rf re
-    git clone https://github.com/creytiv/re.git
+    ALL_PROXY=socks5h://localhost:30000 git clone https://github.com/creytiv/re.git
     pushd re >/dev/null
     git checkout v0.5.0
     make SYSROOT_ALT=${PREFIX_DIR} RELEASE=1
@@ -689,7 +689,7 @@ install_svt_hevc() {
 
   pushd $ROOT/third_party >/dev/null
   rm -rf SVT-HEVC*
-  # git clone https://github.com/intel/SVT-HEVC.git
+  # ALL_PROXY=socks5h://localhost:30000 git clone https://github.com/intel/SVT-HEVC.git
 
   # pushd SVT-HEVC >/dev/null
   # git checkout v1.5.1

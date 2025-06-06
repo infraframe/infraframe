@@ -35,6 +35,5 @@ const setupConnection = function () {
 exports.room = require('./interface/roomInterface');
 
 exports.Config = require('./model/configModel');
-exports.Plugin = require('./model/pluginModel');
 exports.Room = require('./model/roomModel');
 exports.View = require('./model/viewModel');
